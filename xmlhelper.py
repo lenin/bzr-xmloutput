@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
-## Import modules: first standar-lib, 3rd party, ours
-
 # @author Guillermo Gonzalez
-# (this is modified code from bzrlib.cmd_status, bzrlib.status and bzrlib.delta.TreeDelta.show)
+# (most of this code was modified from from bzrlib.cmd_status, bzrlib.status and bzrlib.delta.TreeDelta.show)
 # @version 0.1
 
 from bzrlib.diff import _raise_if_nonexistent
@@ -78,7 +76,8 @@ def show_tree_status_xml(wt, show_unchanged=None,
         try:
             _raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
-            print >>to_file, '<status workingtree_root="%s">' % wt.id2abspath(wt.get_root_id())
+            print >>to_file, '<status workingtree_root="%s">' % \
+                          wt.id2abspath(wt.get_root_id())
             delta = new.changes_from(old, want_unchanged=show_unchanged,
                                   specific_files=specific_files,
                                   want_unversioned=want_unversioned)
@@ -185,9 +184,11 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False):
     extra_modified = []
     if delta.renamed:
         print >>to_file, '<renamed>'
-        for (oldpath, newpath, fid, kind, text_modified, meta_modified) in delta.renamed:
+        for (oldpath, newpath, fid, kind, 
+             text_modified, meta_modified) in delta.renamed:
             if text_modified or meta_modified:
-                extra_modified.append((newpath, fid, kind, text_modified, meta_modified))
+                extra_modified.append((newpath, fid, kind, 
+                                text_modified, meta_modified))
             metamodified = ''
             if meta_modified:
                 metamodified = 'meta_modified="true"'
@@ -195,9 +196,11 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False):
                 kind_id=''
                 if fid:
                     kind_id=get_kind_id_element(kind, fid)
-                print >>to_file, '<%s oldpath="%s" %s %s>%s</%s>' % (kind, oldpath, metamodified, kind_id, newpath, kind)
+                print >>to_file, '<%s oldpath="%s" %s %s>%s</%s>' % \
+                        (kind, oldpath, metamodified, kind_id, newpath, kind)
             else: 
-                print >>to_file, '<%s oldpath="%s" %s >%s</%s>' % (kind, oldpath, metamodified, newpath, kind)
+                print >>to_file, '<%s oldpath="%s" %s >%s</%s>' % \
+                        (kind, oldpath, metamodified, newpath, kind)
         print >>to_file, '</renamed>'
 
     if delta.kind_changed:
@@ -207,7 +210,8 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False):
                 suffix = 'suffix="%s"' % fid
             else:
                 suffix = ''
-            print >>to_file, '<%s oldkind="%s" newkind="%s" %s>%s</%s>' % (new_kind, old_kind, new_kind, suffix, path, new_kind)
+            print >>to_file, '<%s oldkind="%s" newkind="%s" %s>%s</%s>' % \
+                       (new_kind, old_kind, new_kind, suffix, path, new_kind)
         print >>to_file, '</kind changed>'
 
     if delta.modified or extra_modified:

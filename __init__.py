@@ -1,6 +1,15 @@
 #!/usr/bin/env python2.4
 
+# @author Guillermo Gonzalez
+# @version 0.1
+"""
+This plugin provides xml output for two commands:
+ * add a --xml option to 'bzr log'
+ * and sprovide a 'bzr statusxml' command
 
+(most of this is code was modified from bzrlib.cmd_status, 
+bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
+"""
 from bzrlib.commands import display_command, Command, register_command
 from bzrlib.builtins import tree_files
 from bzrlib.log import log_formatter, show_log, LogFormatter, log_formatter_registry
@@ -87,7 +96,8 @@ class cmd_statusxml(Command):
                 to_file=self.outf, versioned=False)
 
 # Try to override default command but fail :(
-#    def run(self, show_ids=False, file_list=None, revision=None, short=False, versioned=False, xml=False):
+#    def run(self, show_ids=False, file_list=None, revision=None, short=False, 
+#               versioned=False, xml=False):
 #        if xml:
 #            from xmlhelper import show_tree_status_xml
 #            tree, file_list = tree_files(file_list)
@@ -106,7 +116,8 @@ register_command(cmd_statusxml)
 class XMLLogFormatter(LogFormatter):
 
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
-        super(XMLLogFormatter, self).__init__(to_file=to_file, show_ids=show_ids, show_timezone=show_timezone)
+        super(XMLLogFormatter, self).__init__(to_file=to_file, 
+                               show_ids=show_ids, show_timezone=show_timezone)
 
     def show(self, revno, rev, delta):
         return self._show_helper(revno=revno, rev=rev, delta=delta)
@@ -115,7 +126,8 @@ class XMLLogFormatter(LogFormatter):
         """a call to self._show_helper, XML don't care about formatting """
         return self._show_helper(revno=revno, rev=rev, merged=True, delta=None)
 
-    def _show_helper(self, rev=None, revno=None, indent='', merged=False, delta=None):
+    def _show_helper(self, rev=None, revno=None, indent='', 
+                    merged=False, delta=None):
         """Show a revision, either merged or not."""
         from xml.sax import saxutils
         from bzrlib.osutils import format_date
@@ -134,7 +146,8 @@ class XMLLogFormatter(LogFormatter):
                 print >>to_file, '<parent>%s</parent>' % parent_id,
             if len(rev.parent_ids) > 0:
                 print >>to_file, '</parents>',
-        print >>to_file,  '<committer>%s</committer>' % saxutils.escape(rev.committer),
+        print >>to_file,  '<committer>%s</committer>' % \
+                        saxutils.escape(rev.committer),
         try:
             print >>to_file, '<branch-nick>%s</branch-nick>' % \
                 saxutils.escape(rev.properties['branch-nick']),
