@@ -117,44 +117,45 @@ class XMLLogFormatter(LogFormatter):
 
     def _show_helper(self, rev=None, revno=None, indent='', merged=False, delta=None):
         """Show a revision, either merged or not."""
+        from xml.sax import saxutils
         from bzrlib.osutils import format_date
         to_file = self.to_file
-        print >>to_file,  '<log>'
+        print >>to_file,  '<log>',
         if revno is not None:
-            print >>to_file,  '<revno>%s</revno>' % revno
+            print >>to_file,  '<revno>%s</revno>' % revno,
         if merged:
-            print >>to_file,  '<merged>%s</merged>' % rev.revision_id
+            print >>to_file,  '<merged>%s</merged>' % rev.revision_id,
         elif self.show_ids:
-            print >>to_file,  '<revision-id>%s</revision_id>' % rev.revision_id
+            print >>to_file,  '<revision-id>%s</revision_id>' % rev.revision_id,
         if self.show_ids:
             if len(rev.parent_ids) > 0:
-                print >>to_file, '<parents>'
+                print >>to_file, '<parents>',
             for parent_id in rev.parent_ids:
-                print >>to_file, '<parent>%s</parent>' % parent_id
+                print >>to_file, '<parent>%s</parent>' % parent_id,
             if len(rev.parent_ids) > 0:
-                print >>to_file, '</parents>'
-        print >>to_file,  '<committer>%s</committer>' % rev.committer
+                print >>to_file, '</parents>',
+        print >>to_file,  '<committer>%s</committer>' % saxutils.escape(rev.committer),
         try:
             print >>to_file, '<branch-nick>%s</branch-nick>' % \
-                rev.properties['branch-nick']
+                saxutils.escape(rev.properties['branch-nick']),
         except KeyError:
             pass
         date_str = format_date(rev.timestamp,
                                rev.timezone or 0,
                                self.show_timezone)
-        print >>to_file,  '<timestamp>%s<timestamp>' % date_str
+        print >>to_file,  '<timestamp>%s<timestamp>' % date_str,
 
-        print >>to_file,  '<message>'
+        print >>to_file,  '<message>',
         if not rev.message:
-            print >>to_file,  '  (no message)'
+            print >>to_file,  '  (no message)',
         else:
-            print >>to_file,  rev.message
-        print >>to_file,  '</message>'
+            print >>to_file,  saxutils.escape(rev.message),
+        print >>to_file,  '</message>',
         if delta is not None:
             from xmlhelper import show_tree_xml
             #delta.show(to_file, self.show_ids)
             show_tree_xml(delta, to_file, self.show_ids)
-        print >>to_file,  '</log>'
+        print >>to_file,  '</log>',
 
 
 
