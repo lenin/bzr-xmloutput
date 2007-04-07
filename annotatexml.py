@@ -18,6 +18,7 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
 
     prevanno=''
     last_rev_id = None
+    print >>to_file, '<?xml version="1.0"?>'
     print >>to_file, '<annotation workingtree-root="%s">' % wt_root_path
     if show_ids:
         w = branch.repository.weave_store.get_weave(file_id,

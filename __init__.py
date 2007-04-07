@@ -59,7 +59,7 @@ class cmd_annotate(builtins.cmd_annotate):
                 file_version = tree.inventory[file_id].revision
                 # always run with --all and --long option (to get the author of each line)
                 annotate_file_xml(branch=branch, rev_id=file_version, 
-                        file_id=file_id, verbose=True, full=True, to_file=sys.stdout,
+                        file_id=file_id, to_file=sys.stdout,
                         show_ids=show_ids, wt_root_path=wt_root_path)
             finally:
                 branch.unlock()

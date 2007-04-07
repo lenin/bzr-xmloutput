@@ -109,6 +109,7 @@ def show_tree_status_xml(wt, show_unchanged=None,
         try:
             _raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
+            print >>to_file, '<?xml version="1.0"?>'
             print >>to_file, '<status workingtree_root="%s">' % \
                           wt.id2abspath(wt.get_root_id())
             delta = new.changes_from(old, want_unchanged=show_unchanged,
