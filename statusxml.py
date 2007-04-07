@@ -16,6 +16,39 @@ def show_tree_status_xml(wt, show_unchanged=None,
                      versioned=False):
     """Display summary of changes as XML.
 
+    Almost equal to status.show_tree_status, except the --short option and the
+    output is in xml format.
+    This reports on versioned and unknown files, reporting them
+    grouped by state.  Possible states are:
+
+    <added/>
+    <removed/>
+    <renamed/>
+    <modified/>
+    <kind changed/>
+    <unknown/>
+    
+    Each group can have multiple child's of this element's:
+
+    <file [oldpath] [oldkind, newkind] [fid]>
+    <directory [oldpath] [oldkind, newkind] [suffix]>
+
+    A simple example: 
+    <status workingtree_root="/home/guillo/Unison-root/sandbox/bazaar/bzr/0.15/">
+        <renamed>
+            <file oldpath="INSTALL"  >INSTALL.txt</file>
+        </renamed>
+        <kind-changed>
+            <directory oldkind="file" newkind="directory">NEWS</directory>
+        </kind-changed>
+        <modified>
+            <file>bzrlib/symbol_versioning.py</file>
+        </modified>
+        <unknown>
+            <file>.project</file>
+            <directory>bzrlib/dir/</directory>
+        </unknown>
+    </status>
 
     By default this compares the working tree to a previous revision. 
     If the revision argument is given, summarizes changes between the 
@@ -148,7 +181,6 @@ def show_pending_merges(new, to_file):
             prefix = ' '
             print >> to_file, prefix, merge
     print >>to_file, '</pending_merges>'
-
 
 def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False):
     """output this delta in a (xml) status-like form to to_file.
