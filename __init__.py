@@ -9,15 +9,15 @@ adding a --xml option to each
 (most of this is code was modified from bzrlib.cmd_status, 
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
-from bzrlib.commands import display_command, Command, register_command
+from bzrlib.commands import display_command, register_command
 from bzrlib import builtins
-from bzrlib.log import log_formatter, show_log, LogFormatter, log_formatter_registry
+from bzrlib.log import LogFormatter, log_formatter_registry
 from bzrlib.option import Option
 from bzrlib.workingtree import WorkingTree
 import sys
 
 class cmd_status(builtins.cmd_status):
-    builtins.cmd_status.takes_options.append(Option('xml', help='output in xml format'))
+    builtins.cmd_status.takes_options.append(Option('xml', help='show status in xml format'))
     __doc__ = builtins.cmd_status.__doc__
     @display_command
     def run(self, show_ids=False, file_list=None, revision=None, short=False,
@@ -32,10 +32,10 @@ class cmd_status(builtins.cmd_status):
             status_class.run(self, show_ids=show_ids, file_list=file_list, 
                     revision=revision, short=short, versioned=versioned)
 
-status_class = register_command(cmd_status, decorate=True)
+
 
 class cmd_annotate(builtins.cmd_annotate):
-    builtins.cmd_annotate.takes_options.append(Option('xml', help='output in xml format'))
+    builtins.cmd_annotate.takes_options.append(Option('xml', help='show annotations in xml format'))
     __doc__ = builtins.cmd_annotate.__doc__
 
     @display_command
@@ -67,7 +67,7 @@ class cmd_annotate(builtins.cmd_annotate):
             annotate_class.run(self, filename=filename, all=all, long=long, revision=revision,
             show_ids=show_ids)
 
-annotate_class = register_command(cmd_annotate, decorate=True)
+
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
@@ -126,6 +126,8 @@ class XMLLogFormatter(LogFormatter):
             show_tree_xml(delta, to_file, self.show_ids)
         print >>to_file,  '</log>',
 
+status_class = register_command(cmd_status, decorate=True)
+annotate_class = register_command(cmd_annotate, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed) XML log format')
 
