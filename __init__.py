@@ -156,7 +156,7 @@ class XMLLogFormatter(LogFormatter):
         date_str = format_date(rev.timestamp,
                                rev.timezone or 0,
                                self.show_timezone)
-        print >>to_file,  '<timestamp>%s<timestamp>' % date_str,
+        print >>to_file,  '<timestamp>%s</timestamp>' % date_str,
 
         print >>to_file,  '<message>',
         if not rev.message:
