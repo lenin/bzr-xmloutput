@@ -12,14 +12,14 @@ from bzrlib.annotate import _annotate_file
 from xml.sax import saxutils
 
 def annotate_file_xml(branch, rev_id, file_id, to_file=None, 
-            show_ids=False, wt_root_path=None):
+            show_ids=False, wt_root_path=None, file_path=None):
     if to_file is None:
         to_file = sys.stdout
 
     prevanno=''
     last_rev_id = None
     print >>to_file, '<?xml version="1.0"?>'
-    print >>to_file, '<annotation workingtree-root="%s">' % wt_root_path
+    print >>to_file, '<annotation workingtree-root="%s" %s>' % (wt_root_path, 'file="'+file_path+'"')
     if show_ids:
         w = branch.repository.weave_store.get_weave(file_id,
             branch.repository.get_transaction())

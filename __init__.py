@@ -33,7 +33,6 @@ class cmd_status(builtins.cmd_status):
                     revision=revision, short=short, versioned=versioned)
 
 
-
 class cmd_annotate(builtins.cmd_annotate):
     builtins.cmd_annotate.takes_options.append(Option('xml', help='show annotations in xml format'))
     __doc__ = builtins.cmd_annotate.__doc__
@@ -60,13 +59,33 @@ class cmd_annotate(builtins.cmd_annotate):
                 # always run with --all and --long option (to get the author of each line)
                 annotate_file_xml(branch=branch, rev_id=file_version, 
                         file_id=file_id, to_file=sys.stdout,
-                        show_ids=show_ids, wt_root_path=wt_root_path)
+                        show_ids=show_ids, wt_root_path=wt_root_path, file_path=relpath)
             finally:
                 branch.unlock()
         else:
             annotate_class.run(self, filename=filename, all=all, long=long, revision=revision,
             show_ids=show_ids)
 
+
+class cmd_log(builtins.cmd_log):
+    __doc__ = builtins.cmd_log.__doc__
+    
+    @display_command
+    def run(self, location=None, timezone='original', verbose=False,
+            show_ids=False, forward=False, revision=None, log_format=None,
+            message=None):
+
+        if log_format is XMLLogFormatter:
+            print >>sys.stdout, '<?xml version="1.0"?>'
+            print >>sys.stdout, '<logs>'
+            log_class.run(self, location=location, timezone=timezone, 
+                    verbose=verbose, show_ids=show_ids, forward=forward, 
+                    revision=revision, log_format=log_format, message=message)
+            print >>sys.stdout, '</logs>'
+        else:
+            log_class.run(self, location=location, timezone=timezone, 
+                    verbose=verbose, show_ids=show_ids, forward=forward, 
+                    revision=revision, log_format=log_format, message=message)
 
 
 class XMLLogFormatter(LogFormatter):
@@ -128,6 +147,7 @@ class XMLLogFormatter(LogFormatter):
 
 status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
+log_class = register_command(cmd_log, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed) XML log format')
 
