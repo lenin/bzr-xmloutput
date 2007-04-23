@@ -6,6 +6,7 @@
 # @version 0.1
 
 from bzrlib.diff import _raise_if_nonexistent
+from bzrlib.trace import warning
 
 def show_tree_status_xml(wt, show_unchanged=None,
                      specific_files=None,
@@ -183,10 +184,9 @@ def show_pending_merges(new, to_file):
             print >> to_file, prefix, merge
     print >>to_file, '</pending_merges>'
 
-def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False):
-    """output this delta in a (xml) status-like form to to_file.
-    
-    """
+def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
+        short_status=False):
+    """output this delta in a (xml) status-like form to to_file."""
     def show_list(files):
         for item in files:
             path, fid, kind = item[:3]
@@ -243,8 +243,8 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False):
                 suffix = 'suffix="%s"' % fid
             else:
                 suffix = ''
-            print >>to_file, '<%s oldkind="%s" newkind="%s" %s>%s</%s>' % \
-                       (new_kind, old_kind, new_kind, suffix, path, new_kind)
+            print >>to_file, '<%s oldkind="%s" %s>%s</%s>' % \
+                       (new_kind, old_kind, suffix, path, new_kind)
         print >>to_file, '</kind changed>'
 
     if delta.modified or extra_modified:
