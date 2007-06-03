@@ -11,7 +11,7 @@ bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
 from bzrlib.commands import display_command, register_command
 from bzrlib import builtins
-from bzrlib.log import LogFormatter, log_formatter_registry
+from bzrlib.log import LogFormatter, log_formatter_registry, LogRevision
 from bzrlib.option import Option
 from bzrlib.workingtree import WorkingTree
 import sys
@@ -31,7 +31,6 @@ class cmd_status(builtins.cmd_status):
         else:
             status_class.run(self, show_ids=show_ids, file_list=file_list, 
                     revision=revision, short=short, versioned=versioned)
-
 
 class cmd_annotate(builtins.cmd_annotate):
     builtins.cmd_annotate.takes_options.append(Option('xml', help='show annotations in xml format'))
@@ -66,27 +65,30 @@ class cmd_annotate(builtins.cmd_annotate):
             annotate_class.run(self, filename=filename, all=all, long=long, revision=revision,
             show_ids=show_ids)
 
-
 class cmd_log(builtins.cmd_log):
     __doc__ = builtins.cmd_log.__doc__
     
     @display_command
-    def run(self, location=None, timezone='original', verbose=False,
-            show_ids=False, forward=False, revision=None, log_format=None,
-            message=None):
+    def run(self, location=None, timezone='original',
+            verbose=False,
+            show_ids=False,
+            forward=False,
+            revision=None,
+            log_format=None,
+            message=None,
+            limit=None):
 
         if log_format is XMLLogFormatter:
             print >>sys.stdout, '<?xml version="1.0"?>'
             print >>sys.stdout, '<logs>'
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
-                    revision=revision, log_format=log_format, message=message)
+                    revision=revision, log_format=log_format, message=message, limit=limit)
             print >>sys.stdout, '</logs>'
         else:
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
-                    revision=revision, log_format=log_format, message=message)
-
+                    revision=revision, log_format=log_format, message=message, limit=limit)
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
@@ -94,54 +96,62 @@ class XMLLogFormatter(LogFormatter):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
 
-    def show(self, revno, rev, delta):
-        return self._show_helper(revno=revno, rev=rev, delta=delta)
+    def show(self, revno, rev, delta, tags=None):
+        lr = LogRevision(rev, revno, 0, delta, tags)
+        return self.log_revision(lr)
 
     def show_merge_revno(self, rev, merge_depth, revno):
         """a call to self._show_helper, XML don't care about formatting """
-        return self._show_helper(revno=revno, rev=rev, merged=True, delta=None)
+        lr = LogRevision(rev, merge_depth=merge_depth, revno=revno)
+        return self.log_revision(lr)
 
-    def _show_helper(self, rev=None, revno=None, indent='', 
-                    merged=False, delta=None):
-        """Show a revision, either merged or not."""
+    def log_revision(self, revision):
+        """Log a revision, either merged or not."""
         from xml.sax import saxutils
         from bzrlib.osutils import format_date
+        indent = '    '*revision.merge_depth
         to_file = self.to_file
         print >>to_file,  '<log>',
-        if revno is not None:
-            print >>to_file,  '<revno>%s</revno>' % revno,
-        if merged:
-            print >>to_file,  '<merged>%s</merged>' % rev.revision_id,
-        elif self.show_ids:
-            print >>to_file,  '<revision-id>%s</revision_id>' % rev.revision_id,
+        if revision.revno is not None:
+            print >>to_file,  '<revno>%s</revno>' % revision.revno,
+        if revision.tags:
+            print >>to_file,  '<tags>'
+            for tag in revision.tags:
+                print >>to_file, indent+'<tag>%s</tag>' % tag
+            print >>to_file,  '</tags>'
         if self.show_ids:
-            if len(rev.parent_ids) > 0:
+            print >>to_file,  '<revision-id>%s</revision_id>' % revision.rev.revision_id,
+            if len(revision.rev.parent_ids) > 0:
                 print >>to_file, '<parents>',
-            for parent_id in rev.parent_ids:
+            for parent_id in revision.rev.parent_ids:
                 print >>to_file, '<parent>%s</parent>' % parent_id,
-            if len(rev.parent_ids) > 0:
+            if len(revision.rev.parent_ids) > 0:
                 print >>to_file, '</parents>',
+
         print >>to_file,  '<committer>%s</committer>' % \
-                        saxutils.escape(rev.committer),
+                        saxutils.escape(revision.rev.committer),
+
         try:
             print >>to_file, '<branch-nick>%s</branch-nick>' % \
-                saxutils.escape(rev.properties['branch-nick']),
+                saxutils.escape(revision.rev.properties['branch-nick']),
         except KeyError:
             pass
-        date_str = format_date(rev.timestamp,
-                               rev.timezone or 0,
+        date_str = format_date(revision.rev.timestamp,
+                               revision.rev.timezone or 0,
                                self.show_timezone)
         print >>to_file,  '<timestamp>%s</timestamp>' % date_str,
 
         print >>to_file,  '<message>',
-        if not rev.message:
-            print >>to_file,  '  (no message)',
+        if not revision.rev.message:
+            print >>to_file,  indent+'(no message)'
         else:
-            print >>to_file,  saxutils.escape(rev.message),
+            message = revision.rev.message.rstrip('\r\n')
+            for l in message.split('\n'):
+                print >>to_file, saxutils.escape(l)
+            #print >>to_file,  saxutils.escape(rev.message),
         print >>to_file,  '</message>',
-        if delta is not None:
+        if revision.delta is not None:
             from statusxml import show_tree_xml
-            #delta.show(to_file, self.show_ids)
             show_tree_xml(delta, to_file, self.show_ids)
         print >>to_file,  '</log>',
 
@@ -149,7 +159,7 @@ status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
 log_class = register_command(cmd_log, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
-                              'Detailed (not well formed) XML log format')
+                              'Detailed (not well formed?) XML log format')
 
 
 
