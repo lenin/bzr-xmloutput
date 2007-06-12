@@ -92,10 +92,13 @@ class cmd_log(builtins.cmd_log):
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
+
+    supports_delta = True
+
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
-
+        
     def show(self, revno, rev, delta, tags=None):
         lr = LogRevision(rev, revno, 0, delta, tags)
         return self.log_revision(lr)
@@ -152,7 +155,7 @@ class XMLLogFormatter(LogFormatter):
         print >>to_file,  '</message>',
         if revision.delta is not None:
             from statusxml import show_tree_xml
-            show_tree_xml(delta, to_file, self.show_ids)
+            show_tree_xml(revision.delta, to_file, self.show_ids)
         print >>to_file,  '</log>',
 
 status_class = register_command(cmd_status, decorate=True)
