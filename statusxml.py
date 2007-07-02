@@ -129,7 +129,7 @@ def show_tree_status_xml(wt, show_unchanged=None,
             if len(new.conflicts()) > 0: 
                 print >> to_file, "<conflicts>"
                 for conflict in new.conflicts():
-                    print >> to_file, "<conflict>%s</conflict>" % (conflict)
+                    print >> to_file, '<conflict type="%s">%s</conflict>' % (conflict.typestring, conflict.path)
                 print >> to_file, "</conflicts>"
             if new_is_working_tree and show_pending:
                 show_pending_merges(new, to_file)
