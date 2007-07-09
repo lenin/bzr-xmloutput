@@ -93,7 +93,9 @@ class cmd_log(builtins.cmd_log):
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
 
+    supports_merge_revisions = True
     supports_delta = True
+    supports_tags = True
 
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
