@@ -126,7 +126,7 @@ def show_tree_status_xml(wt, show_unchanged=None,
                        show_unchanged=show_unchanged)
             conflict_title = False
             # show the new conflicts only for now. XXX: get them from the delta.
-            if len(new.conflicts()) > 0: 
+            if len(new.conflicts()) > 0 and should_show_conflicts(new.conflicts(), specific_files): 
                 print >> to_file, "<conflicts>"
                 for conflict in new.conflicts():
                     print >> to_file, '<conflict type="%s">%s</conflict>' % (conflict.typestring, conflict.path)
@@ -272,3 +272,17 @@ def get_kind_id_element(kind, fid):
     else:
         kind_id='fid="%s"' %fid
     return kind_id
+
+def should_show_conflicts(conflicts, specific_files=None):
+    ''' Workaround to not show conflicts if specific_files contains one or 
+        more files
+    '''
+    if specific_files:
+        if len(specific_files) > 0:
+            for conflict in conflicts:
+                if specific_files.count(conflict.path) > 0:
+                    return True
+        return False
+
+    else: 
+        return True
