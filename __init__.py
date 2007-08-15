@@ -125,7 +125,7 @@ class XMLLogFormatter(LogFormatter):
                 print >>to_file, indent+'<tag>%s</tag>' % tag
             print >>to_file,  '</tags>'
         if self.show_ids:
-            print >>to_file,  '<revision-id>%s</revision_id>' % revision.rev.revision_id,
+            print >>to_file,  '<revisionid>%s</revisionid>' % revision.rev.revision_id,
             if len(revision.rev.parent_ids) > 0:
                 print >>to_file, '<parents>',
             for parent_id in revision.rev.parent_ids:
