@@ -84,6 +84,8 @@ class cmd_log(builtins.cmd_log):
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
+            # workaround
+            print >>sys.stdout, '</log>'
             print >>sys.stdout, '</logs>'
         else:
             log_class.run(self, location=location, timezone=timezone, 
@@ -92,14 +94,21 @@ class cmd_log(builtins.cmd_log):
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
+    import xml.dom.minidom as minidom
 
     supports_merge_revisions = True
     supports_delta = True
     supports_tags = True
+    log_count = 0
 
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
+        self.is_merge = False
+        #self.real_to_file = to_file
+        #self.to_file = StringIO.StringIO()
+        self.is_first = True
+        log_count = 0
         
     def show(self, revno, rev, delta, tags=None):
         lr = LogRevision(rev, revno, 0, delta, tags)
@@ -114,9 +123,34 @@ class XMLLogFormatter(LogFormatter):
         """Log a revision, either merged or not."""
         from xml.sax import saxutils
         from bzrlib.osutils import format_date
-        indent = '    '*revision.merge_depth
+        #indent = '    '*revision.merge_depth
         to_file = self.to_file
-        print >>to_file,  '<log>',
+        # to handle merge revision as childs
+        if revision.merge_depth > 0:
+            if not self.is_merge:
+                print >>to_file,  '<merge>',
+                self.is_merge = True
+            print >>to_file,  '<log>',
+            self.__log_revision(revision)
+            print >>to_file,  '</log>',
+        else:
+            if self.is_merge:
+                print >>to_file,  '</merge>',
+                self.is_merge = False
+            if not self.is_first:
+                print >>to_file,  '</log>',
+            print >>to_file,  '<log>',
+            self.__log_revision(revision)
+        if self.is_first:
+            self.is_first = False
+        XMLLogFormatter.log_count = XMLLogFormatter.log_count + 1
+
+    def __log_revision(self, revision):
+        from xml.sax import saxutils
+        from bzrlib.osutils import format_date
+        import StringIO
+        #to_file = StringIO.StringIO()
+        to_file = self.to_file
         if revision.revno is not None:
             print >>to_file,  '<revno>%s</revno>' % revision.revno,
         if revision.tags:
@@ -157,8 +191,11 @@ class XMLLogFormatter(LogFormatter):
         print >>to_file,  '</message>',
         if revision.delta is not None:
             from statusxml import show_tree_xml
+            print >>to_file,  '<affected-files>',
             show_tree_xml(revision.delta, to_file, self.show_ids)
-        print >>to_file,  '</log>',
+            print >>to_file,  '</affected-files>',
+        #print >>to_file,  '</log>',
+        #return to_file
 
 status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
