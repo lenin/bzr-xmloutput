@@ -92,6 +92,26 @@ class cmd_log(builtins.cmd_log):
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
 
+
+class cmd_missing(builtins.cmd_missing):
+    __doc__ = builtins.cmd_missing.__doc__
+    
+    @display_command
+    def run(self, verbose=False,
+            show_ids=False,
+						delta=False,
+            log_format=None):
+
+        if log_format is XMLLogFormatter:
+            print >>sys.stdout, '<?xml version="1.0"?>'
+            print >>sys.stdout, '<logs>'
+            missing_class.run(self, verbose=verbose, show_ids=show_ids, log_format=log_format)
+            # workaround
+            print >>sys.stdout, '</log>'
+            print >>sys.stdout, '</logs>'
+        else:
+            missing_class.run(self, verbose=verbose, show_ids=show_ids, log_format=log_format)
+
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
     import xml.dom.minidom as minidom
@@ -199,6 +219,7 @@ class XMLLogFormatter(LogFormatter):
 
 status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
+missing_class = register_command(cmd_missing, decorate=True)
 log_class = register_command(cmd_log, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed?) XML log format')
