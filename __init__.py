@@ -105,8 +105,6 @@ class XMLLogFormatter(LogFormatter):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
         self.is_merge = False
-        #self.real_to_file = to_file
-        #self.to_file = StringIO.StringIO()
         self.is_first = True
         log_count = 0
         
@@ -123,7 +121,6 @@ class XMLLogFormatter(LogFormatter):
         """Log a revision, either merged or not."""
         from xml.sax import saxutils
         from bzrlib.osutils import format_date
-        #indent = '    '*revision.merge_depth
         to_file = self.to_file
         # to handle merge revision as childs
         if revision.merge_depth > 0:
@@ -149,14 +146,13 @@ class XMLLogFormatter(LogFormatter):
         from xml.sax import saxutils
         from bzrlib.osutils import format_date
         import StringIO
-        #to_file = StringIO.StringIO()
         to_file = self.to_file
         if revision.revno is not None:
             print >>to_file,  '<revno>%s</revno>' % revision.revno,
         if revision.tags:
             print >>to_file,  '<tags>'
             for tag in revision.tags:
-                print >>to_file, indent+'<tag>%s</tag>' % tag
+                print >>to_file, '<tag>%s</tag>' % tag
             print >>to_file,  '</tags>'
         if self.show_ids:
             print >>to_file,  '<revisionid>%s</revisionid>' % revision.rev.revision_id,
@@ -182,7 +178,7 @@ class XMLLogFormatter(LogFormatter):
 
         print >>to_file,  '<message>',
         if not revision.rev.message:
-            print >>to_file,  indent+'(no message)'
+            print >>to_file, '(no message)'
         else:
             message = revision.rev.message.rstrip('\r\n')
             for l in message.split('\n'):
@@ -194,8 +190,6 @@ class XMLLogFormatter(LogFormatter):
             print >>to_file,  '<affected-files>',
             show_tree_xml(revision.delta, to_file, self.show_ids)
             print >>to_file,  '</affected-files>',
-        #print >>to_file,  '</log>',
-        #return to_file
 
 status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
