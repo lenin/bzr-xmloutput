@@ -85,7 +85,8 @@ class cmd_log(builtins.cmd_log):
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
             # workaround
-            print >>sys.stdout, '</log>'
+            if XMLLogFormatter.log_count > 0:
+                print >>sys.stdout, '</log>'
             print >>sys.stdout, '</logs>'
         else:
             log_class.run(self, location=location, timezone=timezone, 
