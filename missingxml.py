@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 
 # @author Martin Albisetti
-# (most of this code was modified from bzrlib.cmd_missing)
+# (most of this code was modified from bzrlib.cmd_missing and bzrlib.missing)
 # @version 0.1
 
 """Show unmerged/unpulled revisions between two branches.
@@ -11,20 +11,20 @@ OTHER_BRANCH may be local or remote.
 """
 
 
-from bzrlib import ui
-from bzrlib.log import (
-    LogRevision,
-    )
+from bzrlib import ui, urlutils, errors
+from bzrlib.branch import Branch
+from bzrlib.log import LogRevision, log_formatter, log_formatter_registry
+from bzrlib.missing import find_unmerged, iter_log_revisions
+
 from bzrlib.symbol_versioning import (
     deprecated_function,
     zero_seventeen,
     )
 
-def show_missing_xml(other_branch=None, reverse=False, mine_only=False,
+
+def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
         theirs_only=False, log_format=None, long=False, short=False, line=False, 
         show_ids=False, verbose=False, this=False, other=False):
-    from bzrlib.missing import find_unmerged, iter_log_revisions
-    from bzrlib.log import log_formatter
 
     if this:
       mine_only = this
@@ -40,7 +40,7 @@ def show_missing_xml(other_branch=None, reverse=False, mine_only=False,
                                           " or specified.")
         display_url = urlutils.unescape_for_display(parent,
                                                     self.outf.encoding)
-        self.outf.write("Using last location: " + display_url + "\n")
+        self.outf.write('<last_location="' + display_url + '">')
 
     remote_branch = Branch.open(other_branch)
     if remote_branch.base == local_branch.base:
@@ -52,7 +52,7 @@ def show_missing_xml(other_branch=None, reverse=False, mine_only=False,
             local_extra, remote_extra = find_unmerged(local_branch,
                                                       remote_branch)
             if log_format is None:
-                registry = log.log_formatter_registry
+                registry = log_formatter_registry
                 log_format = registry.get_default(local_branch)
             lf = log_format(to_file=self.outf,
                             show_ids=show_ids,
@@ -61,7 +61,7 @@ def show_missing_xml(other_branch=None, reverse=False, mine_only=False,
                 local_extra.reverse()
                 remote_extra.reverse()
             if local_extra and not theirs_only:
-                self.outf.write("You have %d extra revision(s):\n" %
+                self.outf.write('<extra_revisions>%d</extra_revisions>' %
                                 len(local_extra))
                 for revision in iter_log_revisions(local_extra,
                                     local_branch.repository,
@@ -71,9 +71,9 @@ def show_missing_xml(other_branch=None, reverse=False, mine_only=False,
             else:
                 printed_local = False
             if remote_extra and not mine_only:
-                if printed_local is True:
-                    self.outf.write("\n\n\n")
-                self.outf.write("You are missing %d revision(s):\n" %
+                # if printed_local is True:
+                    # self.outf.write("\n\n\n")
+                self.outf.write('<missing_revisions>%d</missing_revisions>' %
                                 len(remote_extra))
                 for revision in iter_log_revisions(remote_extra,
                                     remote_branch.repository,
@@ -81,7 +81,7 @@ def show_missing_xml(other_branch=None, reverse=False, mine_only=False,
                     lf.log_revision(revision)
             if not remote_extra and not local_extra:
                 status_code = 0
-                self.outf.write("Branches are up to date.\n")
+                # self.outf.write("Branches are up to date.\n")
             else:
                 status_code = 1
         finally:

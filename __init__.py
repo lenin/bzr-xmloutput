@@ -97,23 +97,24 @@ class cmd_missing(builtins.cmd_missing):
     __doc__ = builtins.cmd_missing.__doc__
     
     @display_command
-    def run(self, verbose=False,
-            show_ids=False,
-						delta=False,
-            log_format=None):
+    def run(self, other_branch=None, reverse=False, mine_only=False,
+                        theirs_only=False, log_format=None, long=False, short=False, line=False, 
+                        show_ids=False, verbose=False, this=False, other=False):
 
         if log_format is XMLLogFormatter:
             print >>sys.stdout, '<?xml version="1.0"?>'
-            print >>sys.stdout, '<logs>'
             from missingxml import show_missing_xml
-            show_missing_xml(other_branch=None, reverse=False, mine_only=False,
-                        theirs_only=False, log_format=None, long=False, short=False, line=False, 
-                        show_ids=show_ids, verbose=False, this=False, other=False)
+            show_missing_xml(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
+                        theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
+                        show_ids=show_ids, verbose=verbose, this=this, other=other)
+            print >>sys.stdout, '<logs>'
             # workaround
             print >>sys.stdout, '</log>'
             print >>sys.stdout, '</logs>'
         else:
-            missing_class.run(self, verbose=verbose, show_ids=show_ids, log_format=log_format)
+            missing_class.run(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
+                        theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
+                        show_ids=show_ids, verbose=verbose, this=this, other=other)
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
