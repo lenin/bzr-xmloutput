@@ -105,7 +105,10 @@ class cmd_missing(builtins.cmd_missing):
         if log_format is XMLLogFormatter:
             print >>sys.stdout, '<?xml version="1.0"?>'
             print >>sys.stdout, '<logs>'
-            missing_class.run(self, verbose=verbose, show_ids=show_ids, log_format=log_format)
+            from missingxml import show_missing_xml
+            show_missing_xml(other_branch=None, reverse=False, mine_only=False,
+                        theirs_only=False, log_format=None, long=False, short=False, line=False, 
+                        show_ids=show_ids, verbose=False, this=False, other=False)
             # workaround
             print >>sys.stdout, '</log>'
             print >>sys.stdout, '</logs>'
