@@ -93,6 +93,37 @@ class cmd_log(builtins.cmd_log):
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
 
+
+class cmd_missing(builtins.cmd_missing):
+    __doc__ = builtins.cmd_missing.__doc__
+    
+    @display_command
+    def run(self, other_branch=None, reverse=False, mine_only=False,
+                        theirs_only=False, log_format=None, long=False, short=False, line=False, 
+                        show_ids=False, verbose=False, this=False, other=False):
+        from missingxml import show_missing_xml
+        
+        print >>sys.stdout, '<?xml version="1.0"?>'
+        
+        if log_format is XMLLogFormatter:
+            
+            if XMLLogFormatter.log_count > 0:
+                print >>sys.stdout, '<logs>'
+                print >>sys.stdout, '<log>'
+            
+            show_missing_xml(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
+                        theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
+                        show_ids=show_ids, verbose=verbose, this=this, other=other)
+            # workaround
+            if XMLLogFormatter.log_count > 0:
+                print >>sys.stdout, '</log>'
+                print >>sys.stdout, '</logs>'
+
+        else:
+            missing_class.run(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
+                        theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
+                        show_ids=show_ids, verbose=verbose, this=this, other=other)
+
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
     import xml.dom.minidom as minidom
@@ -194,6 +225,7 @@ class XMLLogFormatter(LogFormatter):
 
 status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
+missing_class = register_command(cmd_missing, decorate=True)
 log_class = register_command(cmd_log, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed?) XML log format')
