@@ -101,13 +101,16 @@ class cmd_missing(builtins.cmd_missing):
     def run(self, other_branch=None, reverse=False, mine_only=False,
                         theirs_only=False, log_format=None, long=False, short=False, line=False, 
                         show_ids=False, verbose=False, this=False, other=False):
-
+        from missingxml import show_missing_xml
+        
+        print >>sys.stdout, '<?xml version="1.0"?>'
+        
         if log_format is XMLLogFormatter:
-            print >>sys.stdout, '<?xml version="1.0"?>'
+            
             if XMLLogFormatter.log_count > 0:
                 print >>sys.stdout, '<logs>'
                 print >>sys.stdout, '<log>'
-            from missingxml import show_missing_xml
+            
             show_missing_xml(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
                         show_ids=show_ids, verbose=verbose, this=this, other=other)
