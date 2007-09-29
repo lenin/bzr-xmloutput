@@ -57,6 +57,7 @@ def show_bzrdir_info_xml(a_bzrdir, verbose=False):
 
     lockable.lock_read()
     try:
+        print '<?xml version="1.0"?>'
         print '<info>'
         show_component_info_xml(a_bzrdir, repository, branch, tree, verbose)
         print '</info>'
