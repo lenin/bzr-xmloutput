@@ -9,12 +9,27 @@ adding a --xml option to each
 (most of this is code was modified from bzrlib.cmd_status, 
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
-from bzrlib.commands import display_command, register_command
-from bzrlib import builtins
-from bzrlib.log import LogFormatter, log_formatter_registry, LogRevision
-from bzrlib.option import Option
-from bzrlib.workingtree import WorkingTree
+import bzrlib
+
+from bzrlib.lazy_import import lazy_import
+lazy_import(globals(), """
 import sys
+from bzrlib import (
+    builtins,
+    bzrdir,
+    commands,
+    option,
+    log,
+    workingtree
+    )
+
+from bzrlib.workingtree import WorkingTree
+""")
+
+from bzrlib.option import Option
+from bzrlib.commands import display_command, register_command
+from bzrlib.log import LogFormatter, log_formatter_registry, LogRevision
+
 
 class cmd_status(builtins.cmd_status):
     builtins.cmd_status.takes_options.append(Option('xml', help='show status in xml format'))
@@ -124,6 +139,25 @@ class cmd_missing(builtins.cmd_missing):
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
                         show_ids=show_ids, verbose=verbose, this=this, other=other)
 
+class cmd_info(builtins.cmd_info):
+    builtins.cmd_info.takes_options.append(Option('xml', help='show info in xml format'))
+    __doc__ = builtins.cmd_info.__doc__
+    
+    @display_command
+    def run(self, location=None, verbose=False, xml=False):
+        if verbose:
+            noise_level = 2
+        else:
+            noise_level = 0
+        if xml:
+            from infoxml import show_bzrdir_info_xml
+            show_bzrdir_info_xml(bzrdir.BzrDir.open_containing(location)[0],
+                             verbose=noise_level)
+        else:
+            from bzrlib.info import show_bzrdir_info
+            show_bzrdir_info(bzrdir.BzrDir.open_containing(location)[0],
+                             verbose=noise_level)
+
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
     import xml.dom.minidom as minidom
@@ -227,6 +261,7 @@ status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
 missing_class = register_command(cmd_missing, decorate=True)
 log_class = register_command(cmd_log, decorate=True)
+info_class = register_command(cmd_info, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed?) XML log format')
 
