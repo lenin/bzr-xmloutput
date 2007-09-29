@@ -124,7 +124,7 @@ def _show_format_info_xml(control=None, repository=None, branch=None, working=No
     """Show known formats for control, working, branch and repository."""
     print '<format>'
     if control:
-        print '<control>%s<control>' % control._format.get_format_description()
+        print '<control>%s</control>' % control._format.get_format_description()
     if working:
         print '<working_tree>%s</working_tree>' % working._format.get_format_description()
     if branch:
