@@ -3,7 +3,7 @@
 # @author Guillermo Gonzalez
 # @version 0.1
 """
-This plugin provides xml output for status, log, annotate, missing, info and plugins
+This plugin provides xml output for status, log, annotate, missing, info, version and plugins
 adding a --xml option to each
 """
 """
@@ -181,6 +181,18 @@ class cmd_plugins(builtins.cmd_plugins):
         else:
             super(cmd_plugins, self).run()
 
+class cmd_version(builtins.cmd_version):
+    builtins.cmd_version.takes_options.append(Option('xml', help='generates output in xml format'))
+    __doc__ = builtins.cmd_version.__doc__
+
+    @display_command
+    def run(self, xml=False):
+        if(xml):
+            from versionxml import show_version_xml
+            show_version_xml(to_file=self.outf)
+        else:
+            version_class.run(self)
+            
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
     import xml.dom.minidom as minidom
@@ -286,8 +298,7 @@ missing_class = register_command(cmd_missing, decorate=True)
 log_class = register_command(cmd_log, decorate=True)
 info_class = register_command(cmd_info, decorate=True)
 plugins_class = register_command(cmd_plugins, decorate=True)
+version_class = register_command(cmd_version, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed?) XML log format')
-
-
 
