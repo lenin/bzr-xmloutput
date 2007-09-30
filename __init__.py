@@ -3,9 +3,10 @@
 # @author Guillermo Gonzalez
 # @version 0.1
 """
-This plugin provides xml output for three commands (status, log, annotate)
+This plugin provides xml output for status, log, annotate, missing, info and plugins
 adding a --xml option to each
-
+"""
+"""
 (most of this is code was modified from bzrlib.cmd_status, 
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
@@ -108,7 +109,6 @@ class cmd_log(builtins.cmd_log):
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
 
-
 class cmd_missing(builtins.cmd_missing):
     __doc__ = builtins.cmd_missing.__doc__
     
@@ -157,6 +157,29 @@ class cmd_info(builtins.cmd_info):
             from bzrlib.info import show_bzrdir_info
             show_bzrdir_info(bzrdir.BzrDir.open_containing(location)[0],
                              verbose=noise_level)
+
+class cmd_plugins(builtins.cmd_plugins):
+    builtins.cmd_plugins.takes_options.append(Option('xml', help='show plugins list in xml format'))
+    __doc__ = builtins.cmd_info.__doc__
+
+    @display_command
+    def run(self, xml=False):
+        if xml:
+            import bzrlib.plugin
+            from inspect import getdoc
+            print '<plugins>'
+            for name, plugin in bzrlib.plugin.plugins().items():
+                print '<plugin>'
+                print '<name>%s</name>' % name
+                print '<version>%s</version>' % plugin.__version__
+                print '<path>%s</path>' % plugin.path()
+                d = getdoc(plugin.module)
+                if d:
+                    print '<doc>%s</doc>' % d
+                print '</plugin>'
+            print '</plugins>'
+        else:
+            super(cmd_plugins, self).run()
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
@@ -262,6 +285,7 @@ annotate_class = register_command(cmd_annotate, decorate=True)
 missing_class = register_command(cmd_missing, decorate=True)
 log_class = register_command(cmd_log, decorate=True)
 info_class = register_command(cmd_info, decorate=True)
+plugins_class = register_command(cmd_plugins, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed?) XML log format')
 
