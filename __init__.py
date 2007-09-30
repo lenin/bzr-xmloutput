@@ -108,7 +108,6 @@ class cmd_log(builtins.cmd_log):
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
 
-
 class cmd_missing(builtins.cmd_missing):
     __doc__ = builtins.cmd_missing.__doc__
     
@@ -157,6 +156,18 @@ class cmd_info(builtins.cmd_info):
             from bzrlib.info import show_bzrdir_info
             show_bzrdir_info(bzrdir.BzrDir.open_containing(location)[0],
                              verbose=noise_level)
+
+class cmd_version(builtins.cmd_version):
+    builtins.cmd_version.takes_options.append(Option('xml', help='generates output in xml format'))
+    __doc__ = builtins.cmd_version.__doc__
+
+    @display_command
+    def run(self, xml=False):
+        if(xml):
+            from versionxml import show_version_xml
+            show_version_xml(to_file=self.outf)
+        else:
+            version_class.run(self)
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
@@ -262,6 +273,7 @@ annotate_class = register_command(cmd_annotate, decorate=True)
 missing_class = register_command(cmd_missing, decorate=True)
 log_class = register_command(cmd_log, decorate=True)
 info_class = register_command(cmd_info, decorate=True)
+version_class = register_command(cmd_version, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
                               'Detailed (not well formed?) XML log format')
 
