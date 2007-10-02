@@ -22,9 +22,11 @@ from bzrlib import (
     option,
     log,
     workingtree
+    xml_serializer
     )
 
 from bzrlib.workingtree import WorkingTree
+from bzrlib.xml_serializer import _escape_cdata
 """)
 
 from bzrlib.option import Option
@@ -195,7 +197,6 @@ class cmd_version(builtins.cmd_version):
             
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
-    import xml.dom.minidom as minidom
 
     supports_merge_revisions = True
     supports_delta = True
@@ -220,7 +221,6 @@ class XMLLogFormatter(LogFormatter):
 
     def log_revision(self, revision):
         """Log a revision, either merged or not."""
-        from xml.sax import saxutils
         from bzrlib.osutils import format_date
         to_file = self.to_file
         # to handle merge revision as childs
@@ -244,7 +244,6 @@ class XMLLogFormatter(LogFormatter):
         XMLLogFormatter.log_count = XMLLogFormatter.log_count + 1
 
     def __log_revision(self, revision):
-        from xml.sax import saxutils
         from bzrlib.osutils import format_date
         import StringIO
         to_file = self.to_file
@@ -265,11 +264,11 @@ class XMLLogFormatter(LogFormatter):
                 print >>to_file, '</parents>',
 
         print >>to_file,  '<committer>%s</committer>' % \
-                        saxutils.escape(revision.rev.committer),
+                        _escape_cdata(revision.rev.committer),
 
         try:
             print >>to_file, '<branch-nick>%s</branch-nick>' % \
-                saxutils.escape(revision.rev.properties['branch-nick']),
+                _escape_cdata(revision.rev.properties['branch-nick']),
         except KeyError:
             pass
         date_str = format_date(revision.rev.timestamp,
@@ -283,8 +282,7 @@ class XMLLogFormatter(LogFormatter):
         else:
             message = revision.rev.message.rstrip('\r\n')
             for l in message.split('\n'):
-                print >>to_file, saxutils.escape(l)
-            #print >>to_file,  saxutils.escape(rev.message),
+                print >>to_file, _escape_cdata(l)
         print >>to_file,  '</message>',
         if revision.delta is not None:
             from statusxml import show_tree_xml
