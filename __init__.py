@@ -281,8 +281,7 @@ class XMLLogFormatter(LogFormatter):
             print >>to_file, '(no message)'
         else:
             message = revision.rev.message.rstrip('\r\n')
-            for l in message.split('\n'):
-                print >>to_file, _escape_cdata(l)
+            print >>to_file, os.linesep.join(_escape_cdata(message).splitlines()),
         print >>to_file,  '</message>',
         if revision.delta is not None:
             from statusxml import show_tree_xml
