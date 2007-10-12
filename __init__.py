@@ -21,7 +21,7 @@ from bzrlib import (
     commands,
     option,
     log,
-    workingtree
+    workingtree,
     xml_serializer
     )
 
@@ -32,7 +32,7 @@ from bzrlib.xml_serializer import _escape_cdata
 from bzrlib.option import Option
 from bzrlib.commands import display_command, register_command
 from bzrlib.log import LogFormatter, log_formatter_registry, LogRevision
-
+import os
 
 class cmd_status(builtins.cmd_status):
     builtins.cmd_status.takes_options.append(Option('xml', help='show status in xml format'))
@@ -102,6 +102,9 @@ class cmd_log(builtins.cmd_log):
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
+            #workaround #2
+            if XMLLogFormatter.last_log_was_merge:
+                print >>sys.stdout, '</merge>'
             # workaround
             if XMLLogFormatter.log_count > 0:
                 print >>sys.stdout, '</log>'
@@ -202,12 +205,15 @@ class XMLLogFormatter(LogFormatter):
     supports_delta = True
     supports_tags = True
     log_count = 0
+    last_log_was_merge = False
 
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
         self.is_merge = False
         self.is_first = True
+        self.first_log_is_merged = False
+        XMLLogFormatter.last_log_was_merge = False
         log_count = 0
         
     def show(self, revno, rev, delta, tags=None):
@@ -226,19 +232,29 @@ class XMLLogFormatter(LogFormatter):
         # to handle merge revision as childs
         if revision.merge_depth > 0:
             if not self.is_merge:
-                print >>to_file,  '<merge>',
+                ## to handle a first log with merge_depth > 0
+                if not self.is_first and not self.first_log_is_merged:
+                    print >>to_file,  '<merge>',
+                else: 
+                    self.first_log_is_merged = True
                 self.is_merge = True
             print >>to_file,  '<log>',
             self.__log_revision(revision)
             print >>to_file,  '</log>',
+            XMLLogFormatter.last_log_was_merge = True
         else:
-            if self.is_merge:
-                print >>to_file,  '</merge>',
+            if self.first_log_is_merged:
+                self.first_log_is_merged = False
                 self.is_merge = False
-            if not self.is_first:
-                print >>to_file,  '</log>',
+            else:
+                if self.is_merge or XMLLogFormatter.last_log_was_merge:
+                    print >>to_file,  '</merge>',
+                    self.is_merge = False
+                if not self.is_first:
+                    print >>to_file,  '</log>',
             print >>to_file,  '<log>',
             self.__log_revision(revision)
+            XMLLogFormatter.last_log_was_merge = False
         if self.is_first:
             self.is_first = False
         XMLLogFormatter.log_count = XMLLogFormatter.log_count + 1
