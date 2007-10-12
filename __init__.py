@@ -189,6 +189,7 @@ class cmd_plugins(builtins.cmd_plugins):
 class cmd_version(builtins.cmd_version):
     builtins.cmd_version.takes_options.append(Option('xml', help='generates output in xml format'))
     __doc__ = builtins.cmd_version.__doc__
+    encoding_type = 'replace'
 
     @display_command
     def run(self, xml=False):
