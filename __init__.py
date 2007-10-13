@@ -37,6 +37,8 @@ import os
 class cmd_status(builtins.cmd_status):
     builtins.cmd_status.takes_options.append(Option('xml', help='show status in xml format'))
     __doc__ = builtins.cmd_status.__doc__
+    encoding_type = 'replace'
+
     @display_command
     def run(self, show_ids=False, file_list=None, revision=None, short=False,
             versioned=False, xml=False):
@@ -53,6 +55,7 @@ class cmd_status(builtins.cmd_status):
 class cmd_annotate(builtins.cmd_annotate):
     builtins.cmd_annotate.takes_options.append(Option('xml', help='show annotations in xml format'))
     __doc__ = builtins.cmd_annotate.__doc__
+    encoding_type = 'exact'
 
     @display_command
     def run(self, filename, all=False, long=False, revision=None,
@@ -85,7 +88,8 @@ class cmd_annotate(builtins.cmd_annotate):
 
 class cmd_log(builtins.cmd_log):
     __doc__ = builtins.cmd_log.__doc__
-    
+    encoding_type = 'replace'
+
     @display_command
     def run(self, location=None, timezone='original',
             verbose=False,
@@ -116,7 +120,8 @@ class cmd_log(builtins.cmd_log):
 
 class cmd_missing(builtins.cmd_missing):
     __doc__ = builtins.cmd_missing.__doc__
-    
+    encoding_type = 'replace'
+
     @display_command
     def run(self, other_branch=None, reverse=False, mine_only=False,
                         theirs_only=False, log_format=None, long=False, short=False, line=False, 
