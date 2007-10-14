@@ -1,7 +1,25 @@
-#!/usr/bin/env python2.4
+#!/usr/bin/env python
+# Copyright (C) 2007 Guillermo Gonzalez
+# 
+# The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+#
+# Contributors: 
+#               Martin Albisetti
 
-# @author Guillermo Gonzalez
-# @version 0.1
 """
 This plugin provides xml output for status, log, annotate, missing, info, version and plugins
 adding a --xml option to each
@@ -33,6 +51,8 @@ from bzrlib.option import Option
 from bzrlib.commands import display_command, register_command
 from bzrlib.log import LogFormatter, log_formatter_registry, LogRevision
 import os
+
+version_info = (0, 1, 0)
 
 class cmd_status(builtins.cmd_status):
     builtins.cmd_status.takes_options.append(Option('xml', help='show status in xml format'))
@@ -78,7 +98,7 @@ class cmd_annotate(builtins.cmd_annotate):
                 file_version = tree.inventory[file_id].revision
                 # always run with --all and --long option (to get the author of each line)
                 annotate_file_xml(branch=branch, rev_id=file_version, 
-                        file_id=file_id, to_file=sys.stdout,
+                        file_id=file_id, to_file=self.outf,
                         show_ids=show_ids, wt_root_path=wt_root_path, file_path=relpath)
             finally:
                 branch.unlock()
@@ -101,18 +121,20 @@ class cmd_log(builtins.cmd_log):
             limit=None):
 
         if log_format is XMLLogFormatter:
-            print >>sys.stdout, '<?xml version="1.0"?>'
-            print >>sys.stdout, '<logs>'
+            if self.outf is None:
+                self.outf = sys.stdout
+            print >>self.outf, '<?xml version="1.0"?>'
+            print >>self.outf, '<logs>'
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
             #workaround #2
             if XMLLogFormatter.last_log_was_merge:
-                print >>sys.stdout, '</merge>'
+                print >>self.outf, '</merge>'
             # workaround
             if XMLLogFormatter.log_count > 0:
-                print >>sys.stdout, '</log>'
-            print >>sys.stdout, '</logs>'
+                print >>self.outf, '</log>'
+            print >>self.outf, '</logs>'
         else:
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
@@ -128,21 +150,25 @@ class cmd_missing(builtins.cmd_missing):
                         show_ids=False, verbose=False, this=False, other=False):
         from missingxml import show_missing_xml
         
-        print >>sys.stdout, '<?xml version="1.0"?>'
+        
+        if self.outf is None:
+            self.outf = sys.stdout
+
+        print >>self.outf, '<?xml version="1.0"?>'
         
         if log_format is XMLLogFormatter:
             
             if XMLLogFormatter.log_count > 0:
-                print >>sys.stdout, '<logs>'
-                print >>sys.stdout, '<log>'
+                print >>self.outf, '<logs>'
+                print >>self.outf, '<log>'
             
             show_missing_xml(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
                         show_ids=show_ids, verbose=verbose, this=this, other=other)
             # workaround
             if XMLLogFormatter.log_count > 0:
-                print >>sys.stdout, '</log>'
-                print >>sys.stdout, '</logs>'
+                print >>self.outf, '</log>'
+                print >>self.outf, '</logs>'
 
         else:
             missing_class.run(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
