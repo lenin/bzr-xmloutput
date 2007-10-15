@@ -101,8 +101,8 @@ def _show_bzr_config(to_file):
     config_dir = os.path.normpath(config.config_dir())  # use native slashes
     if not isinstance(config_dir, unicode):
         config_dir = config_dir.decode(bzrlib.user_encoding)
-    print >>to_file, u'<configuration>%s</configuration>' % config_dir
-    print >>to_file, u'<log_file>', trace._bzr_log_filename, u'</log_file>'
+    print >>to_file, ('<configuration>%s</configuration>' % config_dir).encode(bzrlib.user_encoding)
+    print >>to_file, ('<log_file>%s</log_file>' % trace._bzr_log_filename).encode(bzrlib.user_encoding)
 
 def _show_copyright(to_file):
     print >>to_file, bzrlib.__copyright__
