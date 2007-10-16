@@ -21,8 +21,11 @@
 # Contributors:
 #               Martin Albisetti
 
+import bzrlib
 from bzrlib.diff import _raise_if_nonexistent
 from bzrlib.trace import warning
+import bzrlib.errors as errors
+from logxml import line_log
 
 def show_tree_status_xml(wt, show_unchanged=None,
                      specific_files=None,
@@ -126,9 +129,10 @@ def show_tree_status_xml(wt, show_unchanged=None,
         try:
             _raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
-            print >>to_file, '<?xml version="1.0"?>'
+            print >>to_file, '<?xml version="1.0" encoding="%s"?>' % \
+                        bzrlib.user_encoding
             print >>to_file, '<status workingtree_root="%s">' % \
-                          wt.id2abspath(wt.get_root_id())
+                        wt.id2abspath(wt.get_root_id())
             delta = new.changes_from(old, want_unchanged=show_unchanged,
                                   specific_files=specific_files,
                                   want_unversioned=want_unversioned)
@@ -139,12 +143,16 @@ def show_tree_status_xml(wt, show_unchanged=None,
             #delta.show(to_file,
             show_tree_xml(delta, to_file,
                        show_ids=show_ids,
-                       show_unchanged=show_unchanged)
+                       show_unchanged=show_unchanged, show_unversioned=want_unversioned)
             conflict_title = False
             # show the new conflicts only for now. XXX: get them from the delta.
-            if len(new.conflicts()) > 0:
+            conflicts = new.conflicts()
+            if specific_files is not None:
+                conflicts = conflicts.select_conflicts(new, specific_files,
+                        ignore_misses=True, recurse=True)[1]
+            if len(conflicts) > 0:
                 print >> to_file, "<conflicts>"
-                for conflict in new.conflicts():
+                for conflict in conflicts:
                     print >> to_file, '<conflict type="%s">%s</conflict>' % (conflict.typestring, conflict.path)
                 print >> to_file, "</conflicts>"
             if new_is_working_tree and show_pending:
@@ -183,7 +191,7 @@ def show_pending_merges(new, to_file):
             width = terminal_width()
             m_revision = branch.repository.get_revision(merge)
             prefix = ' '
-            print >> to_file, prefix, line_log(m_revision, width - 4)
+            print >> to_file, prefix, line_log(m_revision)
             inner_merges = branch.repository.get_ancestry(merge)
             assert inner_merges[0] is None
             inner_merges.pop(0)
@@ -193,15 +201,15 @@ def show_pending_merges(new, to_file):
                     continue
                 mm_revision = branch.repository.get_revision(mmerge)
                 prefix = '   '
-                print >> to_file, prefix, line_log(mm_revision, width - 5)
+                print >> to_file, prefix, line_log(mm_revision)
                 ignore.add(mmerge)
         except errors.NoSuchRevision:
             prefix = ' '
-            print >> to_file, prefix, merge
+            print >> to_file, prefix, '<pending_merge>%s</pending_merge>' % merge
     print >>to_file, '</pending_merges>'
 
 def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
-        short_status=False):
+        short_status=False, show_unversioned=False):
     """output this delta in a (xml) status-like form to to_file."""
     def show_list(files):
         for item in files:
@@ -253,7 +261,7 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
         print >>to_file, '</renamed>'
 
     if delta.kind_changed:
-        print >>to_file, '<kind changed>'
+        print >>to_file, '<kind_changed>'
         for (path, fid, old_kind, new_kind) in delta.kind_changed:
             if show_ids:
                 suffix = 'suffix="%s"' % fid
@@ -261,7 +269,7 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
                 suffix = ''
             print >>to_file, '<%s oldkind="%s" %s>%s</%s>' % \
                        (new_kind, old_kind, suffix, path, new_kind)
-        print >>to_file, '</kind changed>'
+        print >>to_file, '</kind_changed>'
 
     if delta.modified or extra_modified:
         print >>to_file, '<modified>'
@@ -274,7 +282,7 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
         show_list(delta.unchanged)
         print >>to_file, '</unchanged>'
 
-    if delta.unversioned:
+    if show_unversioned and delta.unversioned:
         print >>to_file, '<unknown>'
         show_list(delta.unversioned)
         print >>to_file, '</unknown>'
