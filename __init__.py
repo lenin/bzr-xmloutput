@@ -44,13 +44,11 @@ from bzrlib import (
     )
 
 from bzrlib.workingtree import WorkingTree
-from bzrlib.xml_serializer import _escape_cdata
 """)
 
 from bzrlib.option import Option
 from bzrlib.commands import display_command, register_command
-from bzrlib.log import log_formatter_registry, LogRevision
-import os
+from bzrlib.log import log_formatter_registry 
 from logxml import XMLLogFormatter, XMLLineLogFormatter
 
 version_info = (0, 1, 0)

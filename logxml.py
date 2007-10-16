@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 from bzrlib.log import LineLogFormatter, LogFormatter, LogRevision
+from bzrlib.xml_serializer import _escape_cdata
+import os
 
 class XMLLogFormatter(LogFormatter):
     """ add a --xml format to 'bzr log'"""
