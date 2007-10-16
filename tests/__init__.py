@@ -37,7 +37,7 @@ def test_suite():
     testmod_names = [
                      'test_version_xml',
                      'test_status_xml',
-                     #'test_log_xml',
+                     'test_log_xml',
                      #'test_annotate_xml',
                      #'test_info_xml',
                      ]
