@@ -25,6 +25,7 @@ from bzrlib.tests.blackbox import ExternalBase
 from bzrlib.tests import TestCaseInTempDir, TestCaseWithTransport
 
 from elementtree.ElementTree import fromstring
+from elementtree.ElementTree import tostring as elementtree_tostring
 from elementtree_builder import (ET, _E)
 
 class TestLog(ExternalBase):
@@ -57,7 +58,7 @@ class TestLog(ExternalBase):
 
     def test_log_null_begin_revspec(self):
         self._prepare()
-        log_xml = self.run_bzr("log --xml -r ..3")[0]
+        log_xml = fromstring(self.run_bzr("log --xml -r ..3")[0])
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
@@ -65,7 +66,7 @@ class TestLog(ExternalBase):
 
     def test_log_null_both_revspecs(self):
         self._prepare()
-        log_xml = self.run_bzr("log --xml -r ..")[0]
+        log_xml = fromstring(self.run_bzr("log --xml -r ..")[0])
         #self.assertEquals(self.full_log, log)
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
@@ -74,7 +75,7 @@ class TestLog(ExternalBase):
 
     def test_log_negative_begin_revspec_full_log(self):
         self._prepare()
-        log_xml = self.run_bzr("log --xml -r -3..")[0]
+        log_xml = fromstring(self.run_bzr("log --xml -r -3..")[0])
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
@@ -82,7 +83,7 @@ class TestLog(ExternalBase):
 
     def test_log_negative_both_revspec_full_log(self):
         self._prepare()
-        log_xml = self.run_bzr("log --xml -r -3..-1")[0]
+        log_xml = fromstring(self.run_bzr("log --xml -r -3..-1")[0])
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
@@ -94,7 +95,7 @@ class TestLog(ExternalBase):
         #self.assertTrue('revno: 1\n' in log)
         #self.assertTrue('revno: 2\n' in log)
         #self.assertTrue('revno: 3\n' not in log)
-        for revno in log_xml.finall('log/revno'):
+        for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1', '2'])
             self.assertTrue(revno.text not in ['3'])
 
@@ -110,9 +111,10 @@ class TestLog(ExternalBase):
 
     def test_log_postive_revspecs(self):
         self._prepare()
-        log_xml = self.run_bzr("log -r 1..3")[0]
+        log_xml = fromstring(self.run_bzr("log --xml -r 1..3")[0])
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
+        for elem1, elem2 in zip(log_xml.getiterator(), \
+                    self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
             self.assertTrue(elem1.text == elem2.text)
 
@@ -120,26 +122,32 @@ class TestLog(ExternalBase):
         self._prepare()
         self.run_bzr_error(('bzr: ERROR: Start revision must be older than '
                             'the end revision.\n',),
-                           ['log', '-r3..1'])
+                           ['log', '--xml', '-r3..1'])
 
     def test_log_revno_n_path(self):
         self._prepare(path='branch1')
         self._prepare(path='branch2')
-        log = self.run_bzr("log -r revno:2:branch1..revno:3:branch2",
+        log = self.run_bzr("log --xml -r revno:2:branch1..revno:3:branch2",
                           retcode=3)[0]
-        log = self.run_bzr("log -r revno:1:branch2..revno:3:branch2")[0]
-        self.assertEqualDiff(self.full_log, log)
-        log = self.run_bzr("log -r revno:1:branch2")[0]
-        self.assertTrue('revno: 1\n' in log)
-        self.assertTrue('revno: 2\n' not in log)
-        self.assertTrue('branch nick: branch2\n' in log)
-        self.assertTrue('branch nick: branch1\n' not in log)
+        log_xml = fromstring(self.run_bzr("log --xml -r revno:1:branch2..revno:3:branch2")[0])
+        self.assertEqualDiff(elementtree_tostring(self.full_log_xml), elementtree_tostring(log_xml))
+        log_xml = fromstring(self.run_bzr("log --xml -r revno:1:branch2")[0])
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text in ['1'])
+            self.assertTrue(revno.text not in ['2'])
+        #self.assertTrue('revno: 1\n' in log)
+        #self.assertTrue('revno: 2\n' not in log)
+        for branch_nick in log_xml.findall('log/branch-nick'):
+            self.assertTrue(branch_nick.text in ['branch2'])
+            self.assertTrue(branch_nick.text not in ['branch1'])
+        #self.assertTrue('branch nick: branch2\n' in log)
+        #self.assertTrue('branch nick: branch1\n' not in log)
         
     def test_log_nonexistent_file(self):
         # files that don't exist in either the basis tree or working tree
         # should give an error
         wt = self.make_branch_and_tree('.')
-        out, err = self.run_bzr('log does-not-exist', retcode=3)
+        out, err = self.run_bzr('log --xml does-not-exist', retcode=3)
         self.assertContainsRe(
             err, 'Path does not have any revision history: does-not-exist')
 
@@ -150,13 +158,17 @@ class TestLog(ExternalBase):
         branch.tags.set_tag('tag1.1', branch.get_rev_id(1))
         branch.tags.set_tag('tag3', branch.last_revision()) 
         
-        log = self.run_bzr("log -r-1")[0]
-        self.assertTrue('tags: tag3' in log)
+        log_xml = fromstring(self.run_bzr("log --xml -r-1")[0])
+        for tag in log_xml.findall('log/tags/tag'):
+            self.assertTrue(tag.text == 'tag3')
+        #self.assertTrue('tags: tag3' in log)
 
-        log = self.run_bzr("log -r1")[0]
+        log_xml = fromstring(self.run_bzr("log --xml -r1")[0])
+        for tag in log_xml.findall('log/tags/tag'):
+            self.assertTrue(tag.text in ['tag1', 'tag1.1'])
         # I guess that we can't know the order of tags in the output
         # since dicts are unordered, need to check both possibilities
-        self.assertContainsRe(log, r'tags: (tag1, tag1\.1|tag1\.1, tag1)')
+        #self.assertContainsRe(log, r'tags: (tag1, tag1\.1|tag1\.1, tag1)')
 
     def test_merged_log_with_tags(self):
         branch1_tree = self._prepare(path='branch1', format='dirstate-tags')
@@ -167,10 +179,14 @@ class TestLog(ExternalBase):
         os.chdir('branch2')
         self.run_bzr('merge ../branch1') # tags don't propagate otherwise
         branch2_tree.commit(message='merge branch 1')
-        log = self.run_bzr("log -r-1")[0]
-        self.assertContainsRe(log, r'    tags: tag1')
-        log = self.run_bzr("log -r3.1.1")[0]
-        self.assertContainsRe(log, r'tags: tag1')
+        log_xml = fromstring(self.run_bzr("log --xml -r-1")[0])
+        for tag in log_xml.findall('log/merge/log/tags/tag'):
+            self.assertTrue(tag.text == 'tag1')
+        #self.assertContainsRe(log, r'    tags: tag1')
+        log_xml = fromstring(self.run_bzr("log --xml -r3.1.1")[0])
+        for tag in log_xml.findall('log/tags/tag'):
+            self.assertTrue(tag.text == 'tag1')
+        #self.assertContainsRe(log, r'tags: tag1')
 
     def test_log_limit(self):
         self._prepare()
@@ -200,7 +216,7 @@ class TestLogMerges(ExternalBase):
 
     def test_merges_are_indented_by_level(self):
         self._prepare()
-        out,err = self.run_bzr('log')
+        out,err = self.run_bzr('log --xml')
         # the log will look something like:
 #        self.assertEqual("""\
 #------------------------------------------------------------
@@ -242,21 +258,34 @@ class TestLogMerges(ExternalBase):
         # but we dont have a nice pattern matcher hooked up yet, so:
         # we check for the indenting of the commit message and the 
         # revision numbers 
-        self.assertTrue('revno: 2' in out)
-        self.assertTrue('  merge branch 1' in out)
-        self.assertTrue('    revno: 1.1.2' in out)
-        self.assertTrue('      merge branch 2' in out)
-        self.assertTrue('        revno: 1.1.1.1' in out)
-        self.assertTrue('          branch 2' in out)
-        self.assertTrue('    revno: 1.1.1' in out)
-        self.assertTrue('      branch 1' in out)
-        self.assertTrue('revno: 1\n' in out)
-        self.assertTrue('  first post' in out)
+        #self.assertTrue('revno: 2' in out)
+        #self.assertTrue('  merge branch 1' in out)
+        #self.assertTrue('    revno: 1.1.2' in out)
+        #self.assertTrue('      merge branch 2' in out)
+        #self.assertTrue('        revno: 1.1.1.1' in out)
+        #self.assertTrue('          branch 2' in out)
+        #self.assertTrue('    revno: 1.1.1' in out)
+        #self.assertTrue('      branch 1' in out)
+        #self.assertTrue('revno: 1\n' in out)
+        #self.assertTrue('  first post' in out)
+        log_xml = fromstring(out)
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text in ['1', '2'])
+        for message in log_xml.findall('log/message'):
+            self.assertTrue(message.text.strip() in ['merge branch 1', 'first post'])
+        for revno in log_xml.findall('log/merge/log/revno'):
+            self.assertTrue(revno.text in ['1.1.2', '1.1.1'])
+        for message in log_xml.findall('log/merge/log/message'):
+            self.assertTrue(message.text.strip() in ['merge branch 2', 'branch 1'])
+        for revno in log_xml.findall('log/merge/log/merge/log/revno'):
+            self.assertTrue(revno.text == '1.1.1.1.1')
+        for message in log_xml.findall('log/merge/log/merge/log/message'):
+            self.assertTrue(message.text.strip() == 'branch 2')
         self.assertEqual('', err)
 
     def test_merges_single_merge_rev(self):
         self._prepare()
-        out,err = self.run_bzr('log -r1.1.2')
+        out,err = self.run_bzr('log --xml -r1.1.2')
         # the log will look something like:
 #        self.assertEqual("""\
 #------------------------------------------------------------
@@ -277,21 +306,33 @@ class TestLogMerges(ExternalBase):
         # but we dont have a nice pattern matcher hooked up yet, so:
         # we check for the indenting of the commit message and the 
         # revision numbers 
-        self.assertTrue('revno: 2' not in out)
-        self.assertTrue('  merge branch 1' not in out)
-        self.assertTrue('revno: 1.1.2' in out)
-        self.assertTrue('  merge branch 2' in out)
-        self.assertTrue('    revno: 1.1.1.1' in out)
-        self.assertTrue('      branch 2' in out)
-        self.assertTrue('revno: 1.1.1\n' not in out)
-        self.assertTrue('  branch 1' not in out)
-        self.assertTrue('revno: 1\n' not in out)
-        self.assertTrue('  first post' not in out)
+        #self.assertTrue('revno: 2' not in out)
+        #self.assertTrue('  merge branch 1' not in out)
+        #self.assertTrue('revno: 1.1.2' in out)
+        #self.assertTrue('  merge branch 2' in out)
+        #self.assertTrue('    revno: 1.1.1.1' in out)
+        #self.assertTrue('      branch 2' in out)
+        #self.assertTrue('revno: 1.1.1\n' not in out)
+        #self.assertTrue('  branch 1' not in out)
+        #self.assertTrue('revno: 1\n' not in out)
+        #self.assertTrue('  first post' not in out)
+        #out,err = self.run_bzr('log --xml -r1.1.2')
+        log_xml = fromstring(out)
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text == '1.1.2')
+            self.assertTrue(revno.text not in ['1.1.1', '2', '1'])
+        for message in log_xml.findall('log/message'):
+            self.assertTrue(message.text.strip() == 'merge branch 2')
+            self.assertTrue(message.text.strip() not in ['merge branch 1', 'first post', 'branch 1'])
+        for revno in log_xml.findall('log/merge/log/revno'):
+            self.assertTrue(revno.text == '1.1.1.1.1')
+        for message in log_xml.findall('log/merge/log/message'):
+            self.assertTrue(message.text.strip() == 'branch 2')
         self.assertEqual('', err)
 
     def test_merges_partial_range(self):
         self._prepare()
-        out,err = self.run_bzr('log -r1.1.1..1.1.2')
+        out,err = self.run_bzr('log --xml -r1.1.1..1.1.2')
         # the log will look something like:
 #        self.assertEqual("""\
 #------------------------------------------------------------
@@ -319,16 +360,27 @@ class TestLogMerges(ExternalBase):
         # but we dont have a nice pattern matcher hooked up yet, so:
         # we check for the indenting of the commit message and the 
         # revision numbers 
-        self.assertTrue('revno: 2' not in out)
-        self.assertTrue('  merge branch 1' not in out)
-        self.assertTrue('revno: 1.1.2' in out)
-        self.assertTrue('  merge branch 2' in out)
-        self.assertTrue('    revno: 1.1.1.1' in out)
-        self.assertTrue('      branch 2' in out)
-        self.assertTrue('revno: 1.1.1' in out)
-        self.assertTrue('  branch 1' in out)
-        self.assertTrue('revno: 1\n' not in out)
-        self.assertTrue('  first post' not in out)
+        #self.assertTrue('revno: 2' not in out)
+        #self.assertTrue('  merge branch 1' not in out)
+        #self.assertTrue('revno: 1.1.2' in out)
+        #self.assertTrue('  merge branch 2' in out)
+        #self.assertTrue('    revno: 1.1.1.1' in out)
+        #self.assertTrue('      branch 2' in out)
+        #self.assertTrue('revno: 1.1.1' in out)
+        #self.assertTrue('  branch 1' in out)
+        #self.assertTrue('revno: 1\n' not in out)
+        #self.assertTrue('  first post' not in out)
+        log_xml = fromstring(out)
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text in ['1.1.2', '1.1.1'])
+            self.assertTrue(revno.text not in ['2', '1'])
+        for message in log_xml.findall('log/message'):
+            self.assertTrue(message.text.strip() in ['branch 1', 'merge branch 2'])
+            self.assertTrue(message.text.strip() not in ['merge branch 1', 'first post'])
+        for revno in log_xml.findall('log/merge/log/revno'):
+            self.assertTrue(revno.text == '1.1.1.1.1')
+        for message in log_xml.findall('log/merge/log/message'):
+            self.assertTrue(message.text.strip() == 'branch 2')
         self.assertEqual('', err)
 
  
@@ -384,7 +436,7 @@ class TestLogEncodings(TestCaseInTempDir):
         try:
             bzrlib.user_encoding = 'ascii'
             # We should be able to handle any encoding
-            out, err = bzr('log', encoding=encoding)
+            out, err = bzr('log --xml', encoding=encoding)
             if not fail:
                 # Make sure we wrote mu as we expected it to exist
                 self.assertNotEqual(-1, out.find(encoded_msg))
@@ -415,9 +467,11 @@ class TestLogEncodings(TestCaseInTempDir):
         self.build_tree(['a'])
         bzr('add a')
         bzr(['commit', '-m', u'\u0422\u0435\u0441\u0442'])
-        stdout, stderr = self.run_bzr('log', encoding='cp866')
+        stdout, stderr = self.run_bzr('log --xml', encoding='cp866')
 
         message = stdout.splitlines()[-1]
+        log_xml = fromstring(stdout)
+        message = log_xml.findall('log/message')[0]
 
         # explanation of the check:
         # u'\u0422\u0435\u0441\u0442' is word 'Test' in russian
@@ -428,7 +482,7 @@ class TestLogEncodings(TestCaseInTempDir):
         test_in_cp866 = '\x92\xa5\xe1\xe2'
         test_in_cp1251 = '\xd2\xe5\xf1\xf2'
         # Make sure the log string is encoded in cp866
-        self.assertEquals(test_in_cp866, message[2:])
+        self.assertEquals(test_in_cp866, message.text.strip())
         # Make sure the cp1251 string is not found anywhere
         self.assertEquals(-1, stdout.find(test_in_cp1251))
 
@@ -442,7 +496,7 @@ class TestLogFile(TestCaseWithTransport):
         tree.add('file')
         tree.commit('revision 1')
         tree.bzrdir.destroy_workingtree()
-        self.run_bzr('log tree/file')
+        self.run_bzr('log --xml tree/file')
 
     def test_log_file(self):
         """The log for a particular file should only list revs for that file"""
@@ -460,45 +514,67 @@ class TestLogFile(TestCaseWithTransport):
         tree.merge_from_branch(child_tree.branch)
         tree.commit(message='merge child branch')
         os.chdir('parent')
-        log = self.run_bzr('log file1')[0]
-        self.assertContainsRe(log, 'revno: 1\n')
-        self.assertNotContainsRe(log, 'revno: 2\n')
-        self.assertNotContainsRe(log, 'revno: 3\n')
-        self.assertNotContainsRe(log, 'revno: 3.1.1\n')
-        self.assertNotContainsRe(log, 'revno: 4\n')
-        log = self.run_bzr('log file2')[0]
-        self.assertNotContainsRe(log, 'revno: 1\n')
-        self.assertContainsRe(log, 'revno: 2\n')
-        self.assertNotContainsRe(log, 'revno: 3\n')
-        self.assertContainsRe(log, 'revno: 3.1.1\n')
-        self.assertContainsRe(log, 'revno: 4\n')
-        log = self.run_bzr('log file3')[0]
-        self.assertNotContainsRe(log, 'revno: 1\n')
-        self.assertNotContainsRe(log, 'revno: 2\n')
-        self.assertContainsRe(log, 'revno: 3\n')
-        self.assertNotContainsRe(log, 'revno: 3.1.1\n')
-        self.assertNotContainsRe(log, 'revno: 4\n')
-        log = self.run_bzr('log -r3.1.1 file2')[0]
-        self.assertNotContainsRe(log, 'revno: 1\n')
-        self.assertNotContainsRe(log, 'revno: 2\n')
-        self.assertNotContainsRe(log, 'revno: 3\n')
-        self.assertContainsRe(log, 'revno: 3.1.1\n')
-        self.assertNotContainsRe(log, 'revno: 4\n')
-        log = self.run_bzr('log -r4 file2')[0]
-        self.assertNotContainsRe(log, 'revno: 1\n')
-        self.assertNotContainsRe(log, 'revno: 2\n')
-        self.assertNotContainsRe(log, 'revno: 3\n')
-        self.assertContainsRe(log, 'revno: 3.1.1\n')
-        self.assertContainsRe(log, 'revno: 4\n')
-        log = self.run_bzr('log -r3.. file2')[0]
-        self.assertNotContainsRe(log, 'revno: 1\n')
-        self.assertNotContainsRe(log, 'revno: 2\n')
-        self.assertNotContainsRe(log, 'revno: 3\n')
-        self.assertContainsRe(log, 'revno: 3.1.1\n')
-        self.assertContainsRe(log, 'revno: 4\n')
-        log = self.run_bzr('log -r..3 file2')[0]
-        self.assertNotContainsRe(log, 'revno: 1\n')
-        self.assertContainsRe(log, 'revno: 2\n')
-        self.assertNotContainsRe(log, 'revno: 3\n')
-        self.assertNotContainsRe(log, 'revno: 3.1.1\n')
-        self.assertNotContainsRe(log, 'revno: 4\n')
+        log_xml = fromstring(self.run_bzr('log --xml file1')[0])
+        #self.assertContainsRe(log, 'revno: 1\n')
+        #self.assertNotContainsRe(log, 'revno: 2\n')
+        #self.assertNotContainsRe(log, 'revno: 3\n')
+        #self.assertNotContainsRe(log, 'revno: 3.1.1\n')
+        #self.assertNotContainsRe(log, 'revno: 4\n')
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text == '1')
+            self.assertTrue(revno.text not in ['2', '3', '3.1.1', '4'])
+        log_xml = fromstring(self.run_bzr('log --xml file2')[0])
+        #self.assertNotContainsRe(log, 'revno: 1\n')
+        #self.assertContainsRe(log, 'revno: 2\n')
+        #self.assertNotContainsRe(log, 'revno: 3\n')
+        #self.assertContainsRe(log, 'revno: 3.1.1\n')
+        #self.assertContainsRe(log, 'revno: 4\n')
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text not in ['1', '3'])
+            self.assertTrue(revno.text in ['2', '3.1.1', '4'])
+        log_xml = fromstring(self.run_bzr('log --xml file3')[0])
+        #self.assertNotContainsRe(log, 'revno: 1\n')
+        #self.assertNotContainsRe(log, 'revno: 2\n')
+        #self.assertContainsRe(log, 'revno: 3\n')
+        #self.assertNotContainsRe(log, 'revno: 3.1.1\n')
+        #self.assertNotContainsRe(log, 'revno: 4\n')
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text not in ['1', '2', '3.1.1', '4'])
+            self.assertTrue(revno.text == '3')
+        log_xml = fromstring(self.run_bzr('log --xml -r3.1.1 file2')[0])
+        #self.assertNotContainsRe(log, 'revno: 1\n')
+        #self.assertNotContainsRe(log, 'revno: 2\n')
+        #self.assertNotContainsRe(log, 'revno: 3\n')
+        #self.assertContainsRe(log, 'revno: 3.1.1\n')
+        #self.assertNotContainsRe(log, 'revno: 4\n')
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text not in ['1', '2', '3', '4'])
+            self.assertTrue(revno.text == '3.1.1')
+        log_xml = fromstring(self.run_bzr('log --xml -r4 file2')[0])
+        #self.assertNotContainsRe(log, 'revno: 1\n')
+        #self.assertNotContainsRe(log, 'revno: 2\n')
+        #self.assertNotContainsRe(log, 'revno: 3\n')
+        #self.assertContainsRe(log, 'revno: 3.1.1\n')
+        #self.assertContainsRe(log, 'revno: 4\n')
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text not in ['1', '2', '3'])
+            self.assertTrue(revno.text in ['3.1.1', '4'])
+        log_xml = fromstring(self.run_bzr('log --xml -r3.. file2')[0])
+        #self.assertNotContainsRe(log, 'revno: 1\n')
+        #self.assertNotContainsRe(log, 'revno: 2\n')
+        #self.assertNotContainsRe(log, 'revno: 3\n')
+        #self.assertContainsRe(log, 'revno: 3.1.1\n')
+        #self.assertContainsRe(log, 'revno: 4\n')
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text not in ['1', '2', '3'])
+            self.assertTrue(revno.text in ['3.1.1', '4'])
+        log_xml = fromstring(self.run_bzr('log --xml -r..3 file2')[0])
+        #self.assertNotContainsRe(log, 'revno: 1\n')
+        #self.assertContainsRe(log, 'revno: 2\n')
+        #self.assertNotContainsRe(log, 'revno: 3\n')
+        #self.assertNotContainsRe(log, 'revno: 3.1.1\n')
+        #self.assertNotContainsRe(log, 'revno: 4\n')
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text not in ['1', '3', '3.1.1', '4'])
+            self.assertTrue(revno.text == '2')
+

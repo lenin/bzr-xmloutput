@@ -123,7 +123,8 @@ class cmd_log(builtins.cmd_log):
         if log_format is XMLLogFormatter or log_format is XMLLineLogFormatter:
             if self.outf is None:
                 self.outf = sys.stdout
-            print >>self.outf, '<?xml version="1.0"?>'
+            print >>self.outf, '<?xml version="1.0" encoding="%s"?>' % \
+                        bzrlib.user_encoding
             print >>self.outf, '<logs>'
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
@@ -154,7 +155,8 @@ class cmd_missing(builtins.cmd_missing):
         if self.outf is None:
             self.outf = sys.stdout
 
-        print >>self.outf, '<?xml version="1.0"?>'
+        print >>self.outf, '<?xml version="1.0" encoding="%s"?>' % \
+                    bzrlib.user_encoding
         
         if log_format is XMLLogFormatter:
             
@@ -203,6 +205,8 @@ class cmd_plugins(builtins.cmd_plugins):
         if xml:
             import bzrlib.plugin
             from inspect import getdoc
+            print >>self.outf, '<?xml version="1.0" encoding="%s"?>' % \
+                    bzrlib.user_encoding
             print '<plugins>'
             for name, plugin in bzrlib.plugin.plugins().items():
                 print '<plugin>'
