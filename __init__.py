@@ -40,7 +40,8 @@ from bzrlib import (
     option,
     log,
     workingtree,
-    xml_serializer
+    xml_serializer,
+    errors
     )
 
 from bzrlib.workingtree import WorkingTree
@@ -94,6 +95,8 @@ class cmd_annotate(builtins.cmd_annotate):
                 else:
                     revision_id = revision[0].in_history(branch).rev_id
                 file_id = tree.path2id(relpath)
+                if file_id is None:
+                    raise errors.NotVersionedError(filename)
                 tree = branch.repository.revision_tree(revision_id)
                 file_version = tree.inventory[file_id].revision
                 # always run with --all and --long option (to get the author of each line)

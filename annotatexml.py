@@ -26,7 +26,7 @@
 import sys
 
 from bzrlib.annotate import _annotate_file
-from xml.sax import saxutils
+from bzrlib.xml_serializer import _escape_cdata
 
 def annotate_file_xml(branch, rev_id, file_id, to_file=None, 
             show_ids=False, wt_root_path=None, file_path=None):
@@ -46,7 +46,7 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
                 this = origin
             else:
                 this = ''
-            to_file.write('<entry fid="%s">%s</entry>' % (this, text))
+            to_file.write('<entry fid="%s">%s</entry>' % (_escape_cdata(this), _escape_cdata(text)))
             last_rev_id = origin
         print >>to_file, '</annotation>'
         return
@@ -54,10 +54,10 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
     annotation = list(_annotate_file(branch, rev_id, file_id))
     for (revno_str, author, date_str, line_rev_id, text) in annotation:
         anno = 'revno="%s" author="%s" date="%s"' % \
-                    (saxutils.escape(revno_str), author, date_str)
+                    (_escape_cdata(revno_str), _escape_cdata(author), date_str)
         if anno.lstrip() == 'revno="" author="" date=""': 
             anno = prevanno
-        print >>to_file, '<entry %s>%s</entry>' % (anno, saxutils.escape(text))
+        print >>to_file, '<entry %s>%s</entry>' % (anno, _escape_cdata(text))
         prevanno = anno
     print >>to_file, '</annotation>'
 
