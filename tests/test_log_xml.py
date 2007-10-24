@@ -23,9 +23,9 @@ import os
 import bzrlib
 from bzrlib.tests.blackbox import ExternalBase
 from bzrlib.tests import TestCaseInTempDir, TestCaseWithTransport
-
-from elementtree.ElementTree import fromstring
-from elementtree.ElementTree import tostring as elementtree_tostring
+from bzrlib.xml_serializer import elementtree as elementtree
+fromstring = elementtree.ElementTree.fromstring
+elementtree_tostring = elementtree.ElementTree.tostring
 from elementtree_builder import (ET, _E)
 
 class TestLog(ExternalBase):

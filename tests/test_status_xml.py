@@ -38,11 +38,11 @@ from bzrlib.osutils import pathjoin
 from bzrlib.revisionspec import RevisionSpec
 from bzrlib.tests import TestCaseWithTransport, TestSkipped
 from bzrlib.workingtree import WorkingTree
-from bzrlib.xml_serializer import elementtree
+from bzrlib.xml_serializer import elementtree as elementtree
 
 import bzrlib.plugin
 from bzrlib.status import show_tree_status
-from elementtree.ElementTree import fromstring
+fromstring = elementtree.ElementTree.fromstring
 from elementtree_builder import (ET, _E)
 
 ## little hack to load functions from parent module

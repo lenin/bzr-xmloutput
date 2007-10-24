@@ -110,7 +110,6 @@ def show_component_info_xml(control, repository, branch=None, working=None,
     if branch is not None:
         _show_missing_revisions_branch_xml(branch)
     if working is not None:
-        _show_missing_revisions_working_xml(working)
         _show_working_stats_xml(working)
     elif branch is not None:
         _show_missing_revisions_branch_xml(branch)
@@ -187,9 +186,9 @@ def _show_missing_revisions_branch_xml(branch):
     if master:
         local_extra, remote_extra = find_unmerged(branch, master)
         if remote_extra:
-            print
-            print 'Branch is out of date: missing %d revision%s.' % (
-                len(remote_extra), plural(len(remote_extra)))
+            print '<branch_stats>'
+            print '<missing_revisions>%d<missing_revisions>' % len(remote_extra)
+            print '</branch_stats>'
 
 
 def _show_missing_revisions_working_xml(working):
@@ -206,9 +205,7 @@ def _show_missing_revisions_working_xml(working):
     if branch_revno and tree_last_id != branch_last_revision:
         tree_last_revno = branch.revision_id_to_revno(tree_last_id)
         missing_count = branch_revno - tree_last_revno
-        print
-        print 'Working tree is out of date: missing %d revision%s.' % (
-            missing_count, plural(missing_count))
+        print '<missing_revisions>%d</missing_revisions>' % missing_count
 
 def _show_working_stats_xml(working):
     """Show statistics about a working tree."""
@@ -217,6 +214,7 @@ def _show_working_stats_xml(working):
     delta = working.changes_from(basis, want_unchanged=True)
 
     print '<working_tree_stats>'
+    _show_missing_revisions_working_xml(working)
     print '<unchanged>%s</unchanged>' % len(delta.unchanged)
     print '<modified>%d</modified>' % len(delta.modified)
     print '<added>%d</added>' % len(delta.added)
@@ -264,9 +262,9 @@ def _show_branch_stats_xml(branch, verbose):
 
 def _show_repository_info_xml(repository):
     """Show settings of a repository."""
-    if repository.make_working_trees():
-        print
-        print 'Create working tree for new branches inside the repository.'
+    ## FIXME/TODO: is this needed in the xml output?
+    #if repository.make_working_trees():
+    #    print 'Create working tree for new branches inside the repository.'
 
 
 def _show_repository_stats_xml(stats):

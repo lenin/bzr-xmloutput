@@ -25,8 +25,8 @@ from bzrlib.tests import (
     TestSkipped,
     )
 
-from bzrlib.xml_serializer import elementtree
-from elementtree.ElementTree import fromstring
+from bzrlib.xml_serializer import elementtree as elementtree
+fromstring = elementtree.ElementTree.fromstring
 
 
 class TestVersionXML(TestCase):

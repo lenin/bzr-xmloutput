@@ -1,7 +1,8 @@
 
 from bzrlib.trace import mutter, warning
-from bzrlib.xml_serializer import elementtree
-import elementtree.ElementTree as ET
+from bzrlib.xml_serializer import elementtree as elementtree
+ET = elementtree.ElementTree
+#import elementtree.ElementTree as ET
 
 class _E(object):
     """ This is the E factory, taken from http://effbot.org/zone/element-builder.htm """
