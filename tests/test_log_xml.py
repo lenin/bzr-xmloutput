@@ -469,9 +469,14 @@ class TestLogEncodings(TestCaseInTempDir):
         bzr(['commit', '-m', u'\u0422\u0435\u0441\u0442'])
         stdout, stderr = self.run_bzr('log --xml', encoding='cp866')
 
-        message = stdout.splitlines()[-1]
-        log_xml = fromstring(stdout)
-        message = log_xml.findall('log/message')[0]
+        #message = stdout.splitlines()[-1]
+        #log_xml = fromstring(stdout)
+        #message = log_xml.findall('log/message')[0]
+
+        # FIXME: little hack to get the message in the correct encoding.
+        # Because if we generate the xml with 'fromstring', it's generated
+        # using the the user encoding (which is cp1251)
+        message = stdout.split('message')[1].strip('</').strip('> ')
 
         # explanation of the check:
         # u'\u0422\u0435\u0441\u0442' is word 'Test' in russian
@@ -482,7 +487,8 @@ class TestLogEncodings(TestCaseInTempDir):
         test_in_cp866 = '\x92\xa5\xe1\xe2'
         test_in_cp1251 = '\xd2\xe5\xf1\xf2'
         # Make sure the log string is encoded in cp866
-        self.assertEquals(test_in_cp866, message.text.strip())
+        self.assertEquals(test_in_cp866, message)
+        #self.assertEquals(test_in_cp866, message.text.strip())
         # Make sure the cp1251 string is not found anywhere
         self.assertEquals(-1, stdout.find(test_in_cp1251))
 
