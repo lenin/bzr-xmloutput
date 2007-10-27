@@ -34,6 +34,7 @@ from bzrlib import (
     trace,
     )
 from bzrlib.version import _get_bzr_source_tree
+from bzrlib.xml_serializer import _escape_cdata
 
 def show_version_xml(show_config=True, show_copyright=True, to_file=None):
     if to_file is None:
@@ -94,7 +95,7 @@ def _show_source_tree(to_file):
         print >>to_file, u'<checkout>%s</checkout>' % src_tree.basedir
         print >>to_file, u'<revision>%s</revision>' % revno
         print >>to_file, u'<revid>%s</revid>' % src_revision_id
-        print >>to_file, u'<branch_nick>%s</branch_nick>' % src_tree.branch.nick
+        print >>to_file, u'<branch_nick>%s</branch_nick>' % _escape_cdata(src_tree.branch.nick)
         print >>to_file, u'</source_tree>'
 
 def _show_bzr_config(to_file):
