@@ -21,19 +21,22 @@ class XMLLogFormatter(LogFormatter):
     
     log_count = 0
     previous_merge_depth = 0
-    current_merge_log_count = 0
-    start_with_merge = True
+    start_with_merge = False
+    open_merges = 0
+    open_logs = 0
 
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
         log_count = 0
         previous_merge_depth = 0
-        current_merge_log_count = 0
-        self.is_first_merge = None
+        start_with_merge = False
+        self.start_with_merge = False
+        self.previous_merge_depth = 0
         self.nested_merge = None
         self.debug_enabled = 'debug' in debug.debug_flags
-        start_with_merge = True
+        self.open_logs = 0
+        self.open_merges = 0
         
     def show(self, revno, rev, delta, tags=None):
         lr = LogRevision(rev, revno, 0, delta, tags)
@@ -48,59 +51,82 @@ class XMLLogFormatter(LogFormatter):
         """Log a revision, either merged or not."""
         from bzrlib.osutils import format_date
         to_file = self.to_file
+        if self.debug_enabled:
+            self.__debug(revision)
         # to handle merge revision as childs
         if revision.merge_depth > 0:
-            if XMLLogFormatter.previous_merge_depth < revision.merge_depth and XMLLogFormatter.log_count > 0:
-                merge_depth_diference = revision.merge_depth - XMLLogFormatter.previous_merge_depth
+            if self.previous_merge_depth < revision.merge_depth and XMLLogFormatter.log_count > 0:
+                merge_depth_diference = revision.merge_depth - self.previous_merge_depth
                 for m in range(0, merge_depth_diference):
-                    print >>to_file,  '<merge>'
+                    self.__open_merge()
                 if merge_depth_diference > 1:
                     self.nested_merge = True
-                self.is_first_merge = True
-                XMLLogFormatter.current_merge_log_count = XMLLogFormatter.current_merge_log_count +1 
-            elif XMLLogFormatter.previous_merge_depth > revision.merge_depth and XMLLogFormatter.log_count > 0:
-                print >>to_file,  '</log>',
+            elif self.previous_merge_depth < revision.merge_depth and XMLLogFormatter.log_count == 0:
+                ## here we support all the output of a merge which is show first as top level <log>
+                self.start_with_merge = True
+                if self.open_logs > 0:
+                    self.__close_log()
+            else:
+                if self.open_logs > 0:
+                    self.__close_log()
+                #if XMLLogFormatter.previous_merge_depth > revision.merge_depth and XMLLogFormatter.log_count > 0:
                 ## TODO: testcase for more than one level of nested merges
-                if XMLLogFormatter.previous_merge_depth - revision.merge_depth > 1:
-                    for m in range(0, XMLLogFormatter.previous_merge_depth - revision.merge_depth):
-                        print >>to_file,  '</merge>'
+                if self.previous_merge_depth - revision.merge_depth > 1:
+                    print "else - if"
+                    for m in range(0, self.previous_merge_depth - revision.merge_depth):
+                        self.__close_merge()
                     self.nested_merge = False
                 else:
-                    print >>to_file,  '</merge>'
+                    if self.open_merges > 0:
+                        self.__close_merge()
                     if self.nested_merge:
                         self.nested_merge = False
                     else:
-                        print >>to_file,  '</log>',
-                    XMLLogFormatter.current_merge_log_count = 0
-
-            elif XMLLogFormatter.previous_merge_depth == revision.merge_depth:
-                print >>to_file,  '</log>',
-                self.is_first_merge = False
-            elif XMLLogFormatter.previous_merge_depth < revision.merge_depth and XMLLogFormatter.log_count == 0:
-                ## here we support all the output inside one bug <merge>
-                XMLLogFormatter.start_with_merge = True
+                        if self.open_logs > 0:
+                            self.__close_log()
         else:
-            if XMLLogFormatter.log_count > 0:
-                print >>to_file,  '</log>', 
-            if XMLLogFormatter.previous_merge_depth > 0:
-                print >>to_file, '</merge>'
-                print >>to_file, '</log>'
-        print >>to_file,  '<log>',
+            if self.previous_merge_depth > 0:
+                if self.open_logs > 0:
+                    self.__close_log()
+                if self.open_merges > 0:
+                    self.__close_merge()
+            if self.open_logs > 0:
+                self.__close_log()
+        self.__open_log()
         self.__log_revision(revision)
-        if self.debug_enabled:
-            self.__debug(revision)
+
         XMLLogFormatter.log_count = XMLLogFormatter.log_count + 1
-        XMLLogFormatter.previous_merge_depth = revision.merge_depth
-        XMLLogFormatter.current_merge_log_count = XMLLogFormatter.current_merge_log_count + 1
+        self.previous_merge_depth = revision.merge_depth
+        XMLLogFormatter.previous_merge_depth =  self.previous_merge_depth
+        XMLLogFormatter.open_logs = self.open_logs
+        XMLLogFormatter.open_merges = self.open_merges
+        XMLLogFormatter.start_with_merge = self.start_with_merge
+
+    def __open_merge(self):
+        print >>self.to_file,  '<merge>'
+        self.open_merges = self.open_merges + 1
+
+    def __close_merge(self):
+        print >>self.to_file, '</merge>'
+        self.open_merges = self.open_merges - 1
+
+    def __open_log(self):
+        print >>self.to_file,  '<log>',
+        self.open_logs = self.open_logs + 1
+
+    def __close_log(self):
+        print >>self.to_file,  '</log>', 
+        self.open_logs = self.open_logs - 1
 
     def __debug(self, revision):
         print >>self.to_file, ''
         print >>self.to_file, '<debug>'
-        print >>self.to_file, "<prev_merge_depth>%d</prev_merge_depth>" % XMLLogFormatter.previous_merge_depth,
+        print >>self.to_file, "<prev_merge_depth>%d</prev_merge_depth>" % self.previous_merge_depth,
         print >>self.to_file, "<merge_depth>%d</merge_depth>" % revision.merge_depth,
-        print >>self.to_file, "<merge_log_count>%d</merge_log_count>" % XMLLogFormatter.current_merge_log_count,
         print >>self.to_file, "<log_count>%d</log_count>" % XMLLogFormatter.log_count,
-        print >>self.to_file, "<is_first_merge>%s</is_first_merge>" % str(self.is_first_merge),
+        print >>self.to_file, '<start_with_merge>%s</start_with_merge>' % str(self.start_with_merge)
+        print >>self.to_file, "<open_logs>%s</open_logs>" % str(self.open_logs),
+        print >>self.to_file, "<open_merges>%s</open_merges>" % str(self.open_merges),
         print >>self.to_file, '</debug>'
 
     def __log_revision(self, revision):

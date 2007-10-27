@@ -28,6 +28,44 @@ fromstring = elementtree.ElementTree.fromstring
 elementtree_tostring = elementtree.ElementTree.tostring
 from elementtree_builder import (ET, _E)
 
+
+def create_xml(wt, status_dict):
+    E = _E()
+    status = E('status')
+    status.attrib["workingtree_root"] = wt.id2abspath(wt.get_root_id())
+    for key in status_dict.keys():
+        status_kind = E(key)
+        for file_kind, name, attributes in status_dict[key]:
+            kind = E(file_kind, name)
+            for attrib in attributes.keys():
+                kind.attrib[attrib] = attributes[attrib]
+            status_kind.append(kind)
+        status.append(status_kind)
+    return status
+
+XMLLogFormatter = None
+def reset_log_formatter():
+    ## little hack to load XMLLogFormatter class from parent module
+    global XMLLogFormatter
+    bzrlib.plugin.load_plugins()
+    plugins = bzrlib.plugin.plugins()
+    if XMLLogFormatter is None:
+        for p in plugins:
+            if getattr(plugins[p].module, 'plugin_name', None) is not None \
+                and plugins[p].module.plugin_name == 'xmloutput':
+                from sys import path
+                import imp
+                path.append(plugins[p].module.__path__[0])
+                fp, pathname, description = imp.find_module('logxml')
+                XMLLogFormatter = imp.load_module('logxml', fp, pathname, 
+                    description).XMLLogFormatter
+    # reset class variables in XMLLogFormatter
+    XMLLogFormatter.log_count = 0
+    XMLLogFormatter.previous_merge_depth = 0
+    XMLLogFormatter.start_with_merge = False
+    XMLLogFormatter.open_merges = 0
+    XMLLogFormatter.open_logs = 0
+
 class TestLog(ExternalBase):
 
     def _prepare(self, path='.', format=None):
@@ -41,6 +79,7 @@ class TestLog(ExternalBase):
         tree.add('meep.txt')
         tree.commit(message='message3')
         self.full_log_xml = fromstring(self.run_bzr(["log", "--xml", path])[0])
+        reset_log_formatter()
         return tree
 
     def test_log_null_end_revspec(self):
@@ -213,6 +252,7 @@ class TestLogMerges(ExternalBase):
         parent_tree.merge_from_branch(child_tree.branch)
         parent_tree.commit(message='merge branch 1')
         os.chdir('parent')
+        reset_log_formatter()
 
     def test_merges_are_indented_by_level(self):
         self._prepare()
@@ -408,6 +448,7 @@ class TestLogEncodings(TestCaseInTempDir):
     def setUp(self):
         TestCaseInTempDir.setUp(self)
         self.user_encoding = bzrlib.user_encoding
+        reset_log_formatter()
 
     def tearDown(self):
         bzrlib.user_encoding = self.user_encoding
@@ -494,6 +535,10 @@ class TestLogEncodings(TestCaseInTempDir):
 
 
 class TestLogFile(TestCaseWithTransport):
+
+    def setUp(self):
+        TestCaseWithTransport.setUp(self)
+        reset_log_formatter()
 
     def test_log_local_branch_file(self):
         """We should be able to log files in local treeless branches"""
