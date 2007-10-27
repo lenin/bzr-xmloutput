@@ -132,12 +132,16 @@ class cmd_log(builtins.cmd_log):
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
-            #workaround #2
-            if XMLLogFormatter.last_log_was_merge:
-                print >>self.outf, '</merge>'
-            # workaround
-            if XMLLogFormatter.log_count > 0:
+            #if the last logged was inside a merge (and it was only one log)
+            if XMLLogFormatter.current_merge_log_count > 1:
                 print >>self.outf, '</log>'
+            if not XMLLogFormatter.start_with_merge:
+                #workaround #2. in the case that the last log weas inside a merge we need to close it
+                if XMLLogFormatter.previous_merge_depth > 0:
+                    print >>self.outf, '</merge>'
+                # workaround
+                if XMLLogFormatter.log_count > 0:
+                    print >>self.outf, '</log>'
             print >>self.outf, '</logs>'
         else:
             log_class.run(self, location=location, timezone=timezone, 
