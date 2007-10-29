@@ -1,0 +1,25 @@
+== bzr-xmloutput ==
+
+This plugin adds an option (--xml) to generate XML output for builtins commands.
+
+=== Supported commands ===
+ * log
+ * status
+ * annotate
+ * missing
+ * info
+ * plugins
+ * version
+
+=== How to install ===
+ There are two main options to install Bazaar plugins, from source or directly 
+ from the branch. 
+ For further instructions visit:  http://bazaar-vcs.org/UsingPlugins.
+ 
+ Notice: If you are installing bzr-xmloutput from the source tarball, the 
+         defaut install location is bzrlib/plugins/xmloutput. To change this
+         look the available options running: python setup.py install --help
+
+
+=== Contributors ===
+ * Martin Albisetti
