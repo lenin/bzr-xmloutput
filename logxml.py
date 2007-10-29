@@ -33,6 +33,7 @@ class XMLLogFormatter(LogFormatter):
         self.log_count = 0
         start_with_merge = False
         self.start_with_merge = False
+        self.nested_merge_count = 0
         self.previous_merge_depth = 0
         self.debug_enabled = 'debug' in debug.debug_flags
         self.open_logs = 0
@@ -62,6 +63,8 @@ class XMLLogFormatter(LogFormatter):
                     merge_depth_diference = revision.merge_depth - self.previous_merge_depth
                     for m in range(0, merge_depth_diference):
                         actions.append(self.__open_merge)
+                    if merge_depth_diference > 1: 
+                        self.nested_merge_count += 1
                 elif self.log_count == 0:
                     # first log is inside a merge, we show it as a top level 
                     # shouwl be better to create a merge tag without parent log?
@@ -69,13 +72,19 @@ class XMLLogFormatter(LogFormatter):
             elif self.previous_merge_depth > revision.merge_depth:
                 ## TODO: testcase for more than one level of nested merges
                 actions.append({self.__close_merge:self.previous_merge_depth - revision.merge_depth})
-                actions.append(self.__close_log)
+                if self.nested_merge_count > 0:
+                    self.nested_merge_count -= 1
+                else:
+                    actions.append(self.__close_log)
             else:
                 if self.open_logs > 0:
                     actions.append(self.__close_log)
         elif self.previous_merge_depth < revision.merge_depth:
             actions.append({self.__close_merge:self.previous_merge_depth - revision.merge_depth})
-            actions.append(self.__close_log)
+            if self.nested_merge_count > 0:
+                self.nested_merge_count -= 1
+            else:
+                actions.append(self.__close_log)
         elif self.open_merges > 0:
             actions.append({self.__close_merge:self.open_merges})
             #actions.append(self.__close_merge)
