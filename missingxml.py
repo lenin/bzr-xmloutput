@@ -28,7 +28,7 @@
 OTHER_BRANCH may be local or remote.
 """
 
-
+from bzrlib import user_encoding
 from bzrlib import ui, urlutils, errors
 from bzrlib.branch import Branch
 from bzrlib.log import LogRevision, log_formatter, log_formatter_registry
@@ -46,7 +46,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
         theirs_only=False, log_format=None, long=False, short=False, line=False, 
         show_ids=False, verbose=False, this=False, other=False):
         
-    self.outf.write('<missing>')
+
         
     if this:
       mine_only = this
@@ -62,8 +62,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                                           " or specified.")
     display_url = urlutils.unescape_for_display(parent,
                                                 self.outf.encoding)
-    self.outf.write('<last_location>' + display_url + '</last_location>')
-    
+
     remote_branch = Branch.open(other_branch)
     
     if remote_branch.base == local_branch.base:
@@ -72,6 +71,10 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
     try:
         remote_branch.lock_read()
         try:
+            self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
+                        user_encoding)
+            self.outf.write('<missing>')
+            self.outf.write('<last_location>' + display_url + '</last_location>')
             local_extra, remote_extra = find_unmerged(local_branch,
                                                       remote_branch)
             if log_format is None:
@@ -84,26 +87,28 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                 local_extra.reverse()
                 remote_extra.reverse()
             if local_extra and not theirs_only:
-                self.outf.write('<extra_revisions>%d</extra_revisions>' %
+                self.outf.write('<extra_revisions size="%d">' %
                                 len(local_extra))
+
+                if local_extra > 0:
+                    showlogs(self, iter_log_revisions(local_extra, 
+                                    local_branch.repository, 
+                                    verbose), lf)
+                self.outf.write('</extra_revisions>')
                 self.outf.write('</missing>')
-                for revision in iter_log_revisions(local_extra,
-                                    local_branch.repository,
-                                    verbose):
-                    lf.log_revision(revision)
                 printed_local = True
             else:
                 printed_local = False
             if remote_extra and not mine_only:
-                # if printed_local is True:
-                    # self.outf.write("\n\n\n")
-                self.outf.write('<missing_revisions>%d</missing_revisions>' %
+                self.outf.write('<missing_revisions size="%d">' %
                                 len(remote_extra))
+                if remote_extra > 0:
+                    showlogs(self, iter_log_revisions(remote_extra,
+                                    remote_branch.repository, 
+                                    verbose), lf)
+                self.outf.write('</missing_revisions>')
                 self.outf.write('</missing>')
-                for revision in iter_log_revisions(remote_extra,
-                                    remote_branch.repository,
-                                    verbose):
-                    lf.log_revision(revision)
+                printed_local = True
             if not remote_extra and not local_extra:
                 status_code = 0
                 # self.outf.write("Branches are up to date.\n")
@@ -127,4 +132,9 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
             local_branch.unlock()
     return status_code
 
-
+def showlogs(self, iterator, lf):
+    self.outf.write('<logs>')
+    for revision in iterator:
+        lf.log_revision(revision)
+    self.outf.write('</log>')
+    self.outf.write('</logs>')

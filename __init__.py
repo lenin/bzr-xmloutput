@@ -149,27 +149,13 @@ class cmd_missing(builtins.cmd_missing):
                         show_ids=False, verbose=False, this=False, other=False):
         from missingxml import show_missing_xml
         
-        
         if self.outf is None:
             self.outf = sys.stdout
-
-        print >>self.outf, '<?xml version="1.0" encoding="%s"?>' % \
-                    bzrlib.user_encoding
         
         if log_format is XMLLogFormatter:
-            
-            if XMLLogFormatter.log_count > 0:
-                print >>self.outf, '<logs>'
-                print >>self.outf, '<log>'
-            
             show_missing_xml(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
                         show_ids=show_ids, verbose=verbose, this=this, other=other)
-            # workaround
-            if XMLLogFormatter.log_count > 0:
-                print >>self.outf, '</log>'
-                print >>self.outf, '</logs>'
-
         else:
             missing_class.run(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
@@ -203,19 +189,22 @@ class cmd_plugins(builtins.cmd_plugins):
         if xml:
             import bzrlib.plugin
             from inspect import getdoc
-            print >>self.outf, '<?xml version="1.0" encoding="%s"?>' % \
-                    bzrlib.user_encoding
-            print '<plugins>'
+            if self.outf is None:
+                self.outf = sys.stdout
+
+            self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
+                    bzrlib.user_encoding)
+            self.outf.write('<plugins>')
             for name, plugin in bzrlib.plugin.plugins().items():
-                print '<plugin>'
-                print '<name>%s</name>' % name
-                print '<version>%s</version>' % plugin.__version__
-                print '<path>%s</path>' % plugin.path()
+                self.outf.write('<plugin>')
+                self.outf.write('<name>%s</name>' % name)
+                self.outf.write('<version>%s</version>' % plugin.__version__)
+                self.outf.write('<path>%s</path>' % plugin.path())
                 d = getdoc(plugin.module)
                 if d:
-                    print '<doc>%s</doc>' % d
-                print '</plugin>'
-            print '</plugins>'
+                    self.outf.write('<doc>%s</doc>' % d)
+                self.outf.write('</plugin>')
+            self.outf.write('</plugins>')
         else:
             super(cmd_plugins, self).run()
 
