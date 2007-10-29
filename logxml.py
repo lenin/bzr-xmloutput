@@ -30,13 +30,14 @@ class XMLLogFormatter(LogFormatter):
                                show_ids=show_ids, show_timezone=show_timezone)
         log_count = 0
         previous_merge_depth = 0
+        self.log_count = 0
         start_with_merge = False
         self.start_with_merge = False
         self.previous_merge_depth = 0
-        self.nested_merge = None
         self.debug_enabled = 'debug' in debug.debug_flags
         self.open_logs = 0
         self.open_merges = 0
+        self.stack = []
         
     def show(self, revno, rev, delta, tags=None):
         lr = LogRevision(rev, revno, 0, delta, tags)
@@ -53,49 +54,49 @@ class XMLLogFormatter(LogFormatter):
         to_file = self.to_file
         if self.debug_enabled:
             self.__debug(revision)
+        actions = []
         # to handle merge revision as childs
-        if revision.merge_depth > 0:
-            if self.previous_merge_depth < revision.merge_depth and XMLLogFormatter.log_count > 0:
-                merge_depth_diference = revision.merge_depth - self.previous_merge_depth
-                for m in range(0, merge_depth_diference):
-                    self.__open_merge()
-                if merge_depth_diference > 1:
-                    self.nested_merge = True
-            elif self.previous_merge_depth < revision.merge_depth and XMLLogFormatter.log_count == 0:
-                ## here we support all the output of a merge which is show first as top level <log>
-                self.start_with_merge = True
-                if self.open_logs > 0:
-                    self.__close_log()
+        if revision.merge_depth > 0 and not self.start_with_merge:
+            if self.previous_merge_depth < revision.merge_depth:
+                if self.log_count > 0:
+                    merge_depth_diference = revision.merge_depth - self.previous_merge_depth
+                    for m in range(0, merge_depth_diference):
+                        actions.append(self.__open_merge)
+                elif self.log_count == 0:
+                    # first log is inside a merge, we show it as a top level 
+                    # shouwl be better to create a merge tag without parent log?
+                    self.start_with_merge = True
+            elif self.previous_merge_depth > revision.merge_depth:
+                ## TODO: testcase for more than one level of nested merges
+                actions.append({self.__close_merge:self.previous_merge_depth - revision.merge_depth})
+                actions.append(self.__close_log)
             else:
                 if self.open_logs > 0:
-                    self.__close_log()
-                #if XMLLogFormatter.previous_merge_depth > revision.merge_depth and XMLLogFormatter.log_count > 0:
-                ## TODO: testcase for more than one level of nested merges
-                if self.previous_merge_depth - revision.merge_depth > 1:
-                    print "else - if"
-                    for m in range(0, self.previous_merge_depth - revision.merge_depth):
-                        self.__close_merge()
-                    self.nested_merge = False
-                else:
-                    if self.open_merges > 0:
-                        self.__close_merge()
-                    if self.nested_merge:
-                        self.nested_merge = False
-                    else:
-                        if self.open_logs > 0:
-                            self.__close_log()
+                    actions.append(self.__close_log)
+        elif self.previous_merge_depth < revision.merge_depth:
+            actions.append({self.__close_merge:self.previous_merge_depth - revision.merge_depth})
+            actions.append(self.__close_log)
+        elif self.open_merges > 0:
+            actions.append({self.__close_merge:self.open_merges})
+            #actions.append(self.__close_merge)
+            actions.append(self.__close_log)
         else:
-            if self.previous_merge_depth > 0:
-                if self.open_logs > 0:
-                    self.__close_log()
-                if self.open_merges > 0:
-                    self.__close_merge()
-            if self.open_logs > 0:
-                self.__close_log()
+            actions.append(self.__close_log)
+            if self.start_with_merge:
+                # we only care about the first log, the following logs are 
+                # handlend in the logic of nested merges
+                self.start_with_merge = False
+                
+        for action in actions:
+            if type(action) == dict:
+                action.keys()[0](action[action.keys()[0]])
+            else:
+                action()
         self.__open_log()
         self.__log_revision(revision)
 
-        XMLLogFormatter.log_count = XMLLogFormatter.log_count + 1
+        self.log_count = self.log_count + 1
+        XMLLogFormatter.log_count = self.log_count
         self.previous_merge_depth = revision.merge_depth
         XMLLogFormatter.previous_merge_depth =  self.previous_merge_depth
         XMLLogFormatter.open_logs = self.open_logs
@@ -104,19 +105,35 @@ class XMLLogFormatter(LogFormatter):
 
     def __open_merge(self):
         print >>self.to_file,  '<merge>'
-        self.open_merges = self.open_merges + 1
+        self.open_merges += 1
+        self.stack.append('merge')
 
-    def __close_merge(self):
-        print >>self.to_file, '</merge>'
-        self.open_merges = self.open_merges - 1
+    def __close_merge(self, num=1):
+        for item in self.stack.__reversed__():
+      	    print >>self.to_file, '</%s>' % item
+            self.stack.pop()
+            if item == 'merge':
+                self.open_merges -= 1
+                num -= 1
+                if num == 0:
+                    return
+            if item == 'log':
+                self.open_logs -= 1
 
     def __open_log(self):
-        print >>self.to_file,  '<log>',
+        print >>self.to_file, '<log>',
         self.open_logs = self.open_logs + 1
+        self.stack.append('log')
 
     def __close_log(self):
-        print >>self.to_file,  '</log>', 
-        self.open_logs = self.open_logs - 1
+        for item in self.stack.__reversed__():
+       	    print >>self.to_file, '</%s>' % item
+            self.stack.pop()
+            if item == 'log':
+                self.open_logs -= 1
+                return
+            if item == 'merge':
+                self.open_merges -= 1
 
     def __debug(self, revision):
         print >>self.to_file, ''
