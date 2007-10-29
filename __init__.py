@@ -171,24 +171,14 @@ class cmd_missing(builtins.cmd_missing):
         
         if self.outf is None:
             self.outf = sys.stdout
-
-        print >>self.outf, '<?xml version="1.0" encoding="%s"?>' % \
-                    bzrlib.user_encoding
         
         if log_format is XMLLogFormatter:
-            
-            if XMLLogFormatter.log_count > 0:
-                print >>self.outf, '<logs>'
-                print >>self.outf, '<log>'
+            print >>self.outf, '<?xml version="1.0" encoding="%s"?>' % \
+                        bzrlib.user_encoding
             
             show_missing_xml(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
                         show_ids=show_ids, verbose=verbose, this=this, other=other)
-            # workaround
-            if XMLLogFormatter.log_count > 0:
-                print >>self.outf, '</log>'
-                print >>self.outf, '</logs>'
-
         else:
             missing_class.run(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
