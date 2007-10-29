@@ -231,4 +231,27 @@ def line_log(rev):
     lf = XMLLineLogFormatter(None)
     return lf.log_string(None, rev)
 
+def open_start_tags(self):
+    self.outf.write('<logs>')
+
+def close_remaining_tags(self):
+    #if the last logged was inside a merge (and it was only one log)
+    if XMLLogFormatter.open_logs > 1 and XMLLogFormatter.open_merges > 0:
+        self.outf.write('</log>')
+        XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
+    if not XMLLogFormatter.start_with_merge:
+        #workaround #2. in the case that the last log weas inside a merge we need to close it
+        if XMLLogFormatter.open_merges > 0:
+            for merge in range(0, XMLLogFormatter.open_merges):
+                self.outf.write('</merge>')
+                XMLLogFormatter.open_merges = XMLLogFormatter.open_merges - 1
+        # workaround
+        if XMLLogFormatter.open_logs > 0:
+            self.outf.write('</log>')
+            XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
+    else: 
+        if XMLLogFormatter.open_logs > 0:
+            self.outf.write('</log>')
+            XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
+    self.outf.write('</logs>')
 
