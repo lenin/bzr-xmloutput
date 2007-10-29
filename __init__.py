@@ -153,9 +153,6 @@ class cmd_missing(builtins.cmd_missing):
             self.outf = sys.stdout
         
         if log_format is XMLLogFormatter:
-            self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
-                        bzrlib.user_encoding)
-            
             show_missing_xml(self, other_branch=other_branch, reverse=reverse, mine_only=mine_only,
                         theirs_only=theirs_only, log_format=log_format, long=long, short=short, line=line, 
                         show_ids=show_ids, verbose=verbose, this=this, other=other)

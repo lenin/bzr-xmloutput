@@ -28,7 +28,7 @@
 OTHER_BRANCH may be local or remote.
 """
 
-
+from bzrlib import user_encoding
 from bzrlib import ui, urlutils, errors
 from bzrlib.branch import Branch
 from bzrlib.log import LogRevision, log_formatter, log_formatter_registry
@@ -46,7 +46,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
         theirs_only=False, log_format=None, long=False, short=False, line=False, 
         show_ids=False, verbose=False, this=False, other=False):
         
-    self.outf.write('<missing>')
+
         
     if this:
       mine_only = this
@@ -62,8 +62,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                                           " or specified.")
     display_url = urlutils.unescape_for_display(parent,
                                                 self.outf.encoding)
-    self.outf.write('<last_location>' + display_url + '</last_location>')
-    
+
     remote_branch = Branch.open(other_branch)
     
     if remote_branch.base == local_branch.base:
@@ -72,6 +71,10 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
     try:
         remote_branch.lock_read()
         try:
+            self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
+                        user_encoding)
+            self.outf.write('<missing>')
+            self.outf.write('<last_location>' + display_url + '</last_location>')
             local_extra, remote_extra = find_unmerged(local_branch,
                                                       remote_branch)
             if log_format is None:
