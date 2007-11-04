@@ -19,19 +19,10 @@ class XMLLogFormatter(LogFormatter):
     supports_delta = True
     supports_tags = True
     
-    log_count = 0
-    previous_merge_depth = 0
-    start_with_merge = False
-    open_merges = 0
-    open_logs = 0
-
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
-        log_count = 0
-        previous_merge_depth = 0
         self.log_count = 0
-        start_with_merge = False
         self.start_with_merge = False
         self.nested_merge_count = 0
         self.previous_merge_depth = 0
@@ -105,12 +96,7 @@ class XMLLogFormatter(LogFormatter):
         self.__log_revision(revision)
 
         self.log_count = self.log_count + 1
-        XMLLogFormatter.log_count = self.log_count
         self.previous_merge_depth = revision.merge_depth
-        XMLLogFormatter.previous_merge_depth =  self.previous_merge_depth
-        XMLLogFormatter.open_logs = self.open_logs
-        XMLLogFormatter.open_merges = self.open_merges
-        XMLLogFormatter.start_with_merge = self.start_with_merge
 
     def __open_merge(self):
         print >>self.to_file,  '<merge>'
@@ -149,7 +135,7 @@ class XMLLogFormatter(LogFormatter):
         print >>self.to_file, '<debug>'
         print >>self.to_file, "<prev_merge_depth>%d</prev_merge_depth>" % self.previous_merge_depth,
         print >>self.to_file, "<merge_depth>%d</merge_depth>" % revision.merge_depth,
-        print >>self.to_file, "<log_count>%d</log_count>" % XMLLogFormatter.log_count,
+        print >>self.to_file, "<log_count>%d</log_count>" % self.log_count,
         print >>self.to_file, '<start_with_merge>%s</start_with_merge>' % str(self.start_with_merge)
         print >>self.to_file, "<open_logs>%s</open_logs>" % str(self.open_logs),
         print >>self.to_file, "<open_merges>%s</open_merges>" % str(self.open_merges),
@@ -201,6 +187,32 @@ class XMLLogFormatter(LogFormatter):
             show_tree_xml(revision.delta, to_file, self.show_ids)
             print >>to_file,  '</affected-files>',
 
+    def begin_log(self):
+        self.to_file.write('<?xml version="1.0" encoding="%s"?>' % \
+                bzrlib.user_encoding)
+        self.to_file.write('<logs>')
+
+    def end_log(self):
+        #if the last logged was inside a merge (and it was only one log)
+        if self.open_logs > 1 and self.open_merges > 0:
+            self.to_file.write('</log>')
+            self.open_logs = self.open_logs - 1
+        if not self.start_with_merge:
+            #workaround #2. in the case that the last log weas inside a merge we need to close it
+            if self.open_merges > 0:
+                for merge in range(0, self.open_merges):
+                    self.to_file.write('</merge>')
+                    self.open_merges = self.open_merges - 1
+            # workaround
+            if self.open_logs > 0:
+                self.to_file.write('</log>')
+                self.open_logs = self.open_logs - 1
+        else: 
+            if self.open_logs > 0:
+                self.to_file.write('</log>')
+            selfogFormatter.open_logs = self.open_logs - 1
+        self.to_file.write('</logs>')
+        
 class XMLLineLogFormatter(LineLogFormatter):
 
     def __init__(self, *args, **kwargs):
@@ -230,28 +242,4 @@ class XMLLineLogFormatter(LineLogFormatter):
 def line_log(rev):
     lf = XMLLineLogFormatter(None)
     return lf.log_string(None, rev)
-
-def open_start_tags(self):
-    self.outf.write('<logs>')
-
-def close_remaining_tags(self):
-    #if the last logged was inside a merge (and it was only one log)
-    if XMLLogFormatter.open_logs > 1 and XMLLogFormatter.open_merges > 0:
-        self.outf.write('</log>')
-        XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
-    if not XMLLogFormatter.start_with_merge:
-        #workaround #2. in the case that the last log weas inside a merge we need to close it
-        if XMLLogFormatter.open_merges > 0:
-            for merge in range(0, XMLLogFormatter.open_merges):
-                self.outf.write('</merge>')
-                XMLLogFormatter.open_merges = XMLLogFormatter.open_merges - 1
-        # workaround
-        if XMLLogFormatter.open_logs > 0:
-            self.outf.write('</log>')
-            XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
-    else: 
-        if XMLLogFormatter.open_logs > 0:
-            self.outf.write('</log>')
-            XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
-    self.outf.write('</logs>')
 

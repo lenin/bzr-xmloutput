@@ -110,7 +110,6 @@ class cmd_annotate(builtins.cmd_annotate):
             annotate_class.run(self, filename=filename, all=all, long=long, revision=revision,
             show_ids=show_ids)
 
-class cmd_log(builtins.cmd_log):
     __doc__ = builtins.cmd_log.__doc__
     encoding_type = 'replace'
 
@@ -127,13 +126,9 @@ class cmd_log(builtins.cmd_log):
         if log_format is XMLLogFormatter or log_format is XMLLineLogFormatter:
             if self.outf is None:
                 self.outf = sys.stdout
-            self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
-                        bzrlib.user_encoding)
-            logxml.open_start_tags(self)
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
                     revision=revision, log_format=log_format, message=message, limit=limit)
-            logxml.close_remaining_tags(self)
         else:
             log_class.run(self, location=location, timezone=timezone, 
                     verbose=verbose, show_ids=show_ids, forward=forward, 
@@ -224,14 +219,11 @@ class cmd_version(builtins.cmd_version):
 status_class = register_command(cmd_status, decorate=True)
 annotate_class = register_command(cmd_annotate, decorate=True)
 missing_class = register_command(cmd_missing, decorate=True)
-log_class = register_command(cmd_log, decorate=True)
 info_class = register_command(cmd_info, decorate=True)
 plugins_class = register_command(cmd_plugins, decorate=True)
 version_class = register_command(cmd_version, decorate=True)
 log_formatter_registry.register('xml', XMLLogFormatter,
-                              'Detailed (not well formed?) XML log format')
-log_formatter_registry.register('line-xml', XMLLineLogFormatter,
-                              'Provides same info as --line option but in XML format')
+                              'Detailed XML log format')
 
 def test_suite():
     import tests
