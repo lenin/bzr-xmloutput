@@ -130,10 +130,10 @@ def show_tree_status_xml(wt, show_unchanged=None,
         try:
             _raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
-            print >>to_file, '<?xml version="1.0" encoding="%s"?>' % \
-                        bzrlib.user_encoding
-            print >>to_file, '<status workingtree_root="%s">' % \
-                        wt.id2abspath(wt.get_root_id())
+            to_file.write('<?xml version="1.0" encoding="%s"?>' % \
+                        bzrlib.user_encoding)
+            to_file.write('<status workingtree_root="%s">' % \
+                        wt.id2abspath(wt.get_root_id()))
             delta = new.changes_from(old, want_unchanged=show_unchanged,
                                   specific_files=specific_files,
                                   want_unversioned=want_unversioned)
@@ -144,7 +144,8 @@ def show_tree_status_xml(wt, show_unchanged=None,
             #delta.show(to_file,
             show_tree_xml(delta, to_file,
                        show_ids=show_ids,
-                       show_unchanged=show_unchanged, show_unversioned=want_unversioned)
+                       show_unchanged=show_unchanged, 
+                       show_unversioned=want_unversioned)
             conflict_title = False
             # show the new conflicts only for now. XXX: get them from the delta.
             conflicts = new.conflicts()
@@ -152,13 +153,14 @@ def show_tree_status_xml(wt, show_unchanged=None,
                 conflicts = conflicts.select_conflicts(new, specific_files,
                         ignore_misses=True, recurse=True)[1]
             if len(conflicts) > 0:
-                print >> to_file, "<conflicts>"
+                to_file.write("<conflicts>")
                 for conflict in conflicts:
-                    print >> to_file, '<conflict type="%s">%s</conflict>' % (conflict.typestring, _escape_cdata(conflict.path))
-                print >> to_file, "</conflicts>"
+                    to_file.write('<conflict type="%s">%s</conflict>' % 
+                                  (conflict.typestring, _escape_cdata(conflict.path)))
+                to_file.write("</conflicts>")
             if new_is_working_tree and show_pending:
                 show_pending_merges(new, to_file)
-            print >>to_file, '</status>'
+            to_file.write('</status>')
         finally:
             old.unlock()
             new.unlock()
@@ -173,7 +175,7 @@ def show_pending_merges(new, to_file):
     pending = parents[1:]
     branch = new.branch
     last_revision = parents[0]
-    print >>to_file, '<pending_merges>'
+    to_file.write('<pending_merges>')
     if last_revision is not None:
         try:
             ignore = set(branch.repository.get_ancestry(last_revision))
@@ -192,7 +194,7 @@ def show_pending_merges(new, to_file):
             width = terminal_width()
             m_revision = branch.repository.get_revision(merge)
             prefix = ' '
-            print >> to_file, prefix, line_log(m_revision)
+            to_file.write(prefix, line_log(m_revision))
             inner_merges = branch.repository.get_ancestry(merge)
             assert inner_merges[0] is None
             inner_merges.pop(0)
@@ -202,12 +204,12 @@ def show_pending_merges(new, to_file):
                     continue
                 mm_revision = branch.repository.get_revision(mmerge)
                 prefix = '   '
-                print >> to_file, prefix, line_log(mm_revision)
+                to_file.write(prefix, line_log(mm_revision))
                 ignore.add(mmerge)
         except errors.NoSuchRevision:
             prefix = ' '
-            print >> to_file, prefix, '<pending_merge>%s</pending_merge>' % merge
-    print >>to_file, '</pending_merges>'
+            to_file.write(prefix, '<pending_merge>%s</pending_merge>' % merge)
+    to_file.write('</pending_merges>')
 
 def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
         short_status=False, show_unversioned=False):
@@ -225,23 +227,24 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
                 kind_id=''
                 if fid:
                     kind_id=get_kind_id_element(kind, fid)
-                print >>to_file, '<%s %s>%s</%s>' % (kind, kind_id, _escape_cdata(path), kind)
+                to_file.write('<%s %s>%s</%s>' % (kind, kind_id, 
+                                                  _escape_cdata(path), kind))
             else:
-                print >>to_file, '<%s>%s</%s>' % (kind, _escape_cdata(path), kind)
+                to_file.write('<%s>%s</%s>' % (kind, _escape_cdata(path), kind))
 
     if delta.removed:
-        print >>to_file, '<removed>'
+        to_file.write('<removed>')
         show_list(delta.removed)
-        print >>to_file, '</removed>'
+        to_file.write('</removed>')
     
     if delta.added:
-        print >>to_file, '<added>'
+        to_file.write('<added>')
         show_list(delta.added)
-        print >>to_file, '</added>'
+        to_file.write('</added>')
     
     extra_modified = []
     if delta.renamed:
-        print >>to_file, '<renamed>'
+        to_file.write('<renamed>')
         for (oldpath, newpath, fid, kind, 
              text_modified, meta_modified) in delta.renamed:
             if text_modified or meta_modified:
@@ -254,39 +257,42 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
                 kind_id=''
                 if fid:
                     kind_id=get_kind_id_element(kind, fid)
-                print >>to_file, '<%s oldpath="%s" %s %s>%s</%s>' % \
-                        (kind, _escape_cdata(oldpath), metamodified, kind_id, _escape_cdata(newpath), kind)
+                to_file.write('<%s oldpath="%s" %s %s>%s</%s>' % \
+                        (kind, _escape_cdata(oldpath), metamodified, 
+                         kind_id, _escape_cdata(newpath), kind))
             else: 
-                print >>to_file, '<%s oldpath="%s" %s >%s</%s>' % \
-                        (kind, _escape_cdata(oldpath), metamodified, _escape_cdata(newpath), kind)
-        print >>to_file, '</renamed>'
+                to_file.write('<%s oldpath="%s" %s >%s</%s>' % \
+                        (kind, _escape_cdata(oldpath), metamodified, 
+                         _escape_cdata(newpath), kind))
+        to_file.write('</renamed>')
 
     if delta.kind_changed:
-        print >>to_file, '<kind_changed>'
+        to_file.write('<kind_changed>')
         for (path, fid, old_kind, new_kind) in delta.kind_changed:
             if show_ids:
                 suffix = 'suffix="%s"' % fid
             else:
                 suffix = ''
-            print >>to_file, '<%s oldkind="%s" %s>%s</%s>' % \
-                       (new_kind, old_kind, suffix, _escape_cdata(path), new_kind)
-        print >>to_file, '</kind_changed>'
+            to_file.write('<%s oldkind="%s" %s>%s</%s>' % \
+                       (new_kind, old_kind, suffix, 
+                        _escape_cdata(path), new_kind))
+        to_file.write('</kind_changed>')
 
     if delta.modified or extra_modified:
-        print >>to_file, '<modified>'
+        to_file.write('<modified>')
         show_list(delta.modified)
         show_list(extra_modified)
-        print >>to_file, '</modified>'
+        to_file.write('</modified>')
             
     if show_unchanged and delta.unchanged:
-        print >>to_file, '<unchanged>'
+        to_file.write('<unchanged>')
         show_list(delta.unchanged)
-        print >>to_file, '</unchanged>'
+        to_file.write('</unchanged>')
 
     if show_unversioned and delta.unversioned:
-        print >>to_file, '<unknown>'
+        to_file.write('<unknown>')
         show_list(delta.unversioned)
-        print >>to_file, '</unknown>'
+        to_file.write('</unknown>')
 
 def get_kind_id_element(kind, fid):
     kind_id=''
