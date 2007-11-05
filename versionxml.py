@@ -38,10 +38,11 @@ from bzrlib.xml_serializer import _escape_cdata
 
 def show_version_xml(show_config=True, show_copyright=True, to_file=None):
     if to_file is None:
+        print sys.stdout
         to_file = sys.stdout
     to_file.write(u'<version>')
-    _show_bazaar_version(to_file)
-    _show_python_version(to_file)
+    _show_bazaar_version(to_file=to_file)
+    _show_python_version(to_file=to_file)
     print >>to_file
     to_file.write(u'</version>')
 
@@ -102,13 +103,16 @@ def _show_bzr_config(to_file):
     config_dir = os.path.normpath(config.config_dir())  # use native slashes
     if not isinstance(config_dir, unicode):
         config_dir = config_dir.decode(bzrlib.user_encoding)
-    to_file.write(('<configuration>%s</configuration>' % config_dir).encode(bzrlib.user_encoding))
-    to_file.write(('<log_file>%s</log_file>' % trace._bzr_log_filename).encode(bzrlib.user_encoding))
+    bzr_log_filename = trace._bzr_log_filename
+    if not isinstance(bzr_log_filename, unicode):
+        bzr_log_filename = trace._bzr_log_filename.decode(bzrlib.user_encoding)
+    to_file.write('<configuration>%s</configuration>' % config_dir)
+    to_file.write('<log_file>%s</log_file>' % bzr_log_filename)
 
 def _show_copyright(to_file):
     to_file.write(bzrlib.__copyright__)
     to_file.write("http://bazaar-vcs.org/")
-    print >>to_file
+    to_file.write('')
     to_file.write("bzr comes with ABSOLUTELY NO WARRANTY.  bzr is free software, and")
     to_file.write("you may use, modify and redistribute it under the terms of the GNU")
     to_file.write("General Public License version 2 or later.")

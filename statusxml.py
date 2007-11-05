@@ -193,8 +193,7 @@ def show_pending_merges(new, to_file):
             from bzrlib.osutils import terminal_width
             width = terminal_width()
             m_revision = branch.repository.get_revision(merge)
-            prefix = ' '
-            to_file.write(prefix, line_log(m_revision))
+            to_file.write(line_log(m_revision))
             inner_merges = branch.repository.get_ancestry(merge)
             assert inner_merges[0] is None
             inner_merges.pop(0)
@@ -207,8 +206,7 @@ def show_pending_merges(new, to_file):
                 to_file.write(prefix, line_log(mm_revision))
                 ignore.add(mmerge)
         except errors.NoSuchRevision:
-            prefix = ' '
-            to_file.write(prefix, '<pending_merge>%s</pending_merge>' % merge)
+            to_file.write('<pending_merge>%s</pending_merge>' % merge)
     to_file.write('</pending_merges>')
 
 def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,

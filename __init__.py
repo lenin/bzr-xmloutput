@@ -57,7 +57,7 @@ version_info = (0, 2, 0)
 plugin_name = 'xmloutput'
 
 class cmd_status(builtins.cmd_status):
-    builtins.cmd_status.takes_options.append(Option('xml', help='show status in xml format'))
+    builtins.cmd_status.takes_options.append(Option('xml', help='Show status in xml format'))
     __doc__ = builtins.cmd_status.__doc__
     encoding_type = 'replace'
 
@@ -67,15 +67,18 @@ class cmd_status(builtins.cmd_status):
         if xml:
             from statusxml import show_tree_status_xml
             tree, file_list = builtins.tree_files(file_list)
+            to_file = self.outf
+            if to_file is None:
+                to_file = sys.stdout
             show_tree_status_xml(tree, show_ids=show_ids,
                     specific_files=file_list, revision=revision,
-                    to_file=self.outf, versioned=versioned)
+                    to_file=to_file, versioned=versioned)
         else:
             status_class.run(self, show_ids=show_ids, file_list=file_list, 
                     revision=revision, short=short, versioned=versioned)
 
 class cmd_annotate(builtins.cmd_annotate):
-    builtins.cmd_annotate.takes_options.append(Option('xml', help='show annotations in xml format'))
+    builtins.cmd_annotate.takes_options.append(Option('xml', help='Show annotations in xml format'))
     __doc__ = builtins.cmd_annotate.__doc__
     encoding_type = 'exact'
 
@@ -101,8 +104,11 @@ class cmd_annotate(builtins.cmd_annotate):
                 tree = branch.repository.revision_tree(revision_id)
                 file_version = tree.inventory[file_id].revision
                 # always run with --all and --long option (to get the author of each line)
+                to_file = self.outf
+                if to_file is None:
+                    to_file = sys.stdout
                 annotate_file_xml(branch=branch, rev_id=file_version, 
-                        file_id=file_id, to_file=self.outf,
+                        file_id=file_id, to_file=to_file,
                         show_ids=show_ids, wt_root_path=wt_root_path, file_path=relpath)
             finally:
                 branch.unlock()
@@ -110,6 +116,7 @@ class cmd_annotate(builtins.cmd_annotate):
             annotate_class.run(self, filename=filename, all=all, long=long, revision=revision,
             show_ids=show_ids)
 
+class cmd_log(builtins.cmd_log):
     __doc__ = builtins.cmd_log.__doc__
     encoding_type = 'replace'
 
@@ -157,7 +164,7 @@ class cmd_missing(builtins.cmd_missing):
                         show_ids=show_ids, verbose=verbose, this=this, other=other)
 
 class cmd_info(builtins.cmd_info):
-    builtins.cmd_info.takes_options.append(Option('xml', help='show info in xml format'))
+    builtins.cmd_info.takes_options.append(Option('xml', help='Show info in xml format'))
     __doc__ = builtins.cmd_info.__doc__
     
     @display_command
@@ -176,7 +183,7 @@ class cmd_info(builtins.cmd_info):
                              verbose=noise_level)
 
 class cmd_plugins(builtins.cmd_plugins):
-    builtins.cmd_plugins.takes_options.append(Option('xml', help='show plugins list in xml format'))
+    builtins.cmd_plugins.takes_options.append(Option('xml', help='Show plugins list in xml format'))
     __doc__ = builtins.cmd_info.__doc__
 
     @display_command
@@ -212,7 +219,10 @@ class cmd_version(builtins.cmd_version):
     def run(self, xml=False):
         if(xml):
             from versionxml import show_version_xml
-            show_version_xml(to_file=self.outf)
+            to_file = self.outf
+            if to_file is None:
+                to_file = sys.stdout
+            show_version_xml(to_file=to_file)
         else:
             version_class.run(self)
             

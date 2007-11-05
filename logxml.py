@@ -170,8 +170,8 @@ class XMLLogFormatter(LogFormatter):
         if not revision.rev.message:
             self.to_file.write('(no message)')
         else:
-            message = _escape_cdata(revision.rev.message.rstrip('\r\n'))
-            self.to_file.write(os.linesep.join(message).splitlines())
+            message = _escape_cdata(revision.rev.message.rstrip('\r\n')).splitlines()
+            self.to_file.write(os.linesep.join(message))
         self.to_file.write('</message>')
         if revision.delta is not None:
             from statusxml import show_tree_xml
