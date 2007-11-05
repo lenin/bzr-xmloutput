@@ -440,8 +440,9 @@ class TestLogMerges(ExternalBase):
 class TestLogNestedMerges(ExternalBase):
 
     def _prepare(self):
+        # TODO: find the correct command secuence to get the xml
         # This is a home-made xml because I don't know how to generate
-        # this parcular case of nested merged (which I found that happen
+        # this particular case of nested merges (which I found that happen
         # in bzr.dev itself)
         xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <logs>
@@ -479,7 +480,6 @@ class TestLogNestedMerges(ExternalBase):
     </log>
 </logs>'''
         return xml
-
     
     def test_nested_merges(self):
         log_xml = fromstring(self._prepare())
