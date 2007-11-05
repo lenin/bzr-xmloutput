@@ -258,6 +258,8 @@ class TestLogMerges(ExternalBase):
         child_tree.commit(message='merge branch 2')
         parent_tree.merge_from_branch(child_tree.branch)
         parent_tree.commit(message='merge branch 1')
+        smaller_tree.merge_from_branch(child_tree.branch)
+        smaller_tree.commit(message="merge branch 1 (in smallertree)")
         os.chdir('parent')
         #reset_log_formatter()
 
@@ -435,7 +437,66 @@ class TestLogMerges(ExternalBase):
             self.assertTrue(message.text.strip() == 'branch 2')
         self.assertEqual('', err)
 
- 
+class TestLogNestedMerges(ExternalBase):
+
+    def _prepare(self):
+        # This is a home-made xml because I don't know how to generate
+        # this parcular case of nested merged (which I found that happen
+        # in bzr.dev itself)
+        xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<logs>
+    <log>
+        <revno>1</revno>
+        <committer>guillo &lt;guillo@shire&gt;</committer>
+        <branch-nick>parent</branch-nick>
+        <timestamp>Mon 2007-11-05 00:37:20 -0300</timestamp>
+        <message>first post</message>
+    </log>
+    <log>
+        <revno>2</revno>
+        <committer>guillo &lt;guillo@shire&gt;</committer>
+        <branch-nick>parent</branch-nick>
+        <timestamp>Mon 2007-11-05 00:37:21 -0300</timestamp>
+        <message>merge branch 1</message>
+        <merge>
+            <merge>
+                <log>
+                    <revno>1.1.1</revno>
+                    <committer>guillo &lt;guillo@shire&gt;</committer>
+                    <branch-nick>smallerchild</branch-nick>
+                    <timestamp>Mon 2007-11-05 00:37:21 -0300</timestamp>
+                    <message>merge first post</message>
+                </log>
+            </merge>
+            <log>
+                <revno>1.1</revno>
+                <committer>guillo &lt;guillo@shire&gt;</committer>
+                <branch-nick>child</branch-nick>
+                <timestamp>Mon 2007-11-05 00:37:21 -0300</timestamp>
+                <message>merge branch 2</message>
+            </log>
+        </merge>
+    </log>
+</logs>'''
+        return xml
+
+    
+    def test_nested_merges(self):
+        log_xml = fromstring(self._prepare())
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text in ['1', '2'])
+        for message in log_xml.findall('log/message'):
+            self.assertTrue(message.text.strip() in 
+                            ['first post', 'merge branch 1'])
+        for revno in log_xml.findall('log/merge/log/revno'):
+            self.assertTrue(revno.text == '1.1')
+        for message in log_xml.findall('log/merge/log/message'):
+            self.assertTrue(message.text.strip() == 'merge branch 2')
+        for revno in log_xml.findall('log/merge/merge/log/revno'):
+            self.assertTrue(revno.text == '1.1.1')
+        for message in log_xml.findall('log/merge/merge/log/message'):
+            self.assertTrue(message.text.strip() == 'merge first post')
+        
 class TestLogEncodings(TestCaseInTempDir):
 
     _mu = u'\xb5'
