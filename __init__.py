@@ -51,7 +51,7 @@ from bzrlib.option import Option
 from bzrlib.commands import display_command, register_command
 from bzrlib.log import log_formatter_registry 
 import logxml
-from logxml import XMLLogFormatter, XMLLineLogFormatter
+from logxml import XMLLogFormatter 
 
 version_info = (0, 2, 0)
 plugin_name = 'xmloutput'
@@ -115,31 +115,6 @@ class cmd_annotate(builtins.cmd_annotate):
         else:
             annotate_class.run(self, filename=filename, all=all, long=long, revision=revision,
             show_ids=show_ids)
-
-class cmd_log(builtins.cmd_log):
-    __doc__ = builtins.cmd_log.__doc__
-    encoding_type = 'replace'
-
-    @display_command
-    def run(self, location=None, timezone='original',
-            verbose=False,
-            show_ids=False,
-            forward=False,
-            revision=None,
-            log_format=None,
-            message=None,
-            limit=None):
-
-        if log_format is XMLLogFormatter or log_format is XMLLineLogFormatter:
-            if self.outf is None:
-                self.outf = sys.stdout
-            log_class.run(self, location=location, timezone=timezone, 
-                    verbose=verbose, show_ids=show_ids, forward=forward, 
-                    revision=revision, log_format=log_format, message=message, limit=limit)
-        else:
-            log_class.run(self, location=location, timezone=timezone, 
-                    verbose=verbose, show_ids=show_ids, forward=forward, 
-                    revision=revision, log_format=log_format, message=message, limit=limit)
 
 class cmd_missing(builtins.cmd_missing):
     __doc__ = builtins.cmd_missing.__doc__
