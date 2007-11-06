@@ -30,8 +30,6 @@ import time
 from bzrlib.tests import TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
 fromstring = elementtree.ElementTree.fromstring
-from elementtree_builder import (ET, _E)
-
 
 class TestAnnotate(TestCaseWithTransport):
 
