@@ -176,7 +176,7 @@ class XMLLogFormatter(LogFormatter):
         if revision.delta is not None:
             from statusxml import show_tree_xml
             self.to_file.write('<affected-files>')
-            show_tree_xml(revision.delta, to_file, self.show_ids)
+            show_tree_xml(revision.delta, self.to_file, self.show_ids)
             self.to_file.write('</affected-files>')
 
     def begin_log(self):
