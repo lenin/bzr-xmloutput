@@ -202,7 +202,7 @@ class XMLLogFormatter(LogFormatter):
         else: 
             if self.open_logs > 0:
                 self.to_file.write('</log>')
-            selfogFormatter.open_logs = self.open_logs - 1
+            self.open_logs = self.open_logs - 1
         self.to_file.write('</logs>')
         
 class XMLLineLogFormatter(LineLogFormatter):
