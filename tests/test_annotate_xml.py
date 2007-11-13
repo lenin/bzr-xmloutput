@@ -30,8 +30,6 @@ import time
 from bzrlib.tests import TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
 fromstring = elementtree.ElementTree.fromstring
-from elementtree_builder import (ET, _E)
-
 
 class TestAnnotate(TestCaseWithTransport):
 
@@ -78,14 +76,15 @@ class TestAnnotate(TestCaseWithTransport):
     def test_annotate_cmd_xml(self):
         out, err = self.run_bzr('annotate hello.txt --xml')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
-        expected_xml = '''<?xml version="1.0"?>
-<annotation workingtree-root="%s" file="hello.txt">
-<entry revno="1" author="test@user" date="%s">my helicopter</entry>
-<entry revno="3" author="user@test" date="%s">your helicopter</entry>
-<entry revno="4" author="user@test" date="%s">all of</entry>
-<entry revno="4" author="user@test" date="%s">our helicopters</entry>
-</annotation>
-''' % (wt_root_path, self.time_revision_id_1, self.time_revision_id_3, self.time_revision_id_4, self.time_revision_id_4)
+        expected_xml = (''.join(['<?xml version="1.0"?>',
+                        '<annotation workingtree-root="%s" file="hello.txt">',
+                        '<entry revno="1" author="test@user" date="%s">my helicopter</entry>',
+                        '<entry revno="3" author="user@test" date="%s">your helicopter</entry>',
+                        '<entry revno="4" author="user@test" date="%s">all of</entry>',
+                        '<entry revno="4" author="user@test" date="%s">our helicopters</entry>',
+                        '</annotation>']) %
+                        (wt_root_path, self.time_revision_id_1, self.time_revision_id_3,
+                         self.time_revision_id_4, self.time_revision_id_4))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
         self.assertEqualDiff(expected_xml, out)
@@ -96,13 +95,14 @@ class TestAnnotate(TestCaseWithTransport):
     def test_annotate_cmd_show_ids(self):
         out, err = self.run_bzr('annotate hello.txt --xml --show-ids')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
-        expected_xml = '''<?xml version="1.0"?>
-<annotation workingtree-root="%s" file="hello.txt">
-<entry fid="%s">my helicopter
-</entry><entry fid="%s">your helicopter
-</entry><entry fid="%s">all of
-</entry><entry fid="">our helicopters\n</entry></annotation>
-''' % (wt_root_path, self.revision_id_1, self.revision_id_3, self.revision_id_4)
+        expected_xml = (''.join(['<?xml version="1.0"?>',
+                                '<annotation workingtree-root="%s" file="hello.txt">',
+                                '<entry fid="%s">my helicopter\n</entry>',
+                                '<entry fid="%s">your helicopter\n</entry>',
+                                '<entry fid="%s">all of\n</entry>',
+                                '<entry fid="">our helicopters\n</entry></annotation>']) %  
+                                    (wt_root_path, self.revision_id_1, 
+                                         self.revision_id_3, self.revision_id_4))
         #TODO: assert xml and elementree (including attributes)
         max_len = max([len(self.revision_id_1),
                        len(self.revision_id_3),
@@ -124,11 +124,10 @@ class TestAnnotate(TestCaseWithTransport):
     def test_no_mail(self):
         out, err = self.run_bzr('annotate --xml nomail.txt')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
-        expected_xml = '''<?xml version="1.0"?>
-<annotation workingtree-root="%s" file="nomail.txt">
-<entry revno="2" author="no mail" date="%s">nomail</entry>
-</annotation>
-''' % (wt_root_path, self.time_revision_id_2)
+        expected_xml = (''.join(['<?xml version="1.0"?>',
+                        '<annotation workingtree-root="%s" file="nomail.txt">',
+                        '<entry revno="2" author="no mail" date="%s">nomail</entry>',
+                        '</annotation>']) % (wt_root_path, self.time_revision_id_2))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
         self.assertEqualDiff(expected_xml, out)
@@ -139,11 +138,11 @@ class TestAnnotate(TestCaseWithTransport):
     def test_annotate_cmd_revision(self):
         out, err = self.run_bzr('annotate --xml hello.txt -r1')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
-        expected_xml = '''<?xml version="1.0"?>
-<annotation workingtree-root="%s" file="hello.txt">
-<entry revno="1" author="test@user" date="%s">my helicopter</entry>
-</annotation>
-''' % (wt_root_path, self.time_revision_id_1)
+        expected_xml = (''.join(['<?xml version="1.0"?>', 
+                                '<annotation workingtree-root="%s" file="hello.txt">', 
+                                '<entry revno="1" author="test@user" date="%s">my helicopter</entry>', 
+                                '</annotation>']) % (wt_root_path, 
+                                                    self.time_revision_id_1))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
         self.assertEqualDiff(expected_xml, out)
@@ -154,12 +153,13 @@ class TestAnnotate(TestCaseWithTransport):
     def test_annotate_cmd_revision3(self):
         out, err = self.run_bzr('annotate --xml hello.txt -r3')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
-        expected_xml = '''<?xml version="1.0"?>
-<annotation workingtree-root="%s" file="hello.txt">
-<entry revno="1" author="test@user" date="%s">my helicopter</entry>
-<entry revno="3" author="user@test" date="%s">your helicopter</entry>
-</annotation>
-''' % (wt_root_path, self.time_revision_id_1, self.time_revision_id_3)
+        expected_xml = (''.join(['<?xml version="1.0"?>',
+                                '<annotation workingtree-root="%s" file="hello.txt">',
+                                '<entry revno="1" author="test@user" date="%s">my helicopter</entry>',
+                                '<entry revno="3" author="user@test" date="%s">your helicopter</entry>',
+                                '</annotation>'])  % (wt_root_path,
+                                                     self.time_revision_id_1, 
+                                                     self.time_revision_id_3))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
         self.assertEqualDiff(expected_xml, out)
@@ -192,10 +192,9 @@ class TestAnnotate(TestCaseWithTransport):
         out, err = self.run_bzr('annotate --xml empty')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
         #TODO: assert xml and elementree (including attributes)'
-        expected_xml = '''<?xml version="1.0"?>
-<annotation workingtree-root="%s" file="empty">
-</annotation>
-''' % (wt_root_path+'tree/',)
+        expected_xml = (''.join(['<?xml version="1.0"?>',
+                                '<annotation workingtree-root="%s" file="empty">',
+                                '</annotation>']) % (wt_root_path+'tree/',))
         self.assertEqual(expected_xml, out)
 
     def test_annotate_nonexistant_file(self):

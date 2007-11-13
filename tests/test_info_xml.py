@@ -296,6 +296,7 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>dirstate</format>
 <format>dirstate-tags</format>
+<format>knitpack-experimental</format>
 </formats>
 <location>
 <light_checkout_root>lightcheckout</light_checkout_root><checkout_of_branch>standalone</checkout_of_branch></location>
@@ -499,6 +500,7 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>dirstate</format>
 <format>dirstate-tags</format>
+<format>knitpack-experimental</format>
 </formats>
 <location>
 <light_checkout_root>lightcheckout</light_checkout_root><checkout_of_branch>standalone</checkout_of_branch></location>
@@ -662,6 +664,7 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>dirstate</format>
 <format>dirstate-tags</format>
+<format>knitpack-experimental</format>
 </formats>
 <location>
 <light_checkout_root>tree/lightcheckout</light_checkout_root><checkout_of_branch>repo/branch</checkout_of_branch><shared_repository>repo</shared_repository></location>
@@ -809,6 +812,7 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>dirstate</format>
 <format>dirstate-tags</format>
+<format>knitpack-experimental</format>
 </formats>
 <location>
 <light_checkout_root>tree/lightcheckout</light_checkout_root><checkout_of_branch>repo/branch</checkout_of_branch><shared_repository>repo</shared_repository></location>
@@ -1300,7 +1304,9 @@ class TestInfoXml(ExternalBase):
             (False, True): 'Lightweight checkout',
             (False, False): 'Checkout',
             }[(shared_repo is not None, light_checkout)]
-        format = {True: '<format>dirstate</format>\n<format>dirstate-tags</format>',
+        format = {True: '<format>dirstate</format>\n' + 
+                        '<format>dirstate-tags</format>\n' + 
+                        '<format>knitpack-experimental</format>',
                   False: '<format>dirstate</format>'}[light_checkout]
         if repo_locked or branch_locked or tree_locked:
             def locked_message(a_bool):

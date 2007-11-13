@@ -21,7 +21,10 @@
 # Contributors:
 #               Martin Albisetti
 
-"""This code is a modified copy from bzrlib.annotate (see there for copyrights and licensing)"""
+"""
+This code is a modified copy from bzrlib.annotate 
+(see there for copyrights and licensing)
+"""
 
 import sys
 
@@ -35,8 +38,9 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
 
     prevanno=''
     last_rev_id = None
-    print >>to_file, '<?xml version="1.0"?>'
-    print >>to_file, '<annotation workingtree-root="%s" %s>' % (wt_root_path, 'file="'+file_path+'"')
+    to_file.write('<?xml version="1.0"?>')
+    to_file.write('<annotation workingtree-root="%s" %s>' % 
+                  (wt_root_path, 'file="'+file_path+'"'))
     if show_ids:
         w = branch.repository.weave_store.get_weave(file_id,
             branch.repository.get_transaction())
@@ -46,9 +50,10 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
                 this = origin
             else:
                 this = ''
-            to_file.write('<entry fid="%s">%s</entry>' % (_escape_cdata(this), _escape_cdata(text)))
+            to_file.write('<entry fid="%s">%s</entry>' % 
+                          (_escape_cdata(this), _escape_cdata(text)))
             last_rev_id = origin
-        print >>to_file, '</annotation>'
+        to_file.write('</annotation>')
         return
 
     annotation = list(_annotate_file(branch, rev_id, file_id))
@@ -57,7 +62,7 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
                     (_escape_cdata(revno_str), _escape_cdata(author), date_str)
         if anno.lstrip() == 'revno="" author="" date=""': 
             anno = prevanno
-        print >>to_file, '<entry %s>%s</entry>' % (anno, _escape_cdata(text))
+        to_file.write('<entry %s>%s</entry>' % (anno, _escape_cdata(text)))
         prevanno = anno
-    print >>to_file, '</annotation>'
+    to_file.write('</annotation>')
 

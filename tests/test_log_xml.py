@@ -26,45 +26,6 @@ from bzrlib.tests import TestCaseInTempDir, TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
 fromstring = elementtree.ElementTree.fromstring
 elementtree_tostring = elementtree.ElementTree.tostring
-from elementtree_builder import (ET, _E)
-
-
-def create_xml(wt, status_dict):
-    E = _E()
-    status = E('status')
-    status.attrib["workingtree_root"] = wt.id2abspath(wt.get_root_id())
-    for key in status_dict.keys():
-        status_kind = E(key)
-        for file_kind, name, attributes in status_dict[key]:
-            kind = E(file_kind, name)
-            for attrib in attributes.keys():
-                kind.attrib[attrib] = attributes[attrib]
-            status_kind.append(kind)
-        status.append(status_kind)
-    return status
-
-XMLLogFormatter = None
-def reset_log_formatter():
-    ## little hack to load XMLLogFormatter class from parent module
-    global XMLLogFormatter
-    bzrlib.plugin.load_plugins()
-    plugins = bzrlib.plugin.plugins()
-    if XMLLogFormatter is None:
-        for p in plugins:
-            if getattr(plugins[p].module, 'plugin_name', None) is not None \
-                and plugins[p].module.plugin_name == 'xmloutput':
-                from sys import path
-                import imp
-                path.append(plugins[p].module.__path__[0])
-                fp, pathname, description = imp.find_module('logxml')
-                XMLLogFormatter = imp.load_module('logxml', fp, pathname, 
-                    description).XMLLogFormatter
-    # reset class variables in XMLLogFormatter
-    XMLLogFormatter.log_count = 0
-    XMLLogFormatter.previous_merge_depth = 0
-    XMLLogFormatter.start_with_merge = False
-    XMLLogFormatter.open_merges = 0
-    XMLLogFormatter.open_logs = 0
 
 class TestLog(ExternalBase):
 
@@ -79,7 +40,6 @@ class TestLog(ExternalBase):
         tree.add('meep.txt')
         tree.commit(message='message3')
         self.full_log_xml = fromstring(self.run_bzr(["log", "--xml", path])[0])
-        reset_log_formatter()
         return tree
 
     def test_log_null_end_revspec(self):
@@ -87,10 +47,12 @@ class TestLog(ExternalBase):
         for revno in self.full_log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1', '2', '3'])
         for message in self.full_log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() in ['message1', 'message2', 'message3'])
+            self.assertTrue(message.text.strip() in 
+                            ['message1', 'message2', 'message3'])
 
         log_xml = fromstring(self.run_bzr("log --xml -r 1..")[0])
-        for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
+        for elem1, elem2 in zip(log_xml.getiterator(), 
+                                self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
             self.assertTrue(elem1.text == elem2.text)
         #self.assertEqualDiff(log_xml, self.full_log_xml)
@@ -99,7 +61,8 @@ class TestLog(ExternalBase):
         self._prepare()
         log_xml = fromstring(self.run_bzr("log --xml -r ..3")[0])
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
+        for elem1, elem2 in zip(log_xml.getiterator(), 
+                                self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
             self.assertTrue(elem1.text == elem2.text)
 
@@ -108,7 +71,8 @@ class TestLog(ExternalBase):
         log_xml = fromstring(self.run_bzr("log --xml -r ..")[0])
         #self.assertEquals(self.full_log, log)
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
+        for elem1, elem2 in zip(log_xml.getiterator(), 
+                                self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
             self.assertTrue(elem1.text == elem2.text)
 
@@ -116,7 +80,8 @@ class TestLog(ExternalBase):
         self._prepare()
         log_xml = fromstring(self.run_bzr("log --xml -r -3..")[0])
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
+        for elem1, elem2 in zip(log_xml.getiterator(), 
+                                self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
             self.assertTrue(elem1.text == elem2.text)
 
@@ -124,7 +89,8 @@ class TestLog(ExternalBase):
         self._prepare()
         log_xml = fromstring(self.run_bzr("log --xml -r -3..-1")[0])
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), self.full_log_xml.getiterator()):
+        for elem1, elem2 in zip(log_xml.getiterator(), 
+                                self.full_log_xml.getiterator()):
             self.assertTrue(elem1.tag == elem2.tag)
             self.assertTrue(elem1.text == elem2.text)
 
@@ -169,7 +135,8 @@ class TestLog(ExternalBase):
         log = self.run_bzr("log --xml -r revno:2:branch1..revno:3:branch2",
                           retcode=3)[0]
         log_xml = fromstring(self.run_bzr("log --xml -r revno:1:branch2..revno:3:branch2")[0])
-        self.assertEqualDiff(elementtree_tostring(self.full_log_xml), elementtree_tostring(log_xml))
+        self.assertEqualDiff(elementtree_tostring(self.full_log_xml), 
+                             elementtree_tostring(log_xml))
         log_xml = fromstring(self.run_bzr("log --xml -r revno:1:branch2")[0])
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1'])
@@ -251,8 +218,9 @@ class TestLogMerges(ExternalBase):
         child_tree.commit(message='merge branch 2')
         parent_tree.merge_from_branch(child_tree.branch)
         parent_tree.commit(message='merge branch 1')
+        smaller_tree.merge_from_branch(child_tree.branch)
+        smaller_tree.commit(message="merge branch 1 (in smallertree)")
         os.chdir('parent')
-        reset_log_formatter()
 
     def test_merges_are_indented_by_level(self):
         self._prepare()
@@ -312,11 +280,13 @@ class TestLogMerges(ExternalBase):
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1', '2'])
         for message in log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() in ['merge branch 1', 'first post'])
+            self.assertTrue(message.text.strip() in 
+                            ['merge branch 1', 'first post'])
         for revno in log_xml.findall('log/merge/log/revno'):
             self.assertTrue(revno.text in ['1.1.2', '1.1.1'])
         for message in log_xml.findall('log/merge/log/message'):
-            self.assertTrue(message.text.strip() in ['merge branch 2', 'branch 1'])
+            self.assertTrue(message.text.strip() in 
+                            ['merge branch 2', 'branch 1'])
         for revno in log_xml.findall('log/merge/log/merge/log/revno'):
             self.assertTrue(revno.text == '1.1.1.1.1')
         for message in log_xml.findall('log/merge/log/merge/log/message'):
@@ -363,7 +333,8 @@ class TestLogMerges(ExternalBase):
             self.assertTrue(revno.text not in ['1.1.1', '2', '1'])
         for message in log_xml.findall('log/message'):
             self.assertTrue(message.text.strip() == 'merge branch 2')
-            self.assertTrue(message.text.strip() not in ['merge branch 1', 'first post', 'branch 1'])
+            self.assertTrue(message.text.strip() not in 
+                            ['merge branch 1', 'first post', 'branch 1'])
         for revno in log_xml.findall('log/merge/log/revno'):
             self.assertTrue(revno.text == '1.1.1.1.1')
         for message in log_xml.findall('log/merge/log/message'):
@@ -415,15 +386,76 @@ class TestLogMerges(ExternalBase):
             self.assertTrue(revno.text in ['1.1.2', '1.1.1'])
             self.assertTrue(revno.text not in ['2', '1'])
         for message in log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() in ['branch 1', 'merge branch 2'])
-            self.assertTrue(message.text.strip() not in ['merge branch 1', 'first post'])
+            self.assertTrue(message.text.strip() in 
+                            ['branch 1', 'merge branch 2'])
+            self.assertTrue(message.text.strip() not in 
+                            ['merge branch 1', 'first post'])
         for revno in log_xml.findall('log/merge/log/revno'):
             self.assertTrue(revno.text == '1.1.1.1.1')
         for message in log_xml.findall('log/merge/log/message'):
             self.assertTrue(message.text.strip() == 'branch 2')
         self.assertEqual('', err)
 
- 
+class TestLogNestedMerges(ExternalBase):
+
+    def _prepare(self):
+        # TODO: find the correct command secuence to get the xml
+        # This is a home-made xml because I don't know how to generate
+        # this particular case of nested merges (which I found that happen
+        # in bzr.dev itself)
+        xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<logs>
+    <log>
+        <revno>1</revno>
+        <committer>guillo &lt;guillo@shire&gt;</committer>
+        <branch-nick>parent</branch-nick>
+        <timestamp>Mon 2007-11-05 00:37:20 -0300</timestamp>
+        <message>first post</message>
+    </log>
+    <log>
+        <revno>2</revno>
+        <committer>guillo &lt;guillo@shire&gt;</committer>
+        <branch-nick>parent</branch-nick>
+        <timestamp>Mon 2007-11-05 00:37:21 -0300</timestamp>
+        <message>merge branch 1</message>
+        <merge>
+            <merge>
+                <log>
+                    <revno>1.1.1</revno>
+                    <committer>guillo &lt;guillo@shire&gt;</committer>
+                    <branch-nick>smallerchild</branch-nick>
+                    <timestamp>Mon 2007-11-05 00:37:21 -0300</timestamp>
+                    <message>merge first post</message>
+                </log>
+            </merge>
+            <log>
+                <revno>1.1</revno>
+                <committer>guillo &lt;guillo@shire&gt;</committer>
+                <branch-nick>child</branch-nick>
+                <timestamp>Mon 2007-11-05 00:37:21 -0300</timestamp>
+                <message>merge branch 2</message>
+            </log>
+        </merge>
+    </log>
+</logs>'''
+        return xml
+    
+    def test_nested_merges(self):
+        log_xml = fromstring(self._prepare())
+        for revno in log_xml.findall('log/revno'):
+            self.assertTrue(revno.text in ['1', '2'])
+        for message in log_xml.findall('log/message'):
+            self.assertTrue(message.text.strip() in 
+                            ['first post', 'merge branch 1'])
+        for revno in log_xml.findall('log/merge/log/revno'):
+            self.assertTrue(revno.text == '1.1')
+        for message in log_xml.findall('log/merge/log/message'):
+            self.assertTrue(message.text.strip() == 'merge branch 2')
+        for revno in log_xml.findall('log/merge/merge/log/revno'):
+            self.assertTrue(revno.text == '1.1.1')
+        for message in log_xml.findall('log/merge/merge/log/message'):
+            self.assertTrue(message.text.strip() == 'merge first post')
+        
 class TestLogEncodings(TestCaseInTempDir):
 
     _mu = u'\xb5'
@@ -448,7 +480,6 @@ class TestLogEncodings(TestCaseInTempDir):
     def setUp(self):
         TestCaseInTempDir.setUp(self)
         self.user_encoding = bzrlib.user_encoding
-        reset_log_formatter()
 
     def tearDown(self):
         bzrlib.user_encoding = self.user_encoding
@@ -538,7 +569,6 @@ class TestLogFile(TestCaseWithTransport):
 
     def setUp(self):
         TestCaseWithTransport.setUp(self)
-        reset_log_formatter()
 
     def test_log_local_branch_file(self):
         """We should be able to log files in local treeless branches"""

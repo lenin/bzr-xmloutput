@@ -19,19 +19,10 @@ class XMLLogFormatter(LogFormatter):
     supports_delta = True
     supports_tags = True
     
-    log_count = 0
-    previous_merge_depth = 0
-    start_with_merge = False
-    open_merges = 0
-    open_logs = 0
-
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
         super(XMLLogFormatter, self).__init__(to_file=to_file, 
                                show_ids=show_ids, show_timezone=show_timezone)
-        log_count = 0
-        previous_merge_depth = 0
         self.log_count = 0
-        start_with_merge = False
         self.start_with_merge = False
         self.nested_merge_count = 0
         self.previous_merge_depth = 0
@@ -60,18 +51,20 @@ class XMLLogFormatter(LogFormatter):
         if revision.merge_depth > 0 and not self.start_with_merge:
             if self.previous_merge_depth < revision.merge_depth:
                 if self.log_count > 0:
-                    merge_depth_diference = revision.merge_depth - self.previous_merge_depth
+                    merge_depth_diference = revision.merge_depth - \
+                        self.previous_merge_depth
                     for m in range(0, merge_depth_diference):
                         actions.append(self.__open_merge)
                     if merge_depth_diference > 1: 
                         self.nested_merge_count += 1
                 elif self.log_count == 0:
                     # first log is inside a merge, we show it as a top level 
-                    # shouwl be better to create a merge tag without parent log?
+                    # we could support  a merge tag without parent log.
                     self.start_with_merge = True
             elif self.previous_merge_depth > revision.merge_depth:
-                ## TODO: testcase for more than one level of nested merges
-                actions.append({self.__close_merge:self.previous_merge_depth - revision.merge_depth})
+                # TODO: testcase for more than one level of nested merges
+                actions.append({self.__close_merge:self.previous_merge_depth - \
+                                                   revision.merge_depth})
                 if self.nested_merge_count > 0:
                     self.nested_merge_count -= 1
                 else:
@@ -80,7 +73,8 @@ class XMLLogFormatter(LogFormatter):
                 if self.open_logs > 0:
                     actions.append(self.__close_log)
         elif self.previous_merge_depth < revision.merge_depth:
-            actions.append({self.__close_merge:self.previous_merge_depth - revision.merge_depth})
+            actions.append({self.__close_merge:self.previous_merge_depth - \
+                                               revision.merge_depth})
             if self.nested_merge_count > 0:
                 self.nested_merge_count -= 1
             else:
@@ -105,21 +99,16 @@ class XMLLogFormatter(LogFormatter):
         self.__log_revision(revision)
 
         self.log_count = self.log_count + 1
-        XMLLogFormatter.log_count = self.log_count
         self.previous_merge_depth = revision.merge_depth
-        XMLLogFormatter.previous_merge_depth =  self.previous_merge_depth
-        XMLLogFormatter.open_logs = self.open_logs
-        XMLLogFormatter.open_merges = self.open_merges
-        XMLLogFormatter.start_with_merge = self.start_with_merge
 
     def __open_merge(self):
-        print >>self.to_file,  '<merge>'
+        self.to_file.write('<merge>')
         self.open_merges += 1
         self.stack.append('merge')
 
     def __close_merge(self, num=1):
         for item in self.stack.__reversed__():
-      	    print >>self.to_file, '</%s>' % item
+      	    self.to_file.write('</%s>' % item)
             self.stack.pop()
             if item == 'merge':
                 self.open_merges -= 1
@@ -130,13 +119,13 @@ class XMLLogFormatter(LogFormatter):
                 self.open_logs -= 1
 
     def __open_log(self):
-        print >>self.to_file, '<log>',
+        self.to_file.write('<log>',)
         self.open_logs = self.open_logs + 1
         self.stack.append('log')
 
     def __close_log(self):
         for item in self.stack.__reversed__():
-       	    print >>self.to_file, '</%s>' % item
+       	    self.to_file.write('</%s>' % item)
             self.stack.pop()
             if item == 'log':
                 self.open_logs -= 1
@@ -144,63 +133,78 @@ class XMLLogFormatter(LogFormatter):
             if item == 'merge':
                 self.open_merges -= 1
 
-    def __debug(self, revision):
-        print >>self.to_file, ''
-        print >>self.to_file, '<debug>'
-        print >>self.to_file, "<prev_merge_depth>%d</prev_merge_depth>" % self.previous_merge_depth,
-        print >>self.to_file, "<merge_depth>%d</merge_depth>" % revision.merge_depth,
-        print >>self.to_file, "<log_count>%d</log_count>" % XMLLogFormatter.log_count,
-        print >>self.to_file, '<start_with_merge>%s</start_with_merge>' % str(self.start_with_merge)
-        print >>self.to_file, "<open_logs>%s</open_logs>" % str(self.open_logs),
-        print >>self.to_file, "<open_merges>%s</open_merges>" % str(self.open_merges),
-        print >>self.to_file, '</debug>'
-
     def __log_revision(self, revision):
         from bzrlib.osutils import format_date
         import StringIO
-        to_file = self.to_file
         if revision.revno is not None:
-            print >>to_file,  '<revno>%s</revno>' % revision.revno,
+            self.to_file.write('<revno>%s</revno>' % revision.revno)
         if revision.tags:
-            print >>to_file,  '<tags>'
+            self.to_file.write('<tags>')
             for tag in revision.tags:
-                print >>to_file, '<tag>%s</tag>' % tag
-            print >>to_file,  '</tags>'
+                self.to_file.write('<tag>%s</tag>' % tag)
+            self.to_file.write('</tags>')
         if self.show_ids:
-            print >>to_file,  '<revisionid>%s</revisionid>' % revision.rev.revision_id,
+            self.to_file.write('<revisionid>%s</revisionid>' %  
+                                revision.rev.revision_id)
             if len(revision.rev.parent_ids) > 0:
-                print >>to_file, '<parents>',
+                self.to_file.write('<parents>')
             for parent_id in revision.rev.parent_ids:
-                print >>to_file, '<parent>%s</parent>' % parent_id,
+                self.to_file.write('<parent>%s</parent>' % parent_id)
             if len(revision.rev.parent_ids) > 0:
-                print >>to_file, '</parents>',
+                self.to_file.write('</parents>')
 
-        print >>to_file,  '<committer>%s</committer>' % \
-                        _escape_cdata(revision.rev.committer),
+        self.to_file.write('<committer>%s</committer>' % \
+                        _escape_cdata(revision.rev.committer))
 
         try:
-            print >>to_file, '<branch-nick>%s</branch-nick>' % \
-                _escape_cdata(revision.rev.properties['branch-nick']),
+            self.to_file.write('<branch-nick>%s</branch-nick>' % \
+                _escape_cdata(revision.rev.properties['branch-nick']))
         except KeyError:
             pass
         date_str = format_date(revision.rev.timestamp,
                                revision.rev.timezone or 0,
                                self.show_timezone)
-        print >>to_file,  '<timestamp>%s</timestamp>' % date_str,
+        self.to_file.write('<timestamp>%s</timestamp>' % date_str)
 
-        print >>to_file,  '<message>',
+        self.to_file.write('<message>')
         if not revision.rev.message:
-            print >>to_file, '(no message)'
+            self.to_file.write('(no message)')
         else:
-            message = revision.rev.message.rstrip('\r\n')
-            print >>to_file, os.linesep.join(_escape_cdata(message).splitlines()),
-        print >>to_file,  '</message>',
+            message = _escape_cdata(revision.rev.message.rstrip('\r\n')).splitlines()
+            self.to_file.write(os.linesep.join(message))
+        self.to_file.write('</message>')
         if revision.delta is not None:
             from statusxml import show_tree_xml
-            print >>to_file,  '<affected-files>',
-            show_tree_xml(revision.delta, to_file, self.show_ids)
-            print >>to_file,  '</affected-files>',
+            self.to_file.write('<affected-files>')
+            show_tree_xml(revision.delta, self.to_file, self.show_ids)
+            self.to_file.write('</affected-files>')
 
+    def begin_log(self):
+        self.to_file.write('<?xml version="1.0" encoding="%s"?>' % \
+                bzrlib.user_encoding)
+        self.to_file.write('<logs>')
+
+    def end_log(self):
+        #if the last logged was inside a merge (and it was only one log)
+        if self.open_logs > 1 and self.open_merges > 0:
+            self.to_file.write('</log>')
+            self.open_logs = self.open_logs - 1
+        if not self.start_with_merge:
+            # In case that the last log was inside a merge we need to close it
+            if self.open_merges > 0:
+                for merge in range(0, self.open_merges):
+                    self.to_file.write('</merge>')
+                    self.open_merges = self.open_merges - 1
+            # to close the last opened log
+            if self.open_logs > 0:
+                self.to_file.write('</log>')
+                self.open_logs = self.open_logs - 1
+        else: 
+            if self.open_logs > 0:
+                self.to_file.write('</log>')
+            self.open_logs = self.open_logs - 1
+        self.to_file.write('</logs>')
+        
 class XMLLineLogFormatter(LineLogFormatter):
 
     def __init__(self, *args, **kwargs):
@@ -220,38 +224,16 @@ class XMLLineLogFormatter(LineLogFormatter):
         if revno:
             # show revno only when is not None
             out.append("<revno>%s</revno>" % revno)
-        out.append('<committer>%s</committer>' % self.truncate(self.short_author(rev), 20))
+        out.append('<committer>%s</committer>' % 
+                   self.truncate(self.short_author(rev), 20))
         out.append('<timestamp>%s</timestamp>' % self.date_string(rev))
         ## TODO: fix hardcoded max_chars 
-        out.append('<message>%s</message>' % self.truncate(rev.get_summary(), max_chars))
+        out.append('<message>%s</message>' % 
+                   self.truncate(rev.get_summary(), max_chars))
         out.append('</log>')
         return " ".join(out).rstrip('\n')
 
 def line_log(rev):
     lf = XMLLineLogFormatter(None)
     return lf.log_string(None, rev)
-
-def open_start_tags(self):
-    self.outf.write('<logs>')
-
-def close_remaining_tags(self):
-    #if the last logged was inside a merge (and it was only one log)
-    if XMLLogFormatter.open_logs > 1 and XMLLogFormatter.open_merges > 0:
-        self.outf.write('</log>')
-        XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
-    if not XMLLogFormatter.start_with_merge:
-        #workaround #2. in the case that the last log weas inside a merge we need to close it
-        if XMLLogFormatter.open_merges > 0:
-            for merge in range(0, XMLLogFormatter.open_merges):
-                self.outf.write('</merge>')
-                XMLLogFormatter.open_merges = XMLLogFormatter.open_merges - 1
-        # workaround
-        if XMLLogFormatter.open_logs > 0:
-            self.outf.write('</log>')
-            XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
-    else: 
-        if XMLLogFormatter.open_logs > 0:
-            self.outf.write('</log>')
-            XMLLogFormatter.open_logs = XMLLogFormatter.open_logs - 1
-    self.outf.write('</logs>')
 

@@ -139,17 +139,20 @@ def _show_related_info_xml(branch, outfile):
         outfile.writelines(locs.get_lines_xml())
         print >> outfile, '</related_branches>'
         
-def _show_format_info_xml(control=None, repository=None, branch=None, working=None):
+def _show_format_info_xml(control=None, repository=None, 
+                          branch=None, working=None):
     """Show known formats for control, working, branch and repository."""
     print '<format>'
     if control:
         print '<control>%s</control>' % control._format.get_format_description()
     if working:
-        print '<working_tree>%s</working_tree>' % working._format.get_format_description()
+        print ('<working_tree>%s</working_tree>' %  
+               working._format.get_format_description())
     if branch:
         print '<branch>%s</branch>' % branch._format.get_format_description()
     if repository:
-        print '<repository>%s</repository>' % repository._format.get_format_description()
+        print ('<repository>%s</repository>' % 
+               repository._format.get_format_description())
     print '</format>'
 
 
@@ -252,11 +255,11 @@ def _show_branch_stats_xml(branch, verbose):
         timestamp, timezone = stats['firstrev']
         age = int((time.time() - timestamp) / 3600 / 24)
         print '<days_old>%d</days_old>' % (age)
-        print '<first_revision>%s</first_revision>' % osutils.format_date(timestamp,
-            timezone)
+        print ('<first_revision>%s</first_revision>' % 
+               osutils.format_date(timestamp, timezone))
         timestamp, timezone = stats['latestrev']
-        print '<latest_revision>%s</latest_revision>' % osutils.format_date(timestamp,
-            timezone)
+        print ('<latest_revision>%s</latest_revision>' % 
+               osutils.format_date(timestamp, timezone))
     print '</branch_history>'
     return stats
 
