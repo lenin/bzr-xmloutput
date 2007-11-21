@@ -80,9 +80,6 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
             if log_format is None:
                 registry = log_formatter_registry
                 log_format = registry.get_default(local_branch)
-            lf = log_format(to_file=self.outf,
-                            show_ids=show_ids,
-                            show_timezone='original')
             if reverse is False:
                 local_extra.reverse()
                 remote_extra.reverse()
@@ -91,11 +88,13 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                                 len(local_extra))
 
                 if local_extra > 0:
+                    lf = log_format(to_file=self.outf,
+                                    show_ids=show_ids,
+                                    show_timezone='original')
                     showlogs(self, iter_log_revisions(local_extra, 
                                     local_branch.repository, 
                                     verbose), lf)
                 self.outf.write('</extra_revisions>')
-                self.outf.write('</missing>')
                 printed_local = True
             else:
                 printed_local = False
@@ -103,17 +102,20 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                 self.outf.write('<missing_revisions size="%d">' %
                                 len(remote_extra))
                 if remote_extra > 0:
+                    lf = log_format(to_file=self.outf,
+                                    show_ids=show_ids,
+                                    show_timezone='original')
                     showlogs(self, iter_log_revisions(remote_extra,
                                     remote_branch.repository, 
                                     verbose), lf)
                 self.outf.write('</missing_revisions>')
-                self.outf.write('</missing>')
                 printed_local = True
             if not remote_extra and not local_extra:
                 status_code = 0
                 # self.outf.write("Branches are up to date.\n")
             else:
                 status_code = 1
+            self.outf.write('</missing>')
         finally:
             remote_branch.unlock()
     finally:
@@ -133,8 +135,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
     return status_code
 
 def showlogs(self, iterator, lf):
-    self.outf.write('<logs>')
+    lf.begin_log()
     for revision in iterator:
         lf.log_revision(revision)
-    self.outf.write('</log>')
-    self.outf.write('</logs>')
+    lf.end_log()
