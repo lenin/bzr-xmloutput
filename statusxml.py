@@ -202,8 +202,7 @@ def show_pending_merges(new, to_file):
                 if mmerge in ignore:
                     continue
                 mm_revision = branch.repository.get_revision(mmerge)
-                prefix = '   '
-                to_file.write(prefix, line_log(mm_revision))
+                to_file.write(line_log(mm_revision))
                 ignore.add(mmerge)
         except errors.NoSuchRevision:
             to_file.write('<pending_merge>%s</pending_merge>' % merge)
