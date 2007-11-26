@@ -1,4 +1,6 @@
 
+from bzrlib.xml_serializer import elementtree as elementtree
+
 ET = elementtree.ElementTree
 
 class _E(object):
