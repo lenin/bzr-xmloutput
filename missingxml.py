@@ -46,8 +46,6 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
         theirs_only=False, log_format=None, long=False, short=False, line=False, 
         show_ids=False, verbose=False, this=False, other=False):
         
-
-        
     if this:
       mine_only = this
     if other:
@@ -135,7 +133,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
     return status_code
 
 def showlogs(self, iterator, lf):
-    lf.begin_log()
+    self.outf.write('<logs>')
     for revision in iterator:
         lf.log_revision(revision)
     lf.end_log()
