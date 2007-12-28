@@ -53,7 +53,7 @@ from bzrlib.log import log_formatter_registry
 import logxml
 from logxml import XMLLogFormatter 
 
-version_info = (0, 3, 0)
+version_info = (0, 4, 0)
 plugin_name = 'xmloutput'
 
 class cmd_status(builtins.cmd_status):
