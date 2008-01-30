@@ -162,7 +162,7 @@ class cmd_plugins(builtins.cmd_plugins):
     __doc__ = builtins.cmd_info.__doc__
 
     @display_command
-    def run(self, xml=False):
+    def run(self, xml=False, verbose=False):
         if xml:
             import bzrlib.plugin
             from inspect import getdoc
