@@ -58,8 +58,8 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
         if other_branch is None:
             raise errors.BzrCommandError("No peer location known"
                                           " or specified.")
-        display_url = urlutils.unescape_for_display(parent,
-                                                self.outf.encoding)
+    display_url = urlutils.unescape_for_display(parent,
+                                            self.outf.encoding)
 
     remote_branch = Branch.open(other_branch)
     
