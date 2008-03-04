@@ -93,7 +93,7 @@ class cmd_status(builtins.cmd_status):
 class cmd_annotate(builtins.cmd_annotate):
     builtins.cmd_annotate.takes_options.append(Option('xml', help='Show annotations in xml format'))
     __doc__ = builtins.cmd_annotate.__doc__
-    encoding_type = 'exact'
+    encoding_type = 'replace'
 
     @display_command
     def run(self, *args, **kwargs):
