@@ -21,5 +21,9 @@ This plugin adds an option (--xml) to generate XML output for builtins commands.
          look the available options running: python setup.py install --help
 
 
+=== TODO ===
+ * tests for plugins and missing
+
 === Contributors ===
  * Martin Albisetti
+

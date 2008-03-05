@@ -34,7 +34,7 @@ from bzrlib import (
     errors,
     )
 import bzrlib.branch
-from bzrlib.osutils import pathjoin
+from bzrlib import osutils
 from bzrlib.revisionspec import RevisionSpec
 from bzrlib.tests import TestCaseWithTransport, TestSkipped
 from bzrlib.workingtree import WorkingTree
@@ -72,7 +72,7 @@ def create_xml(wt, status_dict):
         status.append(status_kind)
     return status
 
-class StatusXML(TestCaseWithTransport):
+class TestXmlStatus(TestCaseWithTransport):
     
     def assertStatus(self, expected_xml_element, working_tree,
         revision=None, specific_files=None):
@@ -84,12 +84,6 @@ class StatusXML(TestCaseWithTransport):
         output_string = self.status_string(working_tree, revision, 
             specific_files)
         output_elem = fromstring(output_string)
-        #print "this>>>>>>"
-        #print output_string
-        #print "<<<<<<<<this"
-        #print "other>>>>>>"
-        #print  elementtree.ElementTree.tostring(expected_xml_element)
-        #print "<<<<<<<<other"
         self.assertEqual(len(output_elem.findall('added/*')), 
             len(expected_xml_element.findall('added/*')))
         self.assertEqual(len(output_elem.findall('modified')), 
@@ -118,7 +112,7 @@ class StatusXML(TestCaseWithTransport):
         return tof.read().decode('utf-8')
 
 
-class BranchStatus(StatusXML):
+class BranchStatus(TestXmlStatus):
     
     def test_branch_statusxml(self):
         """Test basic branch status"""
@@ -174,7 +168,7 @@ class BranchStatus(StatusXML):
         b_2_dir = b.bzrdir.sprout('./copy')
         b_2 = b_2_dir.open_branch()
         wt2 = b_2_dir.open_workingtree()
-        wt.commit(u"\N{TIBETAN DIGIT TWO} Empty commit 2")
+        wt.commit(u"\xe0\xbc\xa2 Empty commit 2")
         wt2.merge_from_branch(wt.branch)
         message = self.status_string(wt2)
         messageElem = fromstring(message.encode('utf-8','replace'))
@@ -261,7 +255,7 @@ class BranchStatus(StatusXML):
         # files that don't exist in either the basis tree or working tree
         # should give an error
         wt = self.make_branch_and_tree('.')
-        out, err = self.run_bzr('status --xml does-not-exist', retcode=3)
+        out, err = self.run_bzr('xmlstatus does-not-exist', retcode=3)
         self.assertContainsRe(err, r'do not exist.*does-not-exist')
 
     def test_statusxml_out_of_date(self):
@@ -291,7 +285,7 @@ class CheckoutStatus(BranchStatus):
         chdir('codir')
         
     def make_branch_and_tree(self, relpath):
-        source = self.make_branch(pathjoin('..', relpath))
+        source = self.make_branch(osutils.pathjoin('..', relpath))
         checkout = bzrdir.BzrDirMetaFormat1().initialize(relpath)
         bzrlib.branch.BranchReferenceFormat().initialize(checkout, source)
         return checkout.create_workingtree()
@@ -303,26 +297,26 @@ class TestStatus(TestCaseWithTransport):
         tree = self.make_branch_and_tree('.')
 
         self.build_tree(['hello.txt'])
-        result = fromstring(self.run_bzr("status --xml")[0])
+        result = fromstring(self.run_bzr("xmlstatus")[0])
         self.assertEquals(result.findall('unknown/file')[0].text, "hello.txt")
 
         tree.add("hello.txt")
-        result = fromstring(self.run_bzr("status --xml")[0])
+        result = fromstring(self.run_bzr("xmlstatus")[0])
         self.assertEquals(result.findall('added/file')[0].text, "hello.txt")
 
         tree.commit(message="added")
-        result = fromstring(self.run_bzr("status --xml -r 0..1")[0])
+        result = fromstring(self.run_bzr("xmlstatus -r 0..1")[0])
         self.assertEquals(result.findall('added/file')[0].text, "hello.txt")
 
-        result = fromstring(self.run_bzr("status --xml -c 1")[0])
+        result = fromstring(self.run_bzr("xmlstatus -c 1")[0])
         self.assertEquals(result.findall('added/file')[0].text, "hello.txt")
 
         self.build_tree(['world.txt'])
-        result = fromstring(self.run_bzr("status --xml -r 0")[0])
+        result = fromstring(self.run_bzr("xmlstatus -r 0")[0])
         self.assertEquals(result.findall('added/file')[0].text, "hello.txt")
         self.assertEquals(result.findall('unknown/file')[0].text, "world.txt")
 
-        result2 = fromstring(self.run_bzr("status --xml -r 0..")[0])
+        result2 = fromstring(self.run_bzr("xmlstatus -r 0..")[0])
         self.assertEquals(elementtree.ElementTree.tostring(result2),
             elementtree.ElementTree.tostring(result))
 
@@ -330,42 +324,43 @@ class TestStatus(TestCaseWithTransport):
         tree = self.make_branch_and_tree('.')
 
         self.build_tree(['hello.txt'])
-        result = fromstring(self.run_bzr("status --xml --versioned")[0])
+        result = fromstring(self.run_bzr("xmlstatus --versioned")[0])
         self.assert_(len(result.findall('unknown/*')) == 0)
 
         tree.add("hello.txt")
-        result = fromstring(self.run_bzr("status --xml --versioned")[0])
+        result = fromstring(self.run_bzr("xmlstatus --versioned")[0])
         self.assertEquals(result.findall('added/file')[0].text, "hello.txt")
 
         tree.commit("added")
-        result = fromstring(self.run_bzr("status --xml --versioned -r 0..1")[0])
+        result = fromstring(self.run_bzr("xmlstatus --versioned -r 0..1")[0])
         self.assertEquals(result.findall('added/file')[0].text, "hello.txt")
 
         self.build_tree(['world.txt'])
-        result = fromstring(self.run_bzr("status --xml --versioned -r 0")[0])
+        result = fromstring(self.run_bzr("xmlstatus --versioned -r 0")[0])
         self.assertEquals(result.findall('added/file')[0].text, "hello.txt")
         self.assert_(len(result.findall('unknown/*')) == 0)
 
-        result2 = fromstring(self.run_bzr("status --xml --versioned -r 0..")[0])
+        result2 = fromstring(self.run_bzr("xmlstatus --versioned -r 0..")[0])
         self.assertEquals(elementtree.ElementTree.tostring(result2),
             elementtree.ElementTree.tostring(result))
 
-    def assertStatusContains(self, xpath, ):
-        """Run status, and assert it contains the given attribute at the 
-           given element"""
-        for key in changes.keys():
-            status_kind = E(key)
-            for file_kind, name, attributes in status_dict[key]:
-                kind = E(file_kind, name)
-                for attrib in attributes.keys():
-                    kind.attrib[attrib] = attributes[attrib]
-                status_kind.append(kind)
-            status.append(status_kind)
-        return status
+    # Not yet implemneted
+    #def assertStatusContains(self, xpath):
+    #    """Run status, and assert it contains the given attribute at the 
+    #       given element"""
+    #    for key in changes.keys():
+    #        status_kind = E(key)
+    #        for file_kind, name, attributes in status_dict[key]:
+    #            kind = E(file_kind, name)
+    #            for attrib in attributes.keys():
+    #                kind.attrib[attrib] = attributes[attrib]
+    #            status_kind.append(kind)
+    #        status.append(status_kind)
+    #    return status
 
-        result = fromstring(self.run_bzr("status --xml")[0])
-        result = self.run_bzr("status --xml")[0]
-        self.assertContainsRe(result, pattern)
+    #    result = fromstring(self.run_bzr("xmlstatus")[0])
+    #    result = self.run_bzr("xmlstatus")[0]
+    #    self.assertContainsRe(result, pattern)
 
     def test_kind_change_xml(self):
         tree = self.make_branch_and_tree('.')
@@ -375,16 +370,16 @@ class TestStatus(TestCaseWithTransport):
         unlink('file')
         self.build_tree(['file/'])
         #self.assertStatusContains('K  file => file/')
-        result = fromstring(self.run_bzr("status --xml")[0])
+        result = fromstring(self.run_bzr("xmlstatus")[0])
         self.assert_(result.findall('kind_changed/*')[0].attrib['oldkind'] == 'file')
         self.assert_(result.findall('kind_changed/*')[0].tag == 'directory')
         tree.rename_one('file', 'directory')
-        result = fromstring(self.run_bzr("status --xml")[0])
+        result = fromstring(self.run_bzr("xmlstatus")[0])
         self.assert_(result.findall('renamed/directory')[0].attrib['oldpath'] == 'file')
         self.assert_(result.findall('renamed/directory')[0].text == 'directory')
         #self.assertStatusContains('RK  file => directory/')
         rmdir('directory')
-        result = fromstring(self.run_bzr("status --xml")[0])
+        result = fromstring(self.run_bzr("xmlstatus")[0])
         self.assert_(result.findall('removed/*')[0].text == 'file')
         #self.assertStatusContains('RD  file => directory')
 
@@ -393,7 +388,7 @@ class TestStatus(TestCaseWithTransport):
         self.assertContainsRe(err, 'one or two revision specifiers')
 
 
-class TestStatusEncodings(StatusXML):
+class TestXmlStatusEncodings(TestXmlStatus):
     
     def setUp(self):
         TestCaseWithTransport.setUp(self)
@@ -421,7 +416,7 @@ class TestStatusEncodings(StatusXML):
         sys.stdout = StringIO()
         bzrlib.user_encoding = 'ascii'
         working_tree = self.make_uncommitted_tree()
-        stdout, stderr = self.run_bzr("status --xml")
+        stdout, stderr = self.run_bzr("xmlstatus")
         messageElem = fromstring(stdout)
         self.assertEquals(messageElem.findall('added/file')[0].text, "hell?")
 
@@ -429,7 +424,7 @@ class TestStatusEncodings(StatusXML):
         sys.stdout = StringIO()
         bzrlib.user_encoding = 'latin-1'
         working_tree = self.make_uncommitted_tree()
-        stdout, stderr = self.run_bzr('status --xml')
+        stdout, stderr = self.run_bzr('xmlstatus')
         messageElem = fromstring(stdout)
         print messageElem.findall('added/file')[0].text.__repr__()
         print u'hell\u00d8'.encode('latin-1').__repr__()
