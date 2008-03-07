@@ -24,7 +24,7 @@ from distutils.core import setup
 
 setup(
     name='bzr-xmloutput',
-    version='0.4.2',
+    version='0.4.3',
     maintainer='Guillermo Gonzalez',
     maintainer_email='guillo.gonzo@gmail.com',
     description="""A Bazaar plugin that provides a option to generate XML output for builtins commands""",

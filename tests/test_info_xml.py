@@ -327,14 +327,10 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
+<size unit="KiB">0</size>
 </repository_stats>
 </info>
-''' % (datestring_first, datestring_first,
-        # poking at _revision_store isn't all that clean, but neither is
-        # having the ui test dependent on the exact overhead of a given store.
-        branch4.repository._revision_store.total_size(
-        branch4.repository.get_transaction())[1] / 1024)
+''' % (datestring_first, datestring_first)
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -501,7 +497,9 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>dirstate</format>
 <format>dirstate-tags</format>
-<format>knitpack-experimental</format>
+<format>pack-0.92</format>
+<format>rich-root</format>
+<format>rich-root-pack</format>
 </formats>
 <location>
 <light_checkout_root>lightcheckout</light_checkout_root><checkout_of_branch>standalone</checkout_of_branch></location>
@@ -1315,6 +1313,8 @@ class TestInfoXml(ExternalBase):
                         '<format>rich-root</format>\n' +
                         '<format>rich-root-pack</format>',
                   False: '<format>dirstate</format>'}[light_checkout]
+        if repo_locked:
+            repo_locked = lco_tree.branch.repository.get_physical_lock_status()
         if repo_locked or branch_locked or tree_locked:
             def locked_message(a_bool):
                 if a_bool:

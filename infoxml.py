@@ -25,27 +25,28 @@
 
 __all__ = ['show_bzrdir_info_xml']
 
-import os
-import time
-import sys
-
+from bzrlib.lazy_import import lazy_import
+lazy_import(globals(), """
+import os, sys, time
 from bzrlib import (
     bzrdir,
     diff,
     errors,
     osutils,
     urlutils,
+    info,
+    missing,
     )
+""")
+
 from bzrlib.errors import (NoWorkingTree, NotBranchError,
                            NoRepositoryPresent, NotLocalUrl)
-from bzrlib.missing import find_unmerged
 from bzrlib.symbol_versioning import (deprecated_function,
         zero_eighteen)
-from bzrlib.info import gather_location_info, describe_format, describe_layout, LocationList, _gather_related_branches;
 
 def get_lines_xml(self):
     return ["<%s>%s</%s>" % (l.replace(' ', '_'), u, l.replace(' ', '_')) for l, u in self.locs ]
-LocationList.get_lines_xml = get_lines_xml
+info.LocationList.get_lines_xml = get_lines_xml
 
 def show_bzrdir_info_xml(a_bzrdir, verbose=False):
     """Output to stdout the 'info' for a_bzrdir."""
@@ -90,8 +91,8 @@ def show_component_info_xml(control, repository, branch=None, working=None,
         verbose = 1
     if verbose is True:
         verbose = 2
-    layout = describe_layout(repository, branch, working)
-    formats = describe_format(control, repository, branch, working).split(' or ')
+    layout = info.describe_layout(repository, branch, working)
+    formats = info.describe_format(control, repository, branch, working).split(' or ')
     print '<layout>%s</layout>' % layout
     print '<formats>'
     if len(formats) > 1:
@@ -100,7 +101,7 @@ def show_component_info_xml(control, repository, branch=None, working=None,
     else:
         print '<format>%s</format>' % formats[0]
     print '</formats>'
-    _show_location_info_xml(gather_location_info(repository, branch, working))
+    _show_location_info_xml(info.gather_location_info(repository, branch, working))
     if branch is not None:
         _show_related_info_xml(branch, sys.stdout)
     if verbose == 0:
@@ -125,7 +126,7 @@ def show_component_info_xml(control, repository, branch=None, working=None,
 def _show_location_info_xml(locs):
     """Show known locations for working, branch and repository."""
     print '<location>'
-    path_list = LocationList(osutils.getcwd())
+    path_list = info.LocationList(osutils.getcwd())
     for name, loc in locs:
         path_list.add_url(name, loc)
     sys.stdout.writelines(path_list.get_lines_xml())
@@ -133,7 +134,7 @@ def _show_location_info_xml(locs):
     
 def _show_related_info_xml(branch, outfile):
     """Show parent and push location of branch."""
-    locs = _gather_related_branches(branch)
+    locs = info._gather_related_branches(branch)
     if len(locs.locs) > 0:
         print >> outfile, '<related_branches>'
         outfile.writelines(locs.get_lines_xml())
@@ -187,7 +188,7 @@ def _show_missing_revisions_branch_xml(branch):
     # Try with inaccessible branch ?
     master = branch.get_master_branch()
     if master:
-        local_extra, remote_extra = find_unmerged(branch, master)
+        local_extra, remote_extra = missing.find_unmerged(branch, master)
         if remote_extra:
             print '<branch_stats>'
             print '<missing_revisions>%d<missing_revisions>' % len(remote_extra)

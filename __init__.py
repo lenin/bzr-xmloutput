@@ -41,18 +41,17 @@ from bzrlib import (
     log,
     workingtree,
     xml_serializer,
-    errors
+    errors,
     )
 
 from bzrlib.workingtree import WorkingTree
 from bzrlib.option import Option
+import logxml
 """)
 
 from bzrlib.commands import display_command, register_command
-from bzrlib.log import log_formatter_registry 
-from logxml import XMLLogFormatter 
 
-version_info = (0, 4, 2)
+version_info = (0, 4, 3)
 plugin_name = 'xmloutput'
 
 class cmd_status(builtins.cmd_status):
@@ -145,7 +144,7 @@ class cmd_missing(builtins.cmd_missing):
         if self.outf is None:
             self.outf = sys.stdout
         
-        if kwargs.has_key('log_format') and kwargs['log_format'] is XMLLogFormatter:
+        if kwargs.has_key('log_format') and kwargs['log_format'] is logxml.XMLLogFormatter:
             show_missing_xml(self, *args, **kwargs) 
         else:
             missing_class.run(self, *args, **kwargs) 
@@ -226,7 +225,7 @@ missing_class = register_command(cmd_missing, decorate=True)
 info_class = register_command(cmd_info, decorate=True)
 plugins_class = register_command(cmd_plugins, decorate=True)
 version_class = register_command(cmd_version, decorate=True)
-log_formatter_registry.register('xml', XMLLogFormatter,
+log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
                               'Detailed XML log format')
 
 def test_suite():

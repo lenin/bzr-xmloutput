@@ -21,12 +21,22 @@
 # Contributors:
 #               Martin Albisetti
 
-import bzrlib
-from bzrlib.diff import _raise_if_nonexistent
-from bzrlib.trace import warning
-import bzrlib.errors as errors
+from bzrlib.lazy_import import lazy_import
+lazy_import(globals(), """
+import os, sys, time
+from bzrlib import (
+    diff,
+    trace,
+    errors,
+    )
+
+
+from bzrlib.osutils import terminal_width
 from bzrlib.xml_serializer import _escape_cdata
-from logxml import line_log
+import logxml
+""")
+
+from bzrlib import user_encoding
 
 def show_tree_status_xml(wt, show_unchanged=None,
                      specific_files=None,
@@ -128,10 +138,9 @@ def show_tree_status_xml(wt, show_unchanged=None,
         old.lock_read()
         new.lock_read()
         try:
-            _raise_if_nonexistent(specific_files, old, new)
+            diff._raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
-            to_file.write('<?xml version="1.0" encoding="%s"?>' % \
-                        bzrlib.user_encoding)
+            to_file.write('<?xml version="1.0" encoding="UTF-8"?>')
             to_file.write('<status workingtree_root="%s">' % \
                         wt.id2abspath(wt.get_root_id()))
             delta = new.changes_from(old, want_unchanged=show_unchanged,
@@ -190,10 +199,9 @@ def show_pending_merges(new, to_file):
     for merge in pending:
         ignore.add(merge)
         try:
-            from bzrlib.osutils import terminal_width
             width = terminal_width()
             m_revision = branch.repository.get_revision(merge)
-            to_file.write(line_log(m_revision))
+            to_file.write(logxml.line_log(m_revision))
             inner_merges = branch.repository.get_ancestry(merge)
             assert inner_merges[0] is None
             inner_merges.pop(0)
@@ -202,7 +210,7 @@ def show_pending_merges(new, to_file):
                 if mmerge in ignore:
                     continue
                 mm_revision = branch.repository.get_revision(mmerge)
-                to_file.write(line_log(mm_revision))
+                to_file.write(logxml.line_log(mm_revision))
                 ignore.add(mmerge)
         except errors.NoSuchRevision:
             to_file.write('<pending_merge>%s</pending_merge>' % merge)

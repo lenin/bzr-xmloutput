@@ -430,7 +430,8 @@ class TestStatusEncodings(StatusXML):
         bzrlib.user_encoding = 'latin-1'
         working_tree = self.make_uncommitted_tree()
         stdout, stderr = self.run_bzr('status --xml')
-        messageElem = fromstring(stdout)
+        ## elementree doesn't care that the xml have encoding=utf-8 
+        messageElem = fromstring(stdout.decode('latin-1', 'strict').encode('utf-8'))
         print messageElem.findall('added/file')[0].text.__repr__()
         print u'hell\u00d8'.encode('latin-1').__repr__()
         self.assertEquals(messageElem.findall('added/file')[0].text.encode('latin-1'), u'hell\u00d8'.encode('latin-1'))
