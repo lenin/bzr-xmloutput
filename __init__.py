@@ -45,12 +45,11 @@ from bzrlib import (
     )
 
 from bzrlib.workingtree import WorkingTree
+from bzrlib.option import Option
 """)
 
-from bzrlib.option import Option
 from bzrlib.commands import display_command, register_command
 from bzrlib.log import log_formatter_registry 
-import logxml
 from logxml import XMLLogFormatter 
 
 version_info = (0, 4, 2)

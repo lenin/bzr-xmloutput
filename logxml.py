@@ -1,18 +1,20 @@
 # -*- encoding: utf-8 -*-
 
-import bzrlib
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
+import bzrlib
 from bzrlib import (
     debug,
     )
+from bzrlib.osutils import format_date
+from bzrlib.xml_serializer import _escape_cdata
+from bzrlib import log
+import StringIO
+import os
 """)
 
-from bzrlib.log import LineLogFormatter, LogFormatter, LogRevision
-from bzrlib.xml_serializer import _escape_cdata
-import os
 
-class XMLLogFormatter(LogFormatter):
+class XMLLogFormatter(log.LogFormatter):
     """ add a --xml format to 'bzr log'"""
 
     supports_merge_revisions = True
@@ -32,17 +34,16 @@ class XMLLogFormatter(LogFormatter):
         self.stack = []
         
     def show(self, revno, rev, delta, tags=None):
-        lr = LogRevision(rev, revno, 0, delta, tags)
+        lr = log.LogRevision(rev, revno, 0, delta, tags)
         return self.log_revision(lr)
 
     def show_merge_revno(self, rev, merge_depth, revno):
         """a call to self._show_helper, XML don't care about formatting """
-        lr = LogRevision(rev, merge_depth=merge_depth, revno=revno)
+        lr = log.LogRevision(rev, merge_depth=merge_depth, revno=revno)
         return self.log_revision(lr)
 
     def log_revision(self, revision):
         """Log a revision, either merged or not."""
-        from bzrlib.osutils import format_date
         to_file = self.to_file
         if self.debug_enabled:
             self.__debug(revision)
@@ -134,8 +135,6 @@ class XMLLogFormatter(LogFormatter):
                 self.open_merges -= 1
 
     def __log_revision(self, revision):
-        from bzrlib.osutils import format_date
-        import StringIO
         if revision.revno is not None:
             self.to_file.write('<revno>%s</revno>' % revision.revno)
         if revision.tags:
@@ -205,7 +204,7 @@ class XMLLogFormatter(LogFormatter):
             self.open_logs = self.open_logs - 1
         self.to_file.write('</logs>')
         
-class XMLLineLogFormatter(LineLogFormatter):
+class XMLLineLogFormatter(log.LineLogFormatter):
 
     def __init__(self, *args, **kwargs):
         from bzrlib.osutils import terminal_width
