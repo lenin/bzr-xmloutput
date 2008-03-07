@@ -53,8 +53,8 @@ class TestLog(ExternalBase):
         log_xml = fromstring(self.run_bzr("log --xml -r 1..")[0])
         for elem1, elem2 in zip(log_xml.getiterator(), 
                                 self.full_log_xml.getiterator()):
-            self.assertTrue(elem1.tag == elem2.tag)
-            self.assertTrue(elem1.text == elem2.text)
+            self.assertEquals(elem1.tag, elem2.tag)
+            self.assertEquals(elem1.text, elem2.text)
         #self.assertEqualDiff(log_xml, self.full_log_xml)
 
     def test_log_null_begin_revspec(self):
@@ -63,8 +63,8 @@ class TestLog(ExternalBase):
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), 
                                 self.full_log_xml.getiterator()):
-            self.assertTrue(elem1.tag == elem2.tag)
-            self.assertTrue(elem1.text == elem2.text)
+            self.assertEquals(elem1.tag, elem2.tag)
+            self.assertEquals(elem1.text, elem2.text)
 
     def test_log_null_both_revspecs(self):
         self._prepare()
@@ -91,8 +91,8 @@ class TestLog(ExternalBase):
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), 
                                 self.full_log_xml.getiterator()):
-            self.assertTrue(elem1.tag == elem2.tag)
-            self.assertTrue(elem1.text == elem2.text)
+            self.assertEquals(elem1.tag, elem2.tag)
+            self.assertEquals(elem1.text, elem2.text)
 
     def test_log_negative_both_revspec_partial(self):
         self._prepare()
@@ -120,8 +120,8 @@ class TestLog(ExternalBase):
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), \
                     self.full_log_xml.getiterator()):
-            self.assertTrue(elem1.tag == elem2.tag)
-            self.assertTrue(elem1.text == elem2.text)
+            self.assertEquals(elem1.tag, elem2.tag)
+            self.assertEquals(elem1.text, elem2.text)
 
     def test_log_reversed_revspecs(self):
         self._prepare()
@@ -166,7 +166,7 @@ class TestLog(ExternalBase):
         
         log_xml = fromstring(self.run_bzr("log --xml -r-1")[0])
         for tag in log_xml.findall('log/tags/tag'):
-            self.assertTrue(tag.text == 'tag3')
+            self.assertEquals(tag.text, 'tag3')
         #self.assertTrue('tags: tag3' in log)
 
         log_xml = fromstring(self.run_bzr("log --xml -r1")[0])
@@ -187,11 +187,11 @@ class TestLog(ExternalBase):
         branch2_tree.commit(message='merge branch 1')
         log_xml = fromstring(self.run_bzr("log --xml -r-1")[0])
         for tag in log_xml.findall('log/merge/log/tags/tag'):
-            self.assertTrue(tag.text == 'tag1')
+            self.assertEquals(tag.text, 'tag1')
         #self.assertContainsRe(log, r'    tags: tag1')
         log_xml = fromstring(self.run_bzr("log --xml -r3.1.1")[0])
         for tag in log_xml.findall('log/tags/tag'):
-            self.assertTrue(tag.text == 'tag1')
+            self.assertEquals(tag.text, 'tag1')
         #self.assertContainsRe(log, r'tags: tag1')
 
     def test_log_limit(self):
@@ -288,9 +288,9 @@ class TestLogMerges(ExternalBase):
             self.assertTrue(message.text.strip() in 
                             ['merge branch 2', 'branch 1'])
         for revno in log_xml.findall('log/merge/log/merge/log/revno'):
-            self.assertTrue(revno.text == '1.1.1.1.1')
+            self.assertEquals(revno.text, '1.2.1')
         for message in log_xml.findall('log/merge/log/merge/log/message'):
-            self.assertTrue(message.text.strip() == 'branch 2')
+            self.assertEquals(message.text.strip(), 'branch 2')
         self.assertEqual('', err)
 
     def test_merges_single_merge_rev(self):
@@ -329,16 +329,16 @@ class TestLogMerges(ExternalBase):
         #out,err = self.run_bzr('log --xml -r1.1.2')
         log_xml = fromstring(out)
         for revno in log_xml.findall('log/revno'):
-            self.assertTrue(revno.text == '1.1.2')
+            self.assertEquals(revno.text, '1.1.2')
             self.assertTrue(revno.text not in ['1.1.1', '2', '1'])
         for message in log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() == 'merge branch 2')
+            self.assertEquals(message.text.strip(), 'merge branch 2')
             self.assertTrue(message.text.strip() not in 
                             ['merge branch 1', 'first post', 'branch 1'])
         for revno in log_xml.findall('log/merge/log/revno'):
-            self.assertTrue(revno.text == '1.1.1.1.1')
+            self.assertEquals(revno.text, '1.2.1')
         for message in log_xml.findall('log/merge/log/message'):
-            self.assertTrue(message.text.strip() == 'branch 2')
+            self.assertEquals(message.text.strip(), 'branch 2')
         self.assertEqual('', err)
 
     def test_merges_partial_range(self):
@@ -391,9 +391,9 @@ class TestLogMerges(ExternalBase):
             self.assertTrue(message.text.strip() not in 
                             ['merge branch 1', 'first post'])
         for revno in log_xml.findall('log/merge/log/revno'):
-            self.assertTrue(revno.text == '1.1.1.1.1')
+            self.assertEquals(revno.text, '1.2.1')
         for message in log_xml.findall('log/merge/log/message'):
-            self.assertTrue(message.text.strip() == 'branch 2')
+            self.assertEquals(message.text.strip(), 'branch 2')
         self.assertEqual('', err)
 
 class TestLogNestedMerges(ExternalBase):
@@ -448,13 +448,13 @@ class TestLogNestedMerges(ExternalBase):
             self.assertTrue(message.text.strip() in 
                             ['first post', 'merge branch 1'])
         for revno in log_xml.findall('log/merge/log/revno'):
-            self.assertTrue(revno.text == '1.1')
+            self.assertEquals(revno.text, '1.1')
         for message in log_xml.findall('log/merge/log/message'):
-            self.assertTrue(message.text.strip() == 'merge branch 2')
+            self.assertEquals(message.text.strip(), 'merge branch 2')
         for revno in log_xml.findall('log/merge/merge/log/revno'):
-            self.assertTrue(revno.text == '1.1.1')
+            self.assertEquals(revno.text, '1.1.1')
         for message in log_xml.findall('log/merge/merge/log/message'):
-            self.assertTrue(message.text.strip() == 'merge first post')
+            self.assertEquals(message.text.strip(), 'merge first post')
         
 class TestLogEncodings(TestCaseInTempDir):
 
@@ -602,7 +602,7 @@ class TestLogFile(TestCaseWithTransport):
         #self.assertNotContainsRe(log, 'revno: 3.1.1\n')
         #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
-            self.assertTrue(revno.text == '1')
+            self.assertEquals(revno.text, '1')
             self.assertTrue(revno.text not in ['2', '3', '3.1.1', '4'])
         log_xml = fromstring(self.run_bzr('log --xml file2')[0])
         #self.assertNotContainsRe(log, 'revno: 1\n')
@@ -621,7 +621,7 @@ class TestLogFile(TestCaseWithTransport):
         #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '2', '3.1.1', '4'])
-            self.assertTrue(revno.text == '3')
+            self.assertEquals(revno.text, '3')
         log_xml = fromstring(self.run_bzr('log --xml -r3.1.1 file2')[0])
         #self.assertNotContainsRe(log, 'revno: 1\n')
         #self.assertNotContainsRe(log, 'revno: 2\n')
@@ -630,7 +630,7 @@ class TestLogFile(TestCaseWithTransport):
         #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '2', '3', '4'])
-            self.assertTrue(revno.text == '3.1.1')
+            self.assertEquals(revno.text, '3.1.1')
         log_xml = fromstring(self.run_bzr('log --xml -r4 file2')[0])
         #self.assertNotContainsRe(log, 'revno: 1\n')
         #self.assertNotContainsRe(log, 'revno: 2\n')
@@ -657,5 +657,5 @@ class TestLogFile(TestCaseWithTransport):
         #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '3', '3.1.1', '4'])
-            self.assertTrue(revno.text == '2')
+            self.assertEquals(revno.text, '2')
 
