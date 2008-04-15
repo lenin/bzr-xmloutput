@@ -33,6 +33,7 @@ from bzrlib import (
 
 from bzrlib.osutils import terminal_width
 from bzrlib.xml_serializer import _escape_cdata
+from bzrlib.trace import warning
 import logxml
 """)
 
