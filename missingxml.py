@@ -32,8 +32,7 @@ from bzrlib import user_encoding
 from bzrlib import ui, urlutils, errors
 from bzrlib.branch import Branch
 from bzrlib.log import LogRevision, log_formatter, log_formatter_registry
-from bzrlib.missing import (
-        iter_log_data, 
+from bzrlib.missing import ( 
         iter_log_revisions, 
         find_unmerged, 
         _shortcut, 
