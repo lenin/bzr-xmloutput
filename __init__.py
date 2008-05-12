@@ -51,7 +51,7 @@ import logxml
 
 from bzrlib.commands import display_command, register_command
 
-version_info = (0, 4, 3)
+version_info = (0, 4, 4)
 plugin_name = 'xmloutput'
 
 class cmd_status(builtins.cmd_status):
