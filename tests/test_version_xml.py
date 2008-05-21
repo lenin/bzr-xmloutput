@@ -32,7 +32,7 @@ fromstring = elementtree.ElementTree.fromstring
 class TestVersionXML(TestCase):
 
     def test_version(self):
-        out = self.run_bzr("version --xml")[0]
+        out = self.run_bzr("xmlversion")[0]
         versionElem = fromstring(out)
         self.assertTrue(len(out) > 0)
         self.assertEquals(1, len(versionElem.findall('bazaar/version')))
@@ -66,7 +66,7 @@ class TestVersionXMLUnicodeOutput(TestCaseInTempDir):
         self.assertEquals(1, len(versionElem.findall('bazaar/log_file')))
 
     def test_command(self):
-        self._check("version --xml")
+        self._check("xmlversion")
 
     def test_unicode_bzr_home(self):
         uni_val, str_val = probe_unicode_in_user_encoding()
@@ -74,7 +74,7 @@ class TestVersionXMLUnicodeOutput(TestCaseInTempDir):
             raise TestSkipped('Cannot find a unicode character that works in'
                               ' encoding %s' % (bzrlib.user_encoding,))
         osutils.set_or_unset_env('BZR_HOME', str_val)
-        out = self.run_bzr("version --xml")[0]
+        out = self.run_bzr("xmlversion")[0]
         self.assertTrue(len(out) > 0)
         versionElem = fromstring(out)
         self.assertEquals(1, len(versionElem.findall('bazaar/configuration')))

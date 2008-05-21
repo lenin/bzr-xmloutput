@@ -40,7 +40,7 @@ class TestInfoXml(ExternalBase):
             location = "C:/i/do/not/exist/"
         else:
             location = "/i/do/not/exist/"
-        out, err = self.run_bzr('info '+location, retcode=3)
+        out, err = self.run_bzr('xmlinfo '+location, retcode=3)
         self.assertEqual(out, '')
         self.assertEqual(err, 'bzr: ERROR: Not a branch: "%s".\n' % location)
 
@@ -53,7 +53,7 @@ class TestInfoXml(ExternalBase):
         tree1.add('a')
         branch1 = tree1.branch
 
-        out, err = self.run_bzr('info --xml standalone')
+        out, err = self.run_bzr('xmlinfo standalone')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone tree</layout>
@@ -67,7 +67,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
-        out, err = self.run_bzr('info standalone --xml -v')
+        out, err = self.run_bzr('xmlinfo standalone -v')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone tree</layout>
@@ -113,7 +113,7 @@ class TestInfoXml(ExternalBase):
         branch2 = branch1.bzrdir.sprout('branch').open_branch()
         branch2.set_push_location(branch1.bzrdir.root_transport.base)
 
-        out, err = self.run_bzr('info branch --xml')
+        out, err = self.run_bzr('xmlinfo branch')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone tree</layout>
@@ -129,7 +129,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
-        out, err = self.run_bzr('info branch --verbose --xml')
+        out, err = self.run_bzr('xmlinfo branch --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone tree</layout>
@@ -183,7 +183,7 @@ class TestInfoXml(ExternalBase):
         branch3 = bzrlib.bzrdir.BzrDir.open('bound').open_branch()
         branch3.bind(branch1)
         bound_tree = branch3.bzrdir.open_workingtree()
-        out, err = self.run_bzr('info --xml -v bound')
+        out, err = self.run_bzr('xmlinfo -v bound')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Checkout</layout>
@@ -239,7 +239,7 @@ class TestInfoXml(ExternalBase):
             format=knit1_format)
         branch4.bind(branch1)
         branch4.bzrdir.open_workingtree().update()
-        out, err = self.run_bzr('info checkout --xml --verbose')
+        out, err = self.run_bzr('xmlinfo checkout --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Checkout</layout>
@@ -289,7 +289,7 @@ class TestInfoXml(ExternalBase):
         # Lightweight checkout (same as above, different branch and repository)
         tree5 = branch1.create_checkout('lightcheckout', lightweight=True)
         branch5 = tree5.branch
-        out, err = self.run_bzr('info --xml -v lightcheckout')
+        out, err = self.run_bzr('xmlinfo -v lightcheckout')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Lightweight checkout</layout>
@@ -342,7 +342,7 @@ class TestInfoXml(ExternalBase):
         datestring_last = format_date(rev.timestamp, rev.timezone)
 
         # Out of date branched standalone branch will not be detected
-        out, err = self.run_bzr('info --xml -v branch')
+        out, err = self.run_bzr('xmlinfo -v branch')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone tree</layout>
@@ -386,7 +386,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Out of date bound branch
-        out, err = self.run_bzr('info --xml -v bound')
+        out, err = self.run_bzr('xmlinfo -v bound')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Checkout</layout>
@@ -439,7 +439,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Out of date checkout
-        out, err = self.run_bzr('info -v --xml checkout')
+        out, err = self.run_bzr('xmlinfo -v checkout')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Checkout</layout>
@@ -490,7 +490,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Out of date lightweight checkout
-        out, err = self.run_bzr('info lightcheckout --xml --verbose')
+        out, err = self.run_bzr('xmlinfo lightcheckout --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Lightweight checkout</layout>
@@ -541,7 +541,7 @@ class TestInfoXml(ExternalBase):
         format = bzrdir.format_registry.make_bzrdir('default')
         branch = self.make_branch('branch')
         repo = branch.repository
-        out, err = self.run_bzr('info --xml branch -v')
+        out, err = self.run_bzr('xmlinfo branch -v')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone branch</layout>
@@ -577,7 +577,7 @@ class TestInfoXml(ExternalBase):
         # Create shared repository
         repo = self.make_repository('repo', shared=True, format=format)
         repo.set_make_working_trees(False)
-        out, err = self.run_bzr('info --xml -v repo')
+        out, err = self.run_bzr('xmlinfo -v repo')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Shared repository</layout>
@@ -606,7 +606,7 @@ class TestInfoXml(ExternalBase):
         repo.bzrdir.root_transport.mkdir('branch')
         branch1 = repo.bzrdir.create_branch_convenience('repo/branch',
             format=format)
-        out, err = self.run_bzr('info --xml -v repo/branch')
+        out, err = self.run_bzr('xmlinfo -v repo/branch')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Repository branch</layout>
@@ -642,12 +642,12 @@ class TestInfoXml(ExternalBase):
         tree2 = branch1.create_checkout('tree/lightcheckout', 
             lightweight=True)
         branch2 = tree2.branch
-        self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout', tree2,
+        self.assertCheckoutStatusOutput('-v tree/lightcheckout', tree2,
                    shared_repo=repo, repo_branch=branch1, verbose=True)
 
         # Create normal checkout
         tree3 = branch1.create_checkout('tree/checkout')
-        self.assertCheckoutStatusOutput('tree/checkout --xml --verbose', tree3,
+        self.assertCheckoutStatusOutput('tree/checkout --verbose', tree3,
             verbose=True,
             light_checkout=False, repo_branch=branch1)
         # Update lightweight checkout
@@ -656,7 +656,7 @@ class TestInfoXml(ExternalBase):
         tree2.commit('commit one')
         rev = repo.get_revision(branch2.revision_history()[0])
         datestring_first = format_date(rev.timestamp, rev.timezone)
-        out, err = self.run_bzr('info tree/lightcheckout --xml --verbose')
+        out, err = self.run_bzr('xmlinfo tree/lightcheckout --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Lightweight checkout</layout>
@@ -708,7 +708,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Out of date checkout
-        out, err = self.run_bzr('info --xml -v tree/checkout')
+        out, err = self.run_bzr('xmlinfo -v tree/checkout')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Checkout</layout>
@@ -755,7 +755,7 @@ class TestInfoXml(ExternalBase):
         tree3.update()
         self.build_tree(['tree/checkout/b'])
         tree3.add('b')
-        out, err = self.run_bzr('info tree/checkout --xml --verbose')
+        out, err = self.run_bzr('xmlinfo tree/checkout --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Checkout</layout>
@@ -806,7 +806,7 @@ class TestInfoXml(ExternalBase):
         # Out of date lightweight checkout
         rev = repo.get_revision(branch1.revision_history()[-1])
         datestring_last = format_date(rev.timestamp, rev.timezone)
-        out, err = self.run_bzr('info tree/lightcheckout --xml --verbose')
+        out, err = self.run_bzr('xmlinfo tree/lightcheckout --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Lightweight checkout</layout>
@@ -859,7 +859,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Show info about shared branch
-        out, err = self.run_bzr('info repo/branch --xml --verbose')
+        out, err = self.run_bzr('xmlinfo repo/branch --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Repository branch</layout>
@@ -897,7 +897,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Show info about repository with revisions
-        out, err = self.run_bzr('info --xml -v repo')
+        out, err = self.run_bzr('xmlinfo -v repo')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Shared repository</layout>
@@ -932,7 +932,7 @@ class TestInfoXml(ExternalBase):
         # Create shared repository with working trees
         repo = self.make_repository('repo', shared=True, format=format)
         repo.set_make_working_trees(True)
-        out, err = self.run_bzr('info --xml -v repo')
+        out, err = self.run_bzr('xmlinfo -v repo')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Shared repository with trees</layout>
@@ -964,7 +964,7 @@ class TestInfoXml(ExternalBase):
         branch2 = branch1.bzrdir.sprout('repo/branch2').open_branch()
 
         # Empty first branch
-        out, err = self.run_bzr('info repo/branch1 --xml --verbose')
+        out, err = self.run_bzr('xmlinfo repo/branch1 --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Repository tree</layout>
@@ -1011,7 +1011,7 @@ class TestInfoXml(ExternalBase):
         tree1.commit('commit one')
         rev = repo.get_revision(branch1.revision_history()[0])
         datestring_first = format_date(rev.timestamp, rev.timezone)
-        out, err = self.run_bzr('info --xml -v repo/branch1')
+        out, err = self.run_bzr('xmlinfo -v repo/branch1')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Repository tree</layout>
@@ -1059,7 +1059,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Out of date second branch
-        out, err = self.run_bzr('info repo/branch2 --xml --verbose')
+        out, err = self.run_bzr('xmlinfo repo/branch2 --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Repository tree</layout>
@@ -1107,7 +1107,7 @@ class TestInfoXml(ExternalBase):
         # Update second branch
         tree2 = branch2.bzrdir.open_workingtree()
         tree2.pull(branch1)
-        out, err = self.run_bzr('info -v --xml repo/branch2')
+        out, err = self.run_bzr('xmlinfo -v repo/branch2')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Repository tree</layout>
@@ -1157,7 +1157,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
 
         # Show info about repository with revisions
-        out, err = self.run_bzr('info --xml -v repo')
+        out, err = self.run_bzr('xmlinfo -v repo')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Shared repository with trees</layout>
@@ -1192,7 +1192,7 @@ class TestInfoXml(ExternalBase):
         # Create shared repository with working trees
         repo = self.make_repository('repo', shared=True, format=format)
         repo.set_make_working_trees(True)
-        out, err = self.run_bzr('info --xml -v repo')
+        out, err = self.run_bzr('xmlinfo -v repo')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Shared repository with trees</layout>
@@ -1220,7 +1220,7 @@ class TestInfoXml(ExternalBase):
         control = repo.bzrdir
         branch = control.create_branch()
         control.create_workingtree()
-        out, err = self.run_bzr('info --xml -v repo')
+        out, err = self.run_bzr('xmlinfo -v repo')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Repository tree</layout>
@@ -1298,9 +1298,9 @@ class TestInfoXml(ExternalBase):
             # We expect this to fail because of locking errors. (A write-locked
             # file cannot be read-locked in the same process).
             # This should be removed when the locking errors are fixed.
-            self.run_bzr_error([], 'info ' + command_string)
+            self.run_bzr_error([], 'xmlinfo ' + command_string)
             return
-        out, err = self.run_bzr('info %s' % command_string)
+        out, err = self.run_bzr('xmlinfo %s' % command_string)
         description = {
             (True, True): 'Lightweight checkout',
             (True, False): 'Repository checkout',
@@ -1431,13 +1431,13 @@ class TestInfoXml(ExternalBase):
         # W B R
 
         # U U U
-        self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout', lco_tree,
+        self.assertCheckoutStatusOutput('-v tree/lightcheckout', lco_tree,
                                         repo_branch=repo_branch,
                                         verbose=True, light_checkout=True)
         # U U L
         lco_tree.branch.repository.lock_write()
         try:
-            self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout',
+            self.assertCheckoutStatusOutput('-v tree/lightcheckout',
             lco_tree, repo_branch=repo_branch,
             repo_locked=True, verbose=True, light_checkout=True)
         finally:
@@ -1445,7 +1445,7 @@ class TestInfoXml(ExternalBase):
         # U L L
         lco_tree.branch.lock_write()
         try:
-            self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout',
+            self.assertCheckoutStatusOutput('-v tree/lightcheckout',
             lco_tree,
             branch_locked=True,
             repo_locked=True,
@@ -1456,7 +1456,7 @@ class TestInfoXml(ExternalBase):
         # L L L
         lco_tree.lock_write()
         try:
-            self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout',
+            self.assertCheckoutStatusOutput('-v tree/lightcheckout',
             lco_tree, repo_branch=repo_branch,
             tree_locked=True,
             branch_locked=True,
@@ -1468,7 +1468,7 @@ class TestInfoXml(ExternalBase):
         lco_tree.lock_write()
         lco_tree.branch.repository.unlock()
         try:
-            self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout',
+            self.assertCheckoutStatusOutput('-v tree/lightcheckout',
             lco_tree, repo_branch=repo_branch,
             tree_locked=True,
             branch_locked=True,
@@ -1480,7 +1480,7 @@ class TestInfoXml(ExternalBase):
         lco_tree.lock_write()
         lco_tree.branch.unlock()
         try:
-            self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout',
+            self.assertCheckoutStatusOutput('-v tree/lightcheckout',
             lco_tree, repo_branch=repo_branch,
             tree_locked=True,
             verbose=True)
@@ -1492,7 +1492,7 @@ class TestInfoXml(ExternalBase):
         lco_tree.branch.unlock()
         lco_tree.branch.repository.lock_write()
         try:
-            self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout',
+            self.assertCheckoutStatusOutput('-v tree/lightcheckout',
             lco_tree, repo_branch=repo_branch,
             tree_locked=True,
             repo_locked=True,
@@ -1505,7 +1505,7 @@ class TestInfoXml(ExternalBase):
         lco_tree.branch.lock_write()
         lco_tree.branch.repository.unlock()
         try:
-            self.assertCheckoutStatusOutput('-v --xml tree/lightcheckout',
+            self.assertCheckoutStatusOutput('-v tree/lightcheckout',
             lco_tree, repo_branch=repo_branch,
             branch_locked=True,
             verbose=True)
@@ -1531,7 +1531,7 @@ class TestInfoXml(ExternalBase):
         # W B R
 
         # U U U
-        out, err = self.run_bzr('info --xml -v branch')
+        out, err = self.run_bzr('xmlinfo -v branch')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone tree</layout>
@@ -1571,7 +1571,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
         # L L L
         tree.lock_write()
-        out, err = self.run_bzr('info --xml -v branch')
+        out, err = self.run_bzr('xmlinfo -v branch')
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>Standalone tree</layout>

@@ -73,8 +73,8 @@ class TestLog(ExternalBase):
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), 
                                 self.full_log_xml.getiterator()):
-            self.assertTrue(elem1.tag == elem2.tag)
-            self.assertTrue(elem1.text == elem2.text)
+            self.assertEquals(elem1.tag, elem2.tag)
+            self.assertEquals(elem1.text, elem2.text)
 
     def test_log_negative_begin_revspec_full_log(self):
         self._prepare()
@@ -82,8 +82,8 @@ class TestLog(ExternalBase):
         #self.assertEqualDiff(self.full_log, log)
         for elem1, elem2 in zip(log_xml.getiterator(), 
                                 self.full_log_xml.getiterator()):
-            self.assertTrue(elem1.tag == elem2.tag)
-            self.assertTrue(elem1.text == elem2.text)
+            self.assertEquals(elem1.tag, elem2.tag)
+            self.assertEquals(elem1.text, elem2.text)
 
     def test_log_negative_both_revspec_full_log(self):
         self._prepare()

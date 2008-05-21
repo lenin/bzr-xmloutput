@@ -31,10 +31,10 @@ from bzrlib.tests import TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
 fromstring = elementtree.ElementTree.fromstring
 
-class TestAnnotate(TestCaseWithTransport):
+class TestXmlAnnotate(TestCaseWithTransport):
 
     def setUp(self):
-        super(TestAnnotate, self).setUp()
+        super(TestXmlAnnotate, self).setUp()
         self.wt = self.make_branch_and_tree('.')
         b = self.wt.branch
         self.build_tree_contents([('hello.txt', 'my helicopter\n'),
@@ -69,12 +69,12 @@ class TestAnnotate(TestCaseWithTransport):
         self.time_revision_id_4 = date_str = time.strftime('%Y%m%d',
                                      time.gmtime(1166050000.00))
 
-    def test_help_annotate(self):
-        """Annotate command exists"""
-        out, err = self.run_bzr('--no-plugins annotate --help')
+    def test_help_xmlannotate(self):
+        """XmlAnnotate command exists"""
+        out, err = self.run_bzr('xmlannotate --help')
 
-    def test_annotate_cmd_xml(self):
-        out, err = self.run_bzr('annotate hello.txt --xml')
+    def test_xmlannotate_cmd(self):
+        out, err = self.run_bzr('xmlannotate hello.txt')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
         expected_xml = (''.join(['<?xml version="1.0"?>',
                         '<annotation workingtree-root="%s" file="hello.txt">',
@@ -92,8 +92,8 @@ class TestAnnotate(TestCaseWithTransport):
         current_elementtree = fromstring(out)
         self.assertEquals(elementtree.ElementTree.tostring(expected_elementtree), elementtree.ElementTree.tostring(current_elementtree))
 
-    def test_annotate_cmd_show_ids(self):
-        out, err = self.run_bzr('annotate hello.txt --xml --show-ids')
+    def test_xmlannotate_cmd_show_ids(self):
+        out, err = self.run_bzr('xmlannotate hello.txt --show-ids')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
         expected_xml = (''.join(['<?xml version="1.0"?>',
                                 '<annotation workingtree-root="%s" file="hello.txt">',
@@ -122,7 +122,7 @@ class TestAnnotate(TestCaseWithTransport):
         #, out)
 
     def test_no_mail(self):
-        out, err = self.run_bzr('annotate --xml nomail.txt')
+        out, err = self.run_bzr('xmlannotate nomail.txt')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
         expected_xml = (''.join(['<?xml version="1.0"?>',
                         '<annotation workingtree-root="%s" file="nomail.txt">',
@@ -135,8 +135,8 @@ class TestAnnotate(TestCaseWithTransport):
         #2   no mail | nomail
         #''', out)
 
-    def test_annotate_cmd_revision(self):
-        out, err = self.run_bzr('annotate --xml hello.txt -r1')
+    def test_xmlannotate_cmd_revision(self):
+        out, err = self.run_bzr('xmlannotate hello.txt -r1')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
         expected_xml = (''.join(['<?xml version="1.0"?>', 
                                 '<annotation workingtree-root="%s" file="hello.txt">', 
@@ -150,8 +150,8 @@ class TestAnnotate(TestCaseWithTransport):
         #1   test@us | my helicopter
         #''', out)
 
-    def test_annotate_cmd_revision3(self):
-        out, err = self.run_bzr('annotate --xml hello.txt -r3')
+    def test_xmlannotate_cmd_revision3(self):
+        out, err = self.run_bzr('xmlannotate hello.txt -r3')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
         expected_xml = (''.join(['<?xml version="1.0"?>',
                                 '<annotation workingtree-root="%s" file="hello.txt">',
@@ -168,28 +168,28 @@ class TestAnnotate(TestCaseWithTransport):
         #3   user@te | your helicopter
         #''', out)
 
-    def test_annotate_cmd_unknown_revision(self):
-        out, err = self.run_bzr('annotate --xml hello.txt -r 10',
+    def test_xmlannotate_cmd_unknown_revision(self):
+        out, err = self.run_bzr('xmlannotate hello.txt -r 10',
                                 retcode=3)
         self.assertEqual('', out)
         self.assertContainsRe(err, 'Requested revision: \'10\' does not exist')
 
-    def test_annotate_cmd_two_revisions(self):
-        out, err = self.run_bzr('annotate --xml hello.txt -r1..2',
+    def test_xmlannotate_cmd_two_revisions(self):
+        out, err = self.run_bzr('xmlannotate hello.txt -r1..2',
                                 retcode=3)
         self.assertEqual('', out)
-        self.assertEqual('bzr: ERROR: bzr annotate --revision takes'
+        self.assertEqual('bzr: ERROR: xmlannotate --revision takes'
                          ' exactly 1 argument\n',
                          err)
 
-    def test_annotate_empty_file(self):
+    def test_xmlannotate_empty_file(self):
         tree = self.make_branch_and_tree('tree')
         self.build_tree_contents([('tree/empty', '')])
         tree.add('empty')
         tree.commit('add empty file')
 
         os.chdir('tree')
-        out, err = self.run_bzr('annotate --xml empty')
+        out, err = self.run_bzr('xmlannotate empty')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
         #TODO: assert xml and elementree (including attributes)'
         expected_xml = (''.join(['<?xml version="1.0"?>',
@@ -197,13 +197,13 @@ class TestAnnotate(TestCaseWithTransport):
                                 '</annotation>']) % (wt_root_path+'tree/',))
         self.assertEqual(expected_xml, out)
 
-    def test_annotate_nonexistant_file(self):
+    def test_xmlannotate_nonexistant_file(self):
         tree = self.make_branch_and_tree('tree')
         self.build_tree(['tree/file'])
         tree.add(['file'])
         tree.commit('add a file')
 
         os.chdir('tree')
-        out, err = self.run_bzr("annotate --xml doesnotexist", retcode=3)
+        out, err = self.run_bzr("xmlannotate doesnotexist", retcode=3)
         self.assertEqual('', out)
         self.assertEqual("bzr: ERROR: doesnotexist is not versioned.\n", err)
