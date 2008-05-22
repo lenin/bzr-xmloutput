@@ -34,12 +34,7 @@ from bzrlib.branch import Branch
 from bzrlib.log import LogRevision, log_formatter, log_formatter_registry
 from bzrlib.missing import ( 
         iter_log_revisions, 
-        find_unmerged, 
-        _shortcut, 
-        _after, 
-        _get_history, 
-        _get_ancestry, 
-        sorted_revisions)
+        find_unmerged) 
 
 def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
         theirs_only=False, log_format=None, long=False, short=False, line=False, 
