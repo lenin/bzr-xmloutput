@@ -19,12 +19,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
 
+
+
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-import socket
-import sys
-#sys.path.append('/Users/guillermo/Projects/bazaar/bzr/dev')
-from bzrlib import commands
+from bzrlib.lazy_import import lazy_import
+lazy_import(globals(), """
+import socket, sys
 from cStringIO import StringIO 
+from bzrlib import commands
+from bzrlib.option import Option
+from bzrlib.commands import display_command
+""")
 
 class BzrXMLRPCServer(SimpleXMLRPCServer):
     
@@ -66,10 +71,16 @@ def run_bzr(argv):
 
 
 class cmd_start_xmlrpc(commands.Command):
-    hidden=True
-    take_args = ['hostane?', 'port?']
+    """Start the xmlrpc service."""
 
-    def run(self, port=8080, hostname='localhost'):
+    hidden=True
+    takes_options = [
+            Option('hostname', argname='HOSTNAME', type=str, help='use the specified hostname, defaults to localhost'),
+            Option('port', argname='PORT', type=int, help='use the specified port, defaults to 11111')
+            ]
+
+    @display_command
+    def run(self, port=11111, hostname='localhost'):
         if hostname is None:
             hostname = socket.gethostname()
         print 'http://' + hostname + ':' + str(port)
