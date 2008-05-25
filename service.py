@@ -66,6 +66,7 @@ def run_bzr(argv):
 
 
 class cmd_start_xmlrpc(commands.Command):
+    hidden=True
     take_args = ['hostane?', 'port?']
 
     def run(self, port=8080, hostname='localhost'):

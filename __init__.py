@@ -45,7 +45,7 @@ from bzrlib import (
     )
 
 from bzrlib.workingtree import WorkingTree
-from bzrlib.option import Option
+from bzrlib.option import Option, custom_help
 import logxml
 import service
 """)
@@ -196,7 +196,7 @@ class cmd_xmlmissing(commands.Command):
         if self.outf is None:
             self.outf = sys.stdout
         
-        show_missing_xml(self, log_format=XMLLogFormatter, *args, **kwargs) 
+        show_missing_xml(self, log_format=logxml.XMLLogFormatter, *args, **kwargs) 
 
 
 class cmd_xmlinfo(commands.Command):
@@ -273,15 +273,57 @@ class cmd_xmlversion(commands.Command):
         show_version_xml(to_file=to_file)
 
 
+class cmd_xmllog(bzrlib.builtins.cmd_log):
+    hidden = True
+    takes_args = ['location?']
+    takes_options = [
+            Option('forward',
+                   help='Show from oldest to newest.'),
+            Option('timezone',
+                   type=str,
+                   help='Display timezone as local, original, or utc.'),
+            custom_help('verbose',
+                   help='Show files changed in each revision.'),
+            'show-ids',
+            'revision',
+            'log-format',
+            Option('message',
+                   short_name='m',
+                   help='Show revisions whose message matches this '
+                        'regular expression.',
+                   type=str),
+            Option('limit',
+                   short_name='l',
+                   help='Limit the output to the first N revisions.',
+                   argname='N',
+                   type=bzrlib.builtins._parse_limit),
+            ]
+    encoding_type = 'replace'
+
+    @display_command
+    def run(self, location=None, timezone='original',
+            verbose=False,
+            show_ids=False,
+            forward=False,
+            revision=None,
+            log_format=None,
+            message=None,
+            limit=None):
+        return bzrlib.builtins.cmd_log.run(self, location, timezone,
+            verbose, show_ids, forward, revision,
+            logxml.XMLLogFormatter, message, limit)
+
+
 register_command(cmd_xmlstatus, decorate=True)
 register_command(cmd_xmlannotate, decorate=True)
 register_command(cmd_xmlmissing, decorate=True)
 register_command(cmd_xmlinfo, decorate=True)
 register_command(cmd_xmlplugins, decorate=True)
 register_command(cmd_xmlversion, decorate=True)
-log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
-                              'Detailed XML log format')
+#log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
+#                              'Detailed XML log format')
 register_command(service.cmd_start_xmlrpc, decorate=False)
+register_command(cmd_xmllog, decorate=True)
 
 
 def test_suite():
