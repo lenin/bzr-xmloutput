@@ -40,6 +40,7 @@ def test_suite():
                      'test_log_xml',
                      'test_annotate_xml',
                      'test_info_xml',
+                     'test_service',
                      ]
     
     loader = TestLoader()

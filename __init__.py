@@ -47,6 +47,7 @@ from bzrlib import (
 from bzrlib.workingtree import WorkingTree
 from bzrlib.option import Option
 import logxml
+import service
 """)
 
 from bzrlib import commands
@@ -280,6 +281,8 @@ register_command(cmd_xmlplugins, decorate=True)
 register_command(cmd_xmlversion, decorate=True)
 log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
                               'Detailed XML log format')
+register_command(service.cmd_start_xmlrpc, decorate=False)
+
 
 def test_suite():
     import tests
