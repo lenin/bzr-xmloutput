@@ -29,7 +29,10 @@ from cStringIO import StringIO
 from bzrlib import commands
 from bzrlib.option import Option
 from bzrlib.commands import display_command
+import os
 """)
+
+run_dir = os.getcwdu()
 
 class BzrXMLRPCServer(SimpleXMLRPCServer):
     
@@ -61,12 +64,14 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
         return 'world!'
 
 
-def run_bzr(argv):
+def run_bzr(argv, workdir):
+    os.chdir(workdir)
     sys.stdout = StringIO()
     sys.stderr = StringIO()
     return_val = (commands.main(argv), sys.stdout.getvalue(), sys.stderr.getvalue())
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
+    os.chdir(run_dir)
     return return_val
 
 

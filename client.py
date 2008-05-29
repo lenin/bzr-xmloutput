@@ -28,11 +28,12 @@ server = Server("http://localhost:11111")
 try:
     import sys
     args = ['bzr']
-    [args.append(arg) for arg in sys.argv[1:]]
-    exit_val, out, err = server.run_bzr(args)
+    [args.append(arg) for arg in sys.argv[1:-1]]
+    exit_val, out, err = server.run_bzr(args, sys.argv[-1])
     sys.stdout.write(out)
     sys.stderr.write(str(err))
     sys.exit(exit_val)
 except Error, v:
+    raise v
     sys.stderr.write(v.__repr__())
 
