@@ -1,15 +1,15 @@
 == bzr-xmloutput ==
 
-This plugin adds an option (--xml) to generate XML output for builtins commands.
+This plugin adds an commands (matching some builtins commands) with xml prefix that generates XML output.
 
 === Supported commands ===
- * log
- * status
- * annotate
- * missing
- * info
- * plugins
- * version
+ * xmllog
+ * xmlstatus
+ * xmlannotate
+ * xmlmissing
+ * xmlinfo
+ * xmlplugins
+ * xmlversion
 
 === How to install ===
  There are two main options to install Bazaar plugins, from source or directly 

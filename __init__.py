@@ -53,8 +53,9 @@ import service
 from bzrlib import commands
 from bzrlib.commands import display_command, register_command
 
-version_info = (0, 4, 4)
+version_info = (0, 5, 0)
 plugin_name = 'xmloutput'
+
 
 class cmd_xmlstatus(commands.Command):
     """Display status summary.
@@ -117,6 +118,7 @@ class cmd_xmlstatus(commands.Command):
             specific_files=file_list, revision=revision,
             to_file=to_file, versioned=versioned)
 
+
 class cmd_xmlannotate(commands.Command):
     """Show the origin of each line in a file.
 
@@ -168,6 +170,7 @@ class cmd_xmlannotate(commands.Command):
             else:
                 branch.unlock()
 
+
 class cmd_xmlmissing(commands.Command):
     """Show unmerged/unpulled revisions between two branches.
     
@@ -183,7 +186,6 @@ class cmd_xmlmissing(commands.Command):
             Option('theirs-only',
                    'Display changes in the remote branch only.'),
             Option('other', 'Same as --theirs-only.'),
-            'log-format',
             'show-ids',
             'verbose'
             ]
