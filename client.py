@@ -22,18 +22,19 @@
 
 from xmlrpclib import Server, Error
 import socket
+import os, sys
 
 server = Server("http://localhost:11111")
 
 try:
-    import sys
     args = ['bzr']
-    [args.append(arg) for arg in sys.argv[1:-1]]
-    exit_val, out, err = server.run_bzr(args, sys.argv[-1])
+    [args.append(arg) for arg in sys.argv[1:]]
+    exit_val, out, err = server.run_bzr(args, os.getcwd())
     sys.stdout.write(out)
-    sys.stderr.write(str(err))
+    sys.stderr.write(err)
+    sys.stderr.flush();
+    sys.stdout.flush();
     sys.exit(exit_val)
 except Error, v:
-    raise v
     sys.stderr.write(v.__repr__())
-
+    raise v

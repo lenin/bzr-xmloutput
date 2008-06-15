@@ -26,9 +26,12 @@ from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import socket, sys
 from cStringIO import StringIO 
+import bzrlib
 from bzrlib import commands
 from bzrlib.option import Option
 from bzrlib.commands import display_command
+from bzrlib import trace
+from bzrlib import errors
 import os
 """)
 
@@ -68,11 +71,33 @@ def run_bzr(argv, workdir):
     os.chdir(workdir)
     sys.stdout = StringIO()
     sys.stderr = StringIO()
-    return_val = (commands.main(argv), sys.stdout.getvalue(), sys.stderr.getvalue())
+    exitval = custom_commands_main(argv)
+    return_val = (exitval, sys.stdout.getvalue(), sys.stderr.getvalue())
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
     os.chdir(run_dir)
     return return_val
+
+
+def custom_commands_main(argv):
+    import bzrlib.ui
+    from bzrlib.ui.text import TextUIFactory
+    bzrlib.ui.ui_factory = TextUIFactory()
+    # suppress warnings
+    bzrlib.symbol_versioning.suppress_deprecation_warnings(override=False)
+    try:
+        argv = [a.decode(bzrlib.user_encoding) for a in argv[1:]]
+        ret = commands.run_bzr(argv)
+        return ret
+    except errors.BzrError, e:
+        sys.stderr.write(str(XMLError(e)))
+        return errors.EXIT_ERROR
+    except Exception, e:
+        print str(e)
+        return errors.EXIT_ERROR
+    finally:
+        sys.stderr.flush();
+        sys.stdout.flush();
 
 
 class cmd_start_xmlrpc(commands.Command):
@@ -91,4 +116,28 @@ class cmd_start_xmlrpc(commands.Command):
         print 'http://' + hostname + ':' + str(port)
         self.server = BzrXMLRPCServer((hostname, port))
         self.server.serve_forever()
+
+class XMLError(errors.BzrError):
+    internal_error = False
+
+    def __init__(self, error):
+        self.error = error
+
+    def __str__(self):
+        xml = '<?xml version="1.0" encoding="%s"?>' % bzrlib.user_encoding
+        xml += '<error>%s</error>' % self.get_cause_xml()
+        return xml
+    
+    def get_cause_xml(self):
+        s = '<class>%s</class><dict>%s</dict>' \
+                '<message>%s</message>' \
+                % (self.error.__class__.__name__,
+                   self._get_dict_as_xml(self.error.__dict__),
+                   str(self.error))
+        return s
+                   
+    def _get_dict_as_xml(self, dict):
+        return ''.join(['<key>%s</key><value>%s</value>' % (key,val) \
+                    for key, val in dict.iteritems()])
+
 
