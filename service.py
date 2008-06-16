@@ -41,8 +41,8 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
     
     finished=False
 
-    def __init__(self, args):
-        SimpleXMLRPCServer.__init__(self, args)
+    def __init__(self, addr, logRequests=False):
+        SimpleXMLRPCServer.__init__(self, addr=addr, logRequests=logRequests)
         self.register_function(run_bzr, 'run_bzr')
         self.register_function(self.shutdown, 'quit')
         self.register_function(self.hello)
@@ -105,17 +105,25 @@ class cmd_start_xmlrpc(commands.Command):
 
     hidden=True
     takes_options = [
-            Option('hostname', argname='HOSTNAME', type=str, help='use the specified hostname, defaults to localhost'),
-            Option('port', argname='PORT', type=int, help='use the specified port, defaults to 11111')
+            Option('hostname', argname='HOSTNAME', type=str, 
+                help='use the specified hostname, defaults to localhost'),
+            Option('port', argname='PORT', type=int, 
+                help='use the specified port, defaults to 11111'),
+            'verbose',
             ]
 
     @display_command
-    def run(self, port=11111, hostname='localhost'):
+    def run(self, port=11111, hostname='localhost', verbose=False):
         if hostname is None:
             hostname = socket.gethostname()
-        print 'http://' + hostname + ':' + str(port)
-        self.server = BzrXMLRPCServer((hostname, port))
+
+        if verbose:
+            self.outf.write('Listening on http://' + hostname + ':' + str(port))
+            self.outf.flush()
+
+        self.server = BzrXMLRPCServer((hostname, port), logRequests=verbose)
         self.server.serve_forever()
+
 
 class XMLError(errors.BzrError):
     internal_error = False

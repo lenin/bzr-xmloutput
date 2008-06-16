@@ -132,7 +132,7 @@ class TestXmlRpcServer(tests.TestCase):
         self.assertEquals(response, "world!")
         
     def test_run_bzr(self):
-        exit, out, err = self.client.run_bzr(['bzr', 'xmlversion'])
+        exit, out, err = self.client.run_bzr(['bzr', 'xmlversion'], '.')
         self.assertEquals(exit, 0)
         self.assertNotEquals(out, "")
         self.assertEquals(err, "")
