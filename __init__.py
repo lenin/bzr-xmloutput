@@ -275,7 +275,7 @@ class cmd_xmlversion(commands.Command):
         show_version_xml(to_file=to_file)
 
 
-class cmd_xmllog(bzrlib.builtins.cmd_log):
+class cmd_xmllog(builtins.cmd_log):
     hidden = True
     takes_args = ['location?']
     takes_options = [
@@ -311,7 +311,7 @@ class cmd_xmllog(bzrlib.builtins.cmd_log):
             log_format=None,
             message=None,
             limit=None):
-        return bzrlib.builtins.cmd_log.run(self, location, timezone,
+        return builtins.cmd_log.run(self, location, timezone,
             verbose, show_ids, forward, revision,
             logxml.XMLLogFormatter, message, limit)
 
