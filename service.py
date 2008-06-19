@@ -22,6 +22,7 @@
 
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
+from errors import XMLError
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import socket, sys
@@ -67,14 +68,23 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
         return 'world!'
 
 
+def redirect_output(func):
+    def wrapper(*args, **kwargs):
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+        try:
+            return func(*args, **kwargs)
+        finally:
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+    return wrapper
+
+
+@redirect_output
 def run_bzr(argv, workdir):
     os.chdir(workdir)
-    sys.stdout = StringIO()
-    sys.stderr = StringIO()
     exitval = custom_commands_main(argv)
     return_val = (exitval, sys.stdout.getvalue(), sys.stderr.getvalue())
-    sys.stdout = sys.__stdout__
-    sys.stderr = sys.__stderr__
     os.chdir(run_dir)
     return return_val
 
@@ -93,7 +103,7 @@ def custom_commands_main(argv):
         sys.stderr.write(str(XMLError(e)))
         return errors.EXIT_ERROR
     except Exception, e:
-        print str(e)
+        sys.stderr.write(str(e))
         return errors.EXIT_ERROR
     finally:
         sys.stderr.flush();
@@ -123,29 +133,5 @@ class cmd_start_xmlrpc(commands.Command):
 
         self.server = BzrXMLRPCServer((hostname, port), logRequests=verbose)
         self.server.serve_forever()
-
-
-class XMLError(errors.BzrError):
-    internal_error = False
-
-    def __init__(self, error):
-        self.error = error
-
-    def __str__(self):
-        xml = '<?xml version="1.0" encoding="%s"?>' % bzrlib.user_encoding
-        xml += '<error>%s</error>' % self.get_cause_xml()
-        return xml
-    
-    def get_cause_xml(self):
-        s = '<class>%s</class><dict>%s</dict>' \
-                '<message>%s</message>' \
-                % (self.error.__class__.__name__,
-                   self._get_dict_as_xml(self.error.__dict__),
-                   str(self.error))
-        return s
-                   
-    def _get_dict_as_xml(self, dict):
-        return ''.join(['<key>%s</key><value>%s</value>' % (key,val) \
-                    for key, val in dict.iteritems()])
 
 

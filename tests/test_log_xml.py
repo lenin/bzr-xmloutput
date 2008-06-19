@@ -125,8 +125,13 @@ class TestLog(ExternalBase):
 
     def test_log_reversed_revspecs(self):
         self._prepare()
-        self.run_bzr_error(('bzr: ERROR: Start revision must be older than '
-                            'the end revision.\n',),
+        #self.run_bzr_error(('<?xml version="1.0" encoding="UTF-8"?><error>'
+        #    '<class>BzrCommandError</class><dict><key>msg</key><value>'
+        #    'Start revision must be older than the end revision.</value>'
+        #    '</dict><message>Start revision must be older than the end '
+        #    'revision.</message></error>',),
+        self.run_bzr_error(('Start revision must be older than '
+            'the end revision.'),
                            ['xmllog', '-r3..1'])
 
     def test_log_revno_n_path(self):

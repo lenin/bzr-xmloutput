@@ -178,9 +178,11 @@ class TestXmlAnnotate(TestCaseWithTransport):
         out, err = self.run_bzr('xmlannotate hello.txt -r1..2',
                                 retcode=3)
         self.assertEqual('', out)
-        self.assertEqual('bzr: ERROR: xmlannotate --revision takes'
-                         ' exactly 1 argument\n',
-                         err)
+        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><error><class>'
+                'BzrCommandError</class><dict><key>msg</key><value>xmlannotate'
+                ' --revision takes exactly 1 argument</value></dict><message>'
+                'xmlannotate --revision takes exactly 1 argument</message>'
+                '</error>',err)
 
     def test_xmlannotate_empty_file(self):
         tree = self.make_branch_and_tree('tree')
@@ -206,4 +208,9 @@ class TestXmlAnnotate(TestCaseWithTransport):
         os.chdir('tree')
         out, err = self.run_bzr("xmlannotate doesnotexist", retcode=3)
         self.assertEqual('', out)
-        self.assertEqual("bzr: ERROR: doesnotexist is not versioned.\n", err)
+        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><error><class>'
+                'NotVersionedError</class><dict><key>path</key><value>'
+                'doesnotexist</value><key>_preformatted_string</key><value>'
+                'None</value><key>context_info</key><value></value></dict>'
+                '<message>doesnotexist is not versioned.</message></error>', 
+                err)

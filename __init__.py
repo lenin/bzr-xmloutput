@@ -41,7 +41,7 @@ from bzrlib import (
     log,
     workingtree,
     xml_serializer,
-    errors,
+    errors
     )
 
 from bzrlib.workingtree import WorkingTree
@@ -50,6 +50,7 @@ import logxml
 import service
 """)
 
+from xml_errors import handle_error_xml
 from bzrlib import commands
 from bzrlib.commands import display_command, register_command
 
@@ -108,6 +109,7 @@ class cmd_xmlstatus(commands.Command):
     encoding_type = 'replace'
 
     @display_command
+    @handle_error_xml
     def run(self, file_list=None, revision=None, versioned=False):
         from statusxml import show_tree_status_xml
         tree, file_list = builtins.tree_files(file_list)
@@ -135,6 +137,7 @@ class cmd_xmlannotate(commands.Command):
     encoding_type = 'exact'
 
     @display_command
+    @handle_error_xml
     def run(self, filename, revision=None, show_ids=False):
         from annotatexml import annotate_file_xml
         wt, branch, relpath = \
@@ -148,7 +151,7 @@ class cmd_xmlannotate(commands.Command):
             if revision is None:
                 revision_id = branch.last_revision()
             elif len(revision) != 1:
-                raise errors.BzrCommandError(
+                raise bzrlib.errors.BzrCommandError(
                     'xmlannotate --revision takes exactly 1 argument')
             else:
                 revision_id = revision[0].in_history(branch).rev_id
@@ -158,7 +161,8 @@ class cmd_xmlannotate(commands.Command):
             else:
                 file_id = tree.path2id(relpath)
             if file_id is None:
-                raise errors.NotVersionedError(filename)
+                raise bzrlib.errors.NotVersionedError(filename)
+
             file_version = tree.inventory[file_id].revision
             # always run with --all and --long option (to get the author of each line)
             annotate_file_xml(branch=branch, rev_id=file_version, 
@@ -192,6 +196,7 @@ class cmd_xmlmissing(commands.Command):
     encoding_type = 'replace'
 
     @display_command
+    @handle_error_xml
     def run(self, *args, **kwargs):
         from missingxml import show_missing_xml
         
@@ -216,6 +221,7 @@ class cmd_xmlinfo(commands.Command):
     encoding_type = 'replace'
     
     @display_command
+    @handle_error_xml
     def run(self, *args, **kwargs):
         location = None
         if kwargs.has_key('location'):
@@ -240,6 +246,7 @@ class cmd_xmlplugins(commands.Command):
     takes_options = ['verbose']
 
     @display_command
+    @handle_error_xml
     def run(self, *args, **kwargs):
         import bzrlib.plugin
         from inspect import getdoc
@@ -267,6 +274,7 @@ class cmd_xmlversion(commands.Command):
     encoding_type = 'replace'
 
     @display_command
+    @handle_error_xml
     def run(self, *args, **kwargs):
         from versionxml import show_version_xml
         to_file = self.outf
@@ -288,7 +296,6 @@ class cmd_xmllog(builtins.cmd_log):
                    help='Show files changed in each revision.'),
             'show-ids',
             'revision',
-            'log-format',
             Option('message',
                    short_name='m',
                    help='Show revisions whose message matches this '
@@ -303,17 +310,52 @@ class cmd_xmllog(builtins.cmd_log):
     encoding_type = 'replace'
 
     @display_command
+    @handle_error_xml
     def run(self, location=None, timezone='original',
             verbose=False,
             show_ids=False,
             forward=False,
             revision=None,
-            log_format=None,
             message=None,
             limit=None):
         return builtins.cmd_log.run(self, location, timezone,
             verbose, show_ids, forward, revision,
             logxml.XMLLogFormatter, message, limit)
+
+
+class cmd_xmlls(builtins.cmd_ls):
+    """XML representation of the list of files in a tree.
+    """
+
+    _see_also = ['xmlstatus']
+    takes_args = ['path?']
+    # TODO: Take a revision or remote path and list that tree instead.
+    takes_options = [
+            'verbose',
+            'revision',
+            Option('non-recursive',
+                   help='Don\'t recurse into subdirectories.'),
+            Option('from-root',
+                   help='Print paths relative to the root of the branch.'),
+            Option('unknown', help='Print unknown files.'),
+            Option('versioned', help='Print versioned files.',
+                   short_name='V'),
+            Option('ignored', help='Print ignored files.'),
+            Option('kind',
+                   help='List entries of a particular kind: file, directory, symlink.',
+                   type=unicode),
+            'show-ids',
+            ]
+    encoding_type = 'replace'
+
+
+    @display_command
+    @handle_error_xml
+    def run(self, *args, **kwargs):
+        import lsxml
+        self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
+                bzrlib.user_encoding)
+        lsxml.show_ls_xml(self.outf, *args, **kwargs)
 
 
 register_command(cmd_xmlstatus, decorate=True)
@@ -324,8 +366,12 @@ register_command(cmd_xmlplugins, decorate=True)
 register_command(cmd_xmlversion, decorate=True)
 register_command(service.cmd_start_xmlrpc, decorate=False)
 register_command(cmd_xmllog, decorate=True)
+register_command(cmd_xmlls, decorate=True)
+log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
+                              'Detailed XML log format')
 
 
 def test_suite():
     import tests
     return tests.test_suite()
+
