@@ -22,7 +22,7 @@
 
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
-from errors import XMLError
+from xml_errors import XMLError
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import socket, sys
