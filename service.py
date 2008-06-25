@@ -93,8 +93,6 @@ def custom_commands_main(argv):
     import bzrlib.ui
     from bzrlib.ui.text import TextUIFactory
     bzrlib.ui.ui_factory = TextUIFactory()
-    # suppress warnings
-    bzrlib.symbol_versioning.suppress_deprecation_warnings(override=False)
     try:
         argv = [a.decode(bzrlib.user_encoding) for a in argv[1:]]
         ret = commands.run_bzr(argv)
