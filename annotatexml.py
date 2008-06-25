@@ -31,17 +31,23 @@ import sys
 from bzrlib.annotate import _annotate_file
 from bzrlib.xml_serializer import _escape_cdata
 from bzrlib import user_encoding
+from bzrlib import osutils
+
+empty_annotation = 'revno="" author="" date=""'
 
 def annotate_file_xml(branch, rev_id, file_id, to_file=None, 
             show_ids=False, wt_root_path=None, file_path=None):
     if to_file is None:
         to_file = sys.stdout
-
+    
+    encoding = getattr(to_file, 'encoding', None) or \
+            osutils.get_terminal_encoding()
     prevanno=''
     last_rev_id = None
     to_file.write('<?xml version="1.0"?>')
-    to_file.write('<annotation workingtree-root="%s" %s>' % 
-                  (wt_root_path, 'file="'+file_path+'"'))
+    to_file.write(('<annotation workingtree-root="%s" %s>' % \
+                  (wt_root_path.encode(encoding), 
+                  'file="%s"' % file_path)).encode(encoding, 'replace'))
     if show_ids:
         w = branch.repository.weave_store.get_weave(file_id,
             branch.repository.get_transaction())
@@ -64,9 +70,10 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
     for (revno_str, author, date_str, line_rev_id, text) in annotation:
         anno = 'revno="%s" author="%s" date="%s"' % \
                     (_escape_cdata(revno_str), _escape_cdata(author), date_str)
-        if anno.lstrip() == 'revno="" author="" date=""': 
+        if anno.lstrip() == empty_annotation: 
             anno = prevanno
-        to_file.write('<entry %s>%s</entry>' % (anno, _escape_cdata(text.decode(user_encoding))))
+        to_file.write('<entry %s>%s</entry>' % \
+                       (anno, _escape_cdata(text)))
         prevanno = anno
     to_file.write('</annotation>')
 

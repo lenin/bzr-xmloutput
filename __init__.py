@@ -91,16 +91,19 @@ class cmd_status(builtins.cmd_status):
 class cmd_annotate(builtins.cmd_annotate):
     builtins.cmd_annotate.takes_options.append(Option('xml', help='Show annotations in xml format'))
     __doc__ = builtins.cmd_annotate.__doc__
-    encoding_type = 'replace'
+    
+    encoding_type = 'exact'
 
     @display_command
     def run(self, *args, **kwargs):
         if kwargs.has_key('xml') and kwargs['xml']:
             from annotatexml import annotate_file_xml
-            tree, relpath = WorkingTree.open_containing(kwargs['filename'])
-            wt_root_path = tree.id2abspath(tree.get_root_id())
-            branch = tree.branch
-            branch.lock_read()
+            wt, branch, relpath = \
+                bzrdir.BzrDir.open_containing_tree_or_branch(kwargs['filename'])
+            if wt is not None:
+                wt.lock_read()
+            else:
+                branch.lock_read()
             try:
                 revision = None
                 if kwargs.has_key('revision'):
@@ -114,23 +117,24 @@ class cmd_annotate(builtins.cmd_annotate):
                     raise errors.BzrCommandError('bzr annotate --revision takes exactly 1 argument')
                 else:
                     revision_id = revision[0].in_history(branch).rev_id
-                file_id = tree.path2id(relpath)
+                tree = branch.repository.revision_tree(revision_id)
+                file_id = wt.path2id(relpath)
                 if file_id is None:
                     raise errors.NotVersionedError(filename)
-                tree = branch.repository.revision_tree(revision_id)
                 file_version = tree.inventory[file_id].revision
                 # always run with --all and --long option (to get the author of each line)
-                to_file = self.outf
-                if to_file is None:
-                    to_file = sys.stdout
+                wt_root_path = wt.id2abspath(tree.get_root_id())
                 annotate_file_xml(branch=branch, rev_id=file_version, 
-                        file_id=file_id, to_file=to_file,
+                        file_id=file_id, to_file=self.outf,
                         show_ids=kwargs.has_key('show_ids') and kwargs['show_ids'], 
                         wt_root_path=wt_root_path, file_path=relpath)
             finally:
-                branch.unlock()
+                if wt is not None:
+                    wt.unlock()
+                else:
+                    branch.unlock()
         else:
-            annotate_class.run(self, *args, **kwargs)
+            builtins.cmd_annotate.run(self, *args, **kwargs)
 
 
 class cmd_missing(builtins.cmd_missing):
@@ -147,7 +151,7 @@ class cmd_missing(builtins.cmd_missing):
         if kwargs.has_key('log_format') and kwargs['log_format'] is logxml.XMLLogFormatter:
             show_missing_xml(self, *args, **kwargs) 
         else:
-            missing_class.run(self, *args, **kwargs) 
+            builtins.cmd_missing.run(self, *args, **kwargs) 
 
 
 class cmd_info(builtins.cmd_info):
@@ -199,7 +203,7 @@ class cmd_plugins(builtins.cmd_plugins):
                 self.outf.write('</plugin>')
             self.outf.write('</plugins>')
         else:
-            super(cmd_plugins, self).run(*args, **kwargs)
+            builtins.cmd_plugins.run(self, *args, **kwargs)
 
 
 class cmd_version(builtins.cmd_version):
@@ -216,7 +220,7 @@ class cmd_version(builtins.cmd_version):
                 to_file = sys.stdout
             show_version_xml(to_file=to_file)
         else:
-            version_class.run(self, *args, **kwargs)
+            builtins.cmd_version.run(self, *args, **kwargs)
 
 
 status_class = register_command(cmd_status, decorate=True)
