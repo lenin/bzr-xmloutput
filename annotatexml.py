@@ -45,7 +45,10 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
     if show_ids:
         w = branch.repository.weave_store.get_weave(file_id,
             branch.repository.get_transaction())
-        annotations = list(w.annotate_iter(rev_id))
+        if getattr(w, 'annotate_iter', None) is not None:
+            annotations = list(w.annotate_iter(rev_id))
+        elif getattr(w, 'annotate', None) is not None:
+            annotations = w.annotate(rev_id)
         for origin, text in annotations:
             if last_rev_id != origin:
                 this = origin
