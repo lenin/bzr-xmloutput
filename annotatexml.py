@@ -30,6 +30,7 @@ import sys
 
 from bzrlib.annotate import _annotate_file
 from bzrlib.xml_serializer import _escape_cdata
+from bzrlib import user_encoding
 
 def annotate_file_xml(branch, rev_id, file_id, to_file=None, 
             show_ids=False, wt_root_path=None, file_path=None):
@@ -44,7 +45,10 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
     if show_ids:
         w = branch.repository.weave_store.get_weave(file_id,
             branch.repository.get_transaction())
-        annotations = w.annotate(rev_id)
+        if getattr(w, 'annotate_iter', None) is not None:
+            annotations = list(w.annotate_iter(rev_id))
+        elif getattr(w, 'annotate', None) is not None:
+            annotations = w.annotate(rev_id)
         for origin, text in annotations:
             if last_rev_id != origin:
                 this = origin
@@ -62,7 +66,7 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
                     (_escape_cdata(revno_str), _escape_cdata(author), date_str)
         if anno.lstrip() == 'revno="" author="" date=""': 
             anno = prevanno
-        to_file.write('<entry %s>%s</entry>' % (anno, _escape_cdata(text)))
+        to_file.write('<entry %s>%s</entry>' % (anno, _escape_cdata(text.decode(user_encoding))))
         prevanno = anno
     to_file.write('</annotation>')
 
