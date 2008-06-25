@@ -72,7 +72,7 @@ class cmd_status(builtins.cmd_status):
                     specific_files=file_list, revision=revision,
                     to_file=to_file, versioned=versioned)
         else:
-            status_class.run(self, *args, **kwargs)
+            builtins.cmd_status.run(self, *args, **kwargs)
 
     def parse_kwargs(self, **kwargs):
         show_ids = kwargs.has_key('show_ids') and kwargs['show_ids']
