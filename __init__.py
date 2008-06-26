@@ -130,7 +130,7 @@ class cmd_xmlannotate(commands.Command):
     hidden = True
     takes_args = ['filename']
     takes_options = ['revision', 'show-ids']
-    #encoding_type = 'replace'
+    
     encoding_type = 'exact'
 
     @display_command
