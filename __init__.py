@@ -256,6 +256,7 @@ class cmd_xmlplugins(commands.Command):
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
                 bzrlib.user_encoding)
         self.outf.write('<plugins>')
+        from bzrlib.xml_serializer import _escape_cdata 
         for name, plugin in bzrlib.plugin.plugins().items():
             self.outf.write('<plugin>')
             self.outf.write('<name>%s</name>' % name)
@@ -263,7 +264,7 @@ class cmd_xmlplugins(commands.Command):
             self.outf.write('<path>%s</path>' % plugin.path())
             d = getdoc(plugin.module)
             if d:
-                self.outf.write('<doc>%s</doc>' % d)
+                self.outf.write('<doc>%s</doc>' % _escape_cdata(d))
             self.outf.write('</plugin>')
         self.outf.write('</plugins>')
 
