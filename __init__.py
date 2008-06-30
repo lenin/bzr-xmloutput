@@ -345,7 +345,6 @@ class cmd_xmlls(builtins.cmd_ls):
             Option('kind',
                    help='List entries of a particular kind: file, directory, symlink.',
                    type=unicode),
-            'show-ids',
             ]
     encoding_type = 'replace'
 
