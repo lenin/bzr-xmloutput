@@ -19,13 +19,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
 
-
-
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from xml_errors import XMLError
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
-import socket, sys
+import socket, sys, os
 from cStringIO import StringIO 
 import bzrlib
 from bzrlib import commands
@@ -33,7 +31,6 @@ from bzrlib.option import Option
 from bzrlib.commands import display_command
 from bzrlib import trace
 from bzrlib import errors
-import os
 """)
 
 run_dir = os.getcwdu()
@@ -44,7 +41,7 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
 
     def __init__(self, addr, logRequests=False):
         SimpleXMLRPCServer.__init__(self, addr=addr, logRequests=logRequests)
-        self.register_function(run_bzr, 'run_bzr')
+        self.register_function(self.system_listMethods, 'list_methods')
         self.register_function(self.shutdown, 'quit')
         self.register_function(self.hello)
     
@@ -80,11 +77,22 @@ def redirect_output(func):
     return wrapper
 
 
-@redirect_output
 def run_bzr(argv, workdir):
+    return _run_bzr(argv, workdir, commands.main)
+
+
+def run_bzr_xml(argv, workdir):
+    return _run_bzr(argv, workdir, custom_commands_main)
+
+
+@redirect_output
+def _run_bzr(argv, workdir, func):
     os.chdir(workdir)
-    exitval = custom_commands_main(argv)
-    return_val = (exitval, sys.stdout.getvalue(), sys.stderr.getvalue())
+    exitval = func(argv)
+    sys.stderr.flush()
+    sys.stdout.flush()
+    return_val = (exitval, sys.stdout.getvalue(),
+                sys.stderr.getvalue())
     os.chdir(run_dir)
     return return_val
 
@@ -103,9 +111,6 @@ def custom_commands_main(argv):
     except Exception, e:
         sys.stderr.write(str(e))
         return errors.EXIT_ERROR
-    finally:
-        sys.stderr.flush();
-        sys.stdout.flush();
 
 
 class cmd_start_xmlrpc(commands.Command):
@@ -130,6 +135,13 @@ class cmd_start_xmlrpc(commands.Command):
             self.outf.flush()
 
         self.server = BzrXMLRPCServer((hostname, port), logRequests=verbose)
-        self.server.serve_forever()
+        register_functions(self.server)
+        try:
+            self.server.serve_forever()
+        finally:
+            self.server.shutdown()
 
 
+def register_functions(server):
+    server.register_function(run_bzr, 'run_bzr_command')
+    server.register_function(run_bzr_xml, 'run_bzr')

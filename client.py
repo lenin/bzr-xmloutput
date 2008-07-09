@@ -29,7 +29,7 @@ server = Server("http://localhost:11111")
 try:
     args = ['bzr']
     [args.append(arg) for arg in sys.argv[1:]]
-    exit_val, out, err = server.run_bzr(args, os.getcwd())
+    exit_val, out, err = server.run_bzr_command(args, os.getcwd())
     sys.stdout.write(out)
     sys.stderr.write(err)
     sys.stderr.flush();
