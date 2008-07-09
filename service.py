@@ -21,6 +21,7 @@
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from xml_errors import XMLError
+import search
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import socket, sys, os
@@ -145,3 +146,5 @@ class cmd_start_xmlrpc(commands.Command):
 def register_functions(server):
     server.register_function(run_bzr, 'run_bzr_command')
     server.register_function(run_bzr_xml, 'run_bzr')
+    if search.is_available:
+        server.register_function(search.search, 'search')
