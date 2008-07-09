@@ -8,6 +8,7 @@ from bzrlib import (
     )
 """)
 
+from bzrlib.xml_serializer import _escape_cdata
 from bzrlib import trace
 #, errors, debug
 
@@ -19,7 +20,11 @@ class XMLError(errors.BzrError):
 
     def __str__(self):
         xml = '<?xml version="1.0" encoding="%s"?>' % bzrlib.user_encoding
-        xml += '<error>%s</error>' % self.get_cause_xml()
+        try:
+            xml += '<error>%s</error>' % self.get_cause_xml()
+        except Exception, e:
+            xml += '<error><message>%s</message></error>' % \
+                _escape_cdata(str(e))
         return xml
     
     def get_cause_xml(self):
@@ -27,12 +32,14 @@ class XMLError(errors.BzrError):
                 '<message>%s</message>' \
                 % (self.error.__class__.__name__,
                    self._get_dict_as_xml(self.error.__dict__),
-                   str(self.error))
+                   _escape_cdata(str(self.error)))
         return s
                    
     def _get_dict_as_xml(self, dict):
-        return ''.join(['<key>%s</key><value>%s</value>' % (key,val) \
-                    for key, val in dict.iteritems()])
+        return ''.join(['<key>%s</key><value>%s</value>' % \
+            (_escape_cdata(key), 
+            _escape_cdata(str(val))) \
+                    for key, val in dict.iteritems() if val is not None])
 
 
 def report_exception(exc_info, err_file): 
