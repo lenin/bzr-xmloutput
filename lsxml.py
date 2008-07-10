@@ -23,7 +23,8 @@
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import os
-from bzrlib import user_encoding, bzrdir, errors, osutils
+from bzrlib import user_encoding, bzrdir, errors, osutils, xml_serializer
+from bzrlib.xml_serializer import _escape_cdata
 """)
 
 
@@ -76,13 +77,9 @@ def show_ls_xml(outf, revision=None, non_recursive=False,
                     fid = ''
                 else:
                     fid = '<id>%s</id>' % fid
-                    #fid = ' id="%s"' % fid
-                #status_kind = 'status_kind="%s"' % long_status_kind[fc]
-                #outstring = '<%s %s%s>%s</%s>' % (fkind, status_kind, 
-                #                                fid, fp, fkind)
                 fkind = '<kind>%s</kind>' % fkind
                 status_kind = '<status_kind>%s</status_kind>' % long_status_kind[fc]
-                fpath = '<path>%s</path>' % fp
+                fpath = '<path>%s</path>' % _escape_cdata(fp)
                 outstring = '<item>%s%s%s%s</item>' % (fid, fkind, fpath, status_kind)
                 outf.write(outstring)
     finally:
