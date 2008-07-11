@@ -20,17 +20,17 @@
 #
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
+from xmlrpclib import Fault
 from xml_errors import XMLError
+import codecs, logging
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import socket, sys, os
 from cStringIO import StringIO 
 import bzrlib
-from bzrlib import commands
 from bzrlib.option import Option
 from bzrlib.commands import display_command
-from bzrlib import trace
-from bzrlib import errors
+from bzrlib import commands, trace, errors, osutils
 """)
 
 run_dir = os.getcwdu()
@@ -65,34 +65,50 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
         return 'world!'
 
 
-def redirect_output(func):
-    def wrapper(*args, **kwargs):
-        sys.stdout = StringIO()
-        sys.stderr = StringIO()
-        try:
-            return func(*args, **kwargs)
-        finally:
-            sys.stdout = sys.__stdout__
-            sys.stderr = sys.__stderr__
-    return wrapper
+class redirect_output(object):
+        
+    def __call__(self, func):
+        def wrapper(*args, **kwargs):
+            sys.stdout = StringIO()
+            sys.stderr = StringIO()
+            self.set_logger()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                sys.stdout = sys.__stdout__
+                sys.stderr = sys.__stderr__
+        return wrapper
+    
+    def set_logger(self):
+        if len(trace._bzr_logger.handlers) >= 1:
+            del trace._bzr_logger.handlers[1]
+        writer_factory = codecs.getwriter(osutils.get_terminal_encoding())
+        encoded_stderr = writer_factory(sys.stderr, errors='replace')
+        stderr_handler = logging.StreamHandler(encoded_stderr)
+        stderr_handler.setLevel(logging.INFO)
+        logging.getLogger('bzr').addHandler(stderr_handler)
 
 
+@redirect_output()
 def run_bzr(argv, workdir):
     return _run_bzr(argv, workdir, commands.main)
 
 
+@redirect_output()
 def run_bzr_xml(argv, workdir):
     return _run_bzr(argv, workdir, custom_commands_main)
 
 
-@redirect_output
 def _run_bzr(argv, workdir, func):
     os.chdir(workdir)
     exitval = func(argv)
     sys.stderr.flush()
     sys.stdout.flush()
-    return_val = (exitval, sys.stdout.getvalue(),
-                sys.stderr.getvalue())
+    if isinstance(exitval, Fault):
+        return_val = exitval
+    else: 
+        return_val = (exitval, sys.stdout.getvalue(),
+                    sys.stderr.getvalue())
     os.chdir(run_dir)
     return return_val
 
@@ -106,11 +122,9 @@ def custom_commands_main(argv):
         ret = commands.run_bzr(argv)
         return ret
     except errors.BzrError, e:
-        sys.stderr.write(str(XMLError(e)))
-        return errors.EXIT_ERROR
+        raise Fault(42, str(XMLError(e)))
     except Exception, e:
-        sys.stderr.write(str(e))
-        return errors.EXIT_ERROR
+        raise Fault(32, str(XMLError(e)))
 
 
 class cmd_start_xmlrpc(commands.Command):
