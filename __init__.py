@@ -57,6 +57,8 @@ from bzrlib.commands import display_command, register_command
 version_info = (0, 5, 0)
 plugin_name = 'xmloutput'
 
+null_option = Option('null', help='Write an ascii NUL (\\0) as the final char')
+
 
 class cmd_xmlstatus(commands.Command):
     """Display status summary.
@@ -104,13 +106,14 @@ class cmd_xmlstatus(commands.Command):
     takes_args = ['file*']
     takes_options = ['show-ids', 'revision', 'change',
                      Option('versioned', help='Only show versioned files.',
-                            short_name='V')
+                            short_name='V'),
+                     null_option
                      ]
     encoding_type = 'replace'
 
     @display_command
     @handle_error_xml
-    def run(self, file_list=None, revision=None, versioned=False):
+    def run(self, file_list=None, revision=None, versioned=False, null=False):
         from statusxml import show_tree_status_xml
         tree, file_list = builtins.tree_files(file_list)
         to_file = self.outf
@@ -119,6 +122,9 @@ class cmd_xmlstatus(commands.Command):
         show_tree_status_xml(tree, show_ids=True,
             specific_files=file_list, revision=revision,
             to_file=to_file, versioned=versioned)
+        if null:
+            to_file.write('\0')
+        self.outf.write('\n')
 
 
 class cmd_xmlannotate(commands.Command):
@@ -132,13 +138,13 @@ class cmd_xmlannotate(commands.Command):
     """
     hidden = True
     takes_args = ['filename']
-    takes_options = ['revision', 'show-ids']
+    takes_options = ['revision', 'show-ids', null_option]
     
     encoding_type = 'exact'
 
     @display_command
     @handle_error_xml
-    def run(self, filename, revision=None, show_ids=False):
+    def run(self, filename, revision=None, show_ids=False, null=False):
         from annotatexml import annotate_file_xml
         wt, branch, relpath = \
             bzrdir.BzrDir.open_containing_tree_or_branch(filename)
@@ -168,7 +174,10 @@ class cmd_xmlannotate(commands.Command):
             annotate_file_xml(branch=branch, rev_id=file_version, 
                     file_id=file_id, to_file=self.outf, show_ids=show_ids, 
                     wt_root_path=wt_root_path, file_path=relpath)
-        finally:
+            if null:
+                self.outf.write('\0')
+            self.outf.write('\n')
+        finally:            
             if wt is not None:
                 wt.unlock()
             else:
@@ -191,7 +200,8 @@ class cmd_xmlmissing(commands.Command):
                    'Display changes in the remote branch only.'),
             Option('other', 'Same as --theirs-only.'),
             'show-ids',
-            'verbose'
+            'verbose',
+            null_option
             ]
     encoding_type = 'replace'
 
@@ -203,7 +213,10 @@ class cmd_xmlmissing(commands.Command):
         if self.outf is None:
             self.outf = sys.stdout
         
-        show_missing_xml(self, log_format=logxml.XMLLogFormatter, *args, **kwargs) 
+        show_missing_xml(self, log_format=logxml.XMLLogFormatter, *args, **kwargs)
+        if getattr(kwargs, 'null', False):
+            self.outf.write('\0')
+        self.outf.write('\n')
 
 
 class cmd_xmlinfo(commands.Command):
@@ -217,7 +230,7 @@ class cmd_xmlinfo(commands.Command):
     """
     hidden = True
     takes_args = ['location?']
-    takes_options = ['verbose']
+    takes_options = ['verbose', null_option]
     encoding_type = 'replace'
     
     @display_command
@@ -232,7 +245,10 @@ class cmd_xmlinfo(commands.Command):
             noise_level = 0
         from infoxml import show_bzrdir_info_xml
         show_bzrdir_info_xml(bzrdir.BzrDir.open_containing(location)[0],
-                             verbose=noise_level)
+                             verbose=noise_level, outfile=self.outf)
+        if getattr(kwargs, 'null', False):
+            self.outf.write('\0')
+        self.outf.write('\n')
 
             
 class cmd_xmlplugins(commands.Command):
@@ -243,7 +259,7 @@ class cmd_xmlplugins(commands.Command):
 
     """
     hidden = True
-    takes_options = ['verbose']
+    takes_options = ['verbose', null_option]
 
     @display_command
     @handle_error_xml
@@ -267,12 +283,16 @@ class cmd_xmlplugins(commands.Command):
                 self.outf.write('<doc>%s</doc>' % _escape_cdata(d))
             self.outf.write('</plugin>')
         self.outf.write('</plugins>')
+        if getattr(kwargs, 'null', False):
+            self.outf.write('\0')
+        self.outf.write('\n')
 
 
 class cmd_xmlversion(commands.Command):
     """Show version of bzr."""
     hidden = True
     encoding_type = 'replace'
+    takes_options = [null_option]
 
     @display_command
     @handle_error_xml
@@ -282,9 +302,13 @@ class cmd_xmlversion(commands.Command):
         if to_file is None:
             to_file = sys.stdout
         show_version_xml(to_file=to_file)
+        if getattr(kwargs, 'null', False):
+            to_file.write('\0')
+        self.outf.write('\n')
 
 
 class cmd_xmllog(builtins.cmd_log):
+    """Show log of a branch, file, or directory as XML."""
     hidden = True
     takes_args = ['location?']
     takes_options = [
@@ -307,6 +331,7 @@ class cmd_xmllog(builtins.cmd_log):
                    help='Limit the output to the first N revisions.',
                    argname='N',
                    type=bzrlib.builtins._parse_limit),
+            null_option
             ]
     encoding_type = 'replace'
 
@@ -318,10 +343,15 @@ class cmd_xmllog(builtins.cmd_log):
             forward=False,
             revision=None,
             message=None,
-            limit=None):
-        return builtins.cmd_log.run(self, location, timezone,
+            limit=None,
+            null=False):
+        exit_val =  builtins.cmd_log.run(self, location, timezone,
             verbose, show_ids, forward, revision,
             logxml.XMLLogFormatter, message, limit)
+        if null:
+            self.outf.write('\0')
+        self.outf.write('\n')
+        return exit_val
 
 
 class cmd_xmlls(builtins.cmd_ls):
@@ -345,6 +375,7 @@ class cmd_xmlls(builtins.cmd_ls):
             Option('kind',
                    help='List entries of a particular kind: file, directory, symlink.',
                    type=unicode),
+            null_option
             ]
     encoding_type = 'replace'
 
@@ -356,6 +387,9 @@ class cmd_xmlls(builtins.cmd_ls):
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
                 bzrlib.user_encoding)
         lsxml.show_ls_xml(self.outf, *args, **kwargs)
+        if getattr(kwargs, 'null', False):
+            self.outf.write('\0')
+        self.outf.write('\n')
 
 
 register_command(cmd_xmlstatus, decorate=True)
