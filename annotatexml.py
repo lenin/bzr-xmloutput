@@ -28,7 +28,7 @@ This code is a modified copy from bzrlib.annotate
 
 import sys
 
-from bzrlib.annotate import _annotate_file
+from bzrlib.annotate import _annotate_file, _annotations
 from bzrlib.xml_serializer import _escape_cdata
 from bzrlib import user_encoding
 from bzrlib import osutils
@@ -36,7 +36,7 @@ from bzrlib import osutils
 empty_annotation = 'revno="" author="" date=""'
 
 def annotate_file_xml(branch, rev_id, file_id, to_file=None, 
-            show_ids=False, wt_root_path=None, file_path=None):
+            show_ids=False, wt_root_path=None, file_path=None, full=False):
     if to_file is None:
         to_file = sys.stdout
     
@@ -49,14 +49,9 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
                   (wt_root_path.encode(encoding), 
                   'file="%s"' % file_path)).encode(encoding, 'replace'))
     if show_ids:
-        w = branch.repository.weave_store.get_weave(file_id,
-            branch.repository.get_transaction())
-        if getattr(w, 'annotate_iter', None) is not None:
-            annotations = list(w.annotate_iter(rev_id))
-        elif getattr(w, 'annotate', None) is not None:
-            annotations = w.annotate(rev_id)
+        annotations = _annotations(branch.repository, file_id, rev_id)
         for origin, text in annotations:
-            if last_rev_id != origin:
+            if full or last_rev_id != origin:
                 this = origin
             else:
                 this = ''
