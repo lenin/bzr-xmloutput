@@ -66,7 +66,9 @@ class TestInfoXml(ExternalBase):
 <location>
 <branch_root>standalone</branch_root></location>
 </info>
+
 '''
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -101,11 +103,11 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
-'''
 
+'''
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
         tree1.commit('commit one')
@@ -128,7 +130,9 @@ class TestInfoXml(ExternalBase):
 <related_branches>
 <push_branch>standalone</push_branch><parent_branch>standalone</parent_branch></related_branches>
 </info>
+
 '''
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -168,13 +172,12 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (datestring_first, datestring_first, 
-        branch2.repository._revision_store.total_size(
-        branch2.repository.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -222,18 +225,15 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (bound_tree._format.get_format_description(),
        branch3._format.get_format_description(),
        branch3.repository._format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       branch3.repository._revision_store.total_size(
-        branch3.repository.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -276,16 +276,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (branch4.repository._format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       branch4.repository._revision_store.total_size(
-        branch4.repository.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml , out)
         self.assertEqual('', err)
 
@@ -330,10 +327,11 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (datestring_first, datestring_first)
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -381,10 +379,11 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (datestring_first, datestring_first,)
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -428,16 +427,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (branch3.repository._format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       branch3.repository._revision_store.total_size(
-        branch3.repository.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -479,16 +475,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (branch4.repository._format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       branch4.repository._revision_store.total_size(
-        branch4.repository.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -532,10 +525,11 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>2</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (datestring_first, datestring_last,)
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -564,12 +558,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -597,11 +592,12 @@ class TestInfoXml(ExternalBase):
 </format>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % ('repo', format.repository_format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -630,12 +626,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -697,16 +694,14 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -745,12 +740,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -792,16 +788,14 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
         tree3.commit('commit two')
@@ -848,16 +842,14 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>2</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        datestring_first, datestring_last,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -886,16 +878,14 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>2</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        datestring_first, datestring_last,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -917,14 +907,12 @@ class TestInfoXml(ExternalBase):
 </format>
 <repository_stats>
 <revisions>2</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.repository_format.get_format_description(),
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -952,11 +940,12 @@ class TestInfoXml(ExternalBase):
 </format>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (format.repository_format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -998,12 +987,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -1048,16 +1038,14 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 '''  % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -1095,15 +1083,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -1146,16 +1132,14 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        datestring_first, datestring_first,
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -1177,14 +1161,12 @@ class TestInfoXml(ExternalBase):
 </format>
 <repository_stats>
 <revisions>1</revisions>
-<size unit="KiB">%d</size>
 </repository_stats>
 </info>
+
 ''' % (format.repository_format.get_format_description(),
-       # poking at _revision_store isn't all that clean, but neither is
-       # having the ui test dependent on the exact overhead of a given store.
-       repo._revision_store.total_size(repo.get_transaction())[1] / 1024,
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
     
@@ -1212,10 +1194,11 @@ class TestInfoXml(ExternalBase):
 </format>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (format.repository_format.get_format_description(),)
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -1254,12 +1237,13 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % (format.get_branch_format().get_format_description(),
        format.repository_format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -1392,9 +1376,9 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 '''  %  (description,
         format,
         tree_data,
@@ -1405,6 +1389,7 @@ class TestInfoXml(ExternalBase):
         expected_lock_output,
         verbose_info,
         )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
@@ -1565,11 +1550,12 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 ''' % ('branch', tree.branch.repository._format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
         # L L L
@@ -1605,11 +1591,12 @@ class TestInfoXml(ExternalBase):
 </branch_history>
 <repository_stats>
 <revisions>0</revisions>
-<size unit="KiB">0</size>
 </repository_stats>
 </info>
+
 '''% ('branch', tree.branch.repository._format.get_format_description(),
        )
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
         tree.unlock()

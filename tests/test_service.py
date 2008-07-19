@@ -36,6 +36,7 @@ class XMLRPCServer(transport.Server):
     def _get_xmlrpcd(xmlrpcServer):
         if XMLRPCServer._xmlrpcd is None:
             XMLRPCServer._xmlrpcd =  service.BzrXMLRPCServer((host, port)) 
+            service.register_functions(XMLRPCServer._xmlrpcd)
         return XMLRPCServer._xmlrpcd
 
     def _xmlrpc_start(self):
