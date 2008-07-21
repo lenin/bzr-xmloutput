@@ -23,6 +23,7 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 from xmlrpclib import Fault
 from xml_errors import XMLError
 import codecs, logging
+import search
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import socket, sys, os
@@ -88,11 +89,9 @@ class redirect_output(object):
         stderr_handler.setLevel(logging.INFO)
         logging.getLogger('bzr').addHandler(stderr_handler)
 
-
 @redirect_output()
 def run_bzr(argv, workdir):
     return _run_bzr(argv, workdir, commands.main)
-
 
 @redirect_output()
 def run_bzr_xml(argv, workdir):
@@ -159,3 +158,5 @@ class cmd_start_xmlrpc(commands.Command):
 def register_functions(server):
     server.register_function(run_bzr, 'run_bzr_command')
     server.register_function(run_bzr_xml, 'run_bzr')
+    if search.is_available:
+        server.register_function(search.search, 'search')
