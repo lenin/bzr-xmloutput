@@ -82,7 +82,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
                         '<entry revno="3" author="user@test" date="%s">your helicopter</entry>',
                         '<entry revno="4" author="user@test" date="%s">all of</entry>',
                         '<entry revno="4" author="user@test" date="%s">our helicopters</entry>',
-                        '</annotation>']) %
+                        '</annotation>\n',]) %
                         (wt_root_path, self.time_revision_id_1, self.time_revision_id_3,
                          self.time_revision_id_4, self.time_revision_id_4))
         #TODO: assert xml and elementree (including attributes)
@@ -100,7 +100,8 @@ class TestXmlAnnotate(TestCaseWithTransport):
                                 '<entry fid="%s">my helicopter\n</entry>',
                                 '<entry fid="%s">your helicopter\n</entry>',
                                 '<entry fid="%s">all of\n</entry>',
-                                '<entry fid="">our helicopters\n</entry></annotation>']) %  
+                                '<entry fid="">our helicopters\n',
+                                '</entry></annotation>\n']) %  
                                     (wt_root_path, self.revision_id_1, 
                                          self.revision_id_3, self.revision_id_4))
         #TODO: assert xml and elementree (including attributes)
@@ -127,7 +128,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
         expected_xml = (''.join(['<?xml version="1.0"?>',
                         '<annotation workingtree-root="%s" file="nomail.txt">',
                         '<entry revno="2" author="no mail" date="%s">nomail</entry>',
-                        '</annotation>']) % (wt_root_path, self.time_revision_id_2))
+                        '</annotation>\n']) % (wt_root_path, self.time_revision_id_2))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
         self.assertEqualDiff(expected_xml, out)
@@ -141,7 +142,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
         expected_xml = (''.join(['<?xml version="1.0"?>', 
                                 '<annotation workingtree-root="%s" file="hello.txt">', 
                                 '<entry revno="1" author="test@user" date="%s">my helicopter</entry>', 
-                                '</annotation>']) % (wt_root_path, 
+                                '</annotation>\n']) % (wt_root_path, 
                                                     self.time_revision_id_1))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
@@ -157,7 +158,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
                                 '<annotation workingtree-root="%s" file="hello.txt">',
                                 '<entry revno="1" author="test@user" date="%s">my helicopter</entry>',
                                 '<entry revno="3" author="user@test" date="%s">your helicopter</entry>',
-                                '</annotation>'])  % (wt_root_path,
+                                '</annotation>\n'])  % (wt_root_path,
                                                      self.time_revision_id_1, 
                                                      self.time_revision_id_3))
         #TODO: assert xml and elementree (including attributes)
@@ -196,7 +197,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
         #TODO: assert xml and elementree (including attributes)'
         expected_xml = (''.join(['<?xml version="1.0"?>',
                                 '<annotation workingtree-root="%s" file="empty">',
-                                '</annotation>']) % (wt_root_path+'tree/',))
+                                '</annotation>\n']) % (wt_root_path+'tree/',))
         self.assertEqual(expected_xml, out)
 
     def test_xmlannotate_nonexistant_file(self):
@@ -208,9 +209,6 @@ class TestXmlAnnotate(TestCaseWithTransport):
         os.chdir('tree')
         out, err = self.run_bzr("xmlannotate doesnotexist", retcode=3)
         self.assertEqual('', out)
-        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><error><class>'
-                'NotVersionedError</class><dict><key>path</key><value>'
-                'doesnotexist</value><key>_preformatted_string</key><value>'
-                'None</value><key>context_info</key><value></value></dict>'
-                '<message>doesnotexist is not versioned.</message></error>', 
-                err)
+        self.assertContainsRe(err, '<error><class>NotVersionedError.*'
+                '<dict><key>path.*<value>doesnotexist'
+                '.*<message>doesnotexist is not versioned.</message></error>')

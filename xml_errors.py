@@ -57,12 +57,12 @@ def report_exception(exc_info, err_file):
 
 def handle_error_xml(func):
 
-    def xml_error_handling(*args, **kw):
+    def xml_error_handling(*args, **kwargs):
         #global original_report_exception
         #original_report_exception = trace.report_exception
         #trace.report_exception = report_exception
         try:
-            return func(*args, **kw)
+            return func(*args, **kwargs)
         except:
             import sys, os
             exitcode = report_exception(sys.exc_info(), sys.stderr)
