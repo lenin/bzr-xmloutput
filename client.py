@@ -24,7 +24,7 @@ from xmlrpclib import Server, Error
 import socket
 import os, sys
 
-server = Server("http://localhost:11111")
+server = Server("http://localhost:11112")
 
 try:
     args = ['bzr']

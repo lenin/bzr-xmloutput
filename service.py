@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# Copyright (C) 2007 Guillermo Gonzalez
+# Copyright (C) 2007-2008 Guillermo Gonzalez
 #
-# The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
+# The code taken from bzrlib is under: Copyright (C) 2005-2008 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,11 +39,15 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
     
     finished=False
 
-    def __init__(self, addr, logRequests=False):
+    def __init__(self, addr, logRequests=False, to_file=None):
         SimpleXMLRPCServer.__init__(self, addr=addr, logRequests=logRequests)
         self.register_function(self.system_listMethods, 'list_methods')
         self.register_function(self.shutdown, 'quit')
         self.register_function(self.hello)
+        self.to_file = to_file
+        if to_file is None:
+            self.to_file = sys.stdout
+         
     
     def register_signal(self, signum):
         signal.signal(signum, self.signal_handler)
@@ -66,31 +70,41 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
 
 
 class redirect_output(object):
+
+    def __init__(self):
+        self.writer_factory = codecs.getwriter(osutils.get_terminal_encoding())
+        self.remove_logger()
         
     def __call__(self, func):
         def wrapper(*args, **kwargs):
+            trace.mutter('%s arguments: %s' % (func.func_name, str(args)))
             sys.stdout = StringIO()
             sys.stderr = StringIO()
             self.set_logger()
             try:
                 return func(*args, **kwargs)
             finally:
+                self.remove_logger()
                 sys.stdout = sys.__stdout__
                 sys.stderr = sys.__stderr__
         return wrapper
     
     def set_logger(self):
-        if len(trace._bzr_logger.handlers) >= 1:
-            del trace._bzr_logger.handlers[1]
-        writer_factory = codecs.getwriter(osutils.get_terminal_encoding())
-        encoded_stderr = writer_factory(sys.stderr, errors='replace')
+        """add sys.stderr as a log handler"""
+        encoded_stderr = self.writer_factory(sys.stderr, errors='replace')
         stderr_handler = logging.StreamHandler(encoded_stderr)
         stderr_handler.setLevel(logging.INFO)
         logging.getLogger('bzr').addHandler(stderr_handler)
+    
+    def remove_logger(self):
+        """removes extra log handlers, only keeps the .bzr.log hanlder"""
+        del trace._bzr_logger.handlers[1:len(trace._bzr_logger.handlers)]
+
 
 @redirect_output()
 def run_bzr(argv, workdir):
     return _run_bzr(argv, workdir, commands.main)
+
 
 @redirect_output()
 def run_bzr_xml(argv, workdir):
@@ -113,8 +127,7 @@ def _run_bzr(argv, workdir, func):
 
 def custom_commands_main(argv):
     import bzrlib.ui
-    from bzrlib.ui.text import TextUIFactory
-    bzrlib.ui.ui_factory = TextUIFactory()
+    bzrlib.ui.ui_factory = bzrlib.ui.SilentUIFactory()
     try:
         argv = [a.decode(bzrlib.user_encoding) for a in argv[1:]]
         ret = commands.run_bzr(argv)
@@ -146,7 +159,8 @@ class cmd_start_xmlrpc(commands.Command):
             self.outf.write('Listening on http://' + hostname + ':' + str(port))
             self.outf.flush()
 
-        self.server = BzrXMLRPCServer((hostname, port), logRequests=verbose)
+        self.server = BzrXMLRPCServer((hostname, port), 
+                                     logRequests=verbose, to_file=self.outf)
         register_functions(self.server)
         try:
             self.server.serve_forever()
