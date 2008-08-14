@@ -33,6 +33,7 @@ from bzrlib.commands import display_command
 from bzrlib import commands, trace, errors, osutils
 """)
 
+bzrlib.user_encoding = 'utf-8'
 run_dir = os.getcwdu()
 
 class BzrXMLRPCServer(SimpleXMLRPCServer):
@@ -72,7 +73,7 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
 class redirect_output(object):
 
     def __init__(self):
-        self.writer_factory = codecs.getwriter(osutils.get_terminal_encoding())
+        self.writer_factory = codecs.getwriter('utf8')
         self.remove_logger()
         
     def __call__(self, func):
@@ -162,6 +163,12 @@ class cmd_start_xmlrpc(commands.Command):
         self.server = BzrXMLRPCServer((hostname, port), 
                                      logRequests=verbose, to_file=self.outf)
         register_functions(self.server)
+        
+        import bzrlib.osutils
+        bzrlib.user_encoding = 'UTF-8'
+        bzrlib.osutils._cached_user_encoding = 'UTF-8'
+        bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
+        
         try:
             self.server.serve_forever()
         finally:
