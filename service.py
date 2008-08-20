@@ -166,7 +166,7 @@ class cmd_start_xmlrpc(commands.Command):
         
         import bzrlib.osutils
         bzrlib.user_encoding = 'UTF-8'
-        bzrlib.osutils._cached_user_encoding = 'UTF-8'
+        bzrlib.osutils._cached_user_encoding = bzrlib.user_encoding
         bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
         
         try:
