@@ -24,7 +24,7 @@ from distutils.core import setup
 
 setup(
     name='bzr-xmloutput',
-    version='0.5.0',
+    version='0.6.0',
     maintainer='Guillermo Gonzalez',
     maintainer_email='guillo.gonzo@gmail.com',
     description="""A Bazaar plugin that provides a option to generate XML output for builtins commands""",
@@ -32,5 +32,5 @@ setup(
     url='https://launchpad.net/bzr-xmloutput',
     packages=['bzrlib.plugins.xmloutput'],
     package_dir={'bzrlib.plugins.xmloutput': '.'},
-    long_description="""This plugin adds a "--xml" option to the following bazaar commands: log, status, annotate, missing, info, plugins and version""",
+    long_description="""This plugin adds commands (log, status, missing, etc) with xml prefix that generates XML output."",
 )

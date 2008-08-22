@@ -33,7 +33,6 @@ from bzrlib.commands import display_command
 from bzrlib import commands, trace, errors, osutils
 """)
 
-bzrlib.user_encoding = 'utf-8'
 run_dir = os.getcwdu()
 
 class BzrXMLRPCServer(SimpleXMLRPCServer):
@@ -170,7 +169,6 @@ class cmd_start_xmlrpc(commands.Command):
         bzrlib.user_encoding = 'UTF-8'
         bzrlib.osutils._cached_user_encoding = bzrlib.user_encoding
         bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
-        
         try:
             self.server.serve_forever()
         finally:
