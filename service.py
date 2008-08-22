@@ -72,23 +72,24 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
 
 class redirect_output(object):
 
-    def __init__(self):
+    def __init__(self, func):
         self.writer_factory = codecs.getwriter('utf8')
-        self.remove_logger()
+        self.func = func
+        self.logger_removed = False
         
-    def __call__(self, func):
-        def wrapper(*args, **kwargs):
-            trace.mutter('%s arguments: %s' % (func.func_name, str(args)))
-            sys.stdout = StringIO()
-            sys.stderr = StringIO()
-            self.set_logger()
-            try:
-                return func(*args, **kwargs)
-            finally:
-                self.remove_logger()
-                sys.stdout = sys.__stdout__
-                sys.stderr = sys.__stderr__
-        return wrapper
+    def __call__(self, *args, **kwargs):
+        if self.logger_removed:
+            self.remove_logger()
+        trace.mutter('%s arguments: %s' % (self.func.func_name, str(args)))
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
+        self.set_logger()
+        try:
+            return self.func(*args, **kwargs)
+        finally:
+            self.remove_logger()
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
     
     def set_logger(self):
         """add sys.stderr as a log handler"""
@@ -98,16 +99,17 @@ class redirect_output(object):
         logging.getLogger('bzr').addHandler(stderr_handler)
     
     def remove_logger(self):
-        """removes extra log handlers, only keeps the .bzr.log hanlder"""
+        """removes extra log handlers, only keeps the .bzr.log handler"""
+        self.logger_removed = True
         del trace._bzr_logger.handlers[1:len(trace._bzr_logger.handlers)]
 
 
-@redirect_output()
+@redirect_output
 def run_bzr(argv, workdir):
     return _run_bzr(argv, workdir, commands.main)
 
 
-@redirect_output()
+@redirect_output
 def run_bzr_xml(argv, workdir):
     return _run_bzr(argv, workdir, custom_commands_main)
 

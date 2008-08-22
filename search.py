@@ -30,7 +30,7 @@ except ImportError:
     
 is_available = _mod_index is not None
 
-@redirect_output()
+@redirect_output
 def search(branch_location, query_list, suggest=False):
     """Search using bzr-search plugin to find revisions matching the query.
     

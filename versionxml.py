@@ -38,7 +38,6 @@ from bzrlib.xml_serializer import _escape_cdata
 
 def show_version_xml(show_config=True, show_copyright=True, to_file=None):
     if to_file is None:
-        print sys.stdout
         to_file = sys.stdout
     to_file.write(u'<version>')
     _show_bazaar_version(to_file=to_file)

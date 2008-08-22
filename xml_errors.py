@@ -10,7 +10,6 @@ from bzrlib import (
 
 from bzrlib.xml_serializer import _escape_cdata
 from bzrlib import trace
-#, errors, debug
 
 class XMLError(errors.BzrError):
     internal_error = False
@@ -58,9 +57,6 @@ def report_exception(exc_info, err_file):
 def handle_error_xml(func):
 
     def xml_error_handling(*args, **kwargs):
-        #global original_report_exception
-        #original_report_exception = trace.report_exception
-        #trace.report_exception = report_exception
         try:
             return func(*args, **kwargs)
         except:
@@ -71,9 +67,7 @@ def handle_error_xml(func):
                 import pdb
                 pdb.post_mortem(sys.exc_traceback)
             return exitcode
-        #finally:
-        #    trace.report_exception = original_report_exception
-
+    
     return xml_error_handling
 
 
