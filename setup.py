@@ -32,5 +32,5 @@ setup(
     url='https://launchpad.net/bzr-xmloutput',
     packages=['bzrlib.plugins.xmloutput'],
     package_dir={'bzrlib.plugins.xmloutput': '.'},
-    long_description="""This plugin adds commands (log, status, missing, etc) with xml prefix that generates XML output."",
+    long_description="""This plugin adds commands (log, status, missing, etc) with xml prefix that generates XML output.""",
 )
