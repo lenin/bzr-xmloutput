@@ -48,9 +48,9 @@ from bzrlib.workingtree import WorkingTree
 from bzrlib.option import Option, custom_help
 import logxml
 import service
+from xml_errors import handle_error_xml
 """)
 
-from xml_errors import handle_error_xml
 from bzrlib import commands
 from bzrlib.commands import display_command, register_command
 
@@ -292,19 +292,25 @@ class cmd_xmlversion(commands.Command):
     """Show version of bzr."""
     hidden = True
     encoding_type = 'replace'
-    takes_options = [null_option]
+    takes_options = [Option("short", help="Only print the version number"),
+                    null_option]
 
     @display_command
     @handle_error_xml
-    def run(self, *args, **kwargs):
+    def run(self, short=False, null=False):
         from versionxml import show_version_xml
         to_file = self.outf
         if to_file is None:
             to_file = sys.stdout
-        show_version_xml(to_file=to_file)
-        if getattr(kwargs, 'null', False):
+        if short:
+            to_file.write("<version><bazaar><version>" + \
+            bzrlib.version_string + \
+            "</version></bazaar></version>")
+        else:
+            show_version_xml(to_file=to_file)
+        if null:
             to_file.write('\0')
-        self.outf.write('\n')
+        to_file.write('\n')
 
 
 class cmd_xmllog(builtins.cmd_log):
@@ -398,7 +404,7 @@ register_command(cmd_xmlmissing, decorate=True)
 register_command(cmd_xmlinfo, decorate=True)
 register_command(cmd_xmlplugins, decorate=True)
 register_command(cmd_xmlversion, decorate=True)
-register_command(service.cmd_start_xmlrpc, decorate=False)
+register_command(service.cmd_start_xmlrpc, decorate=True)
 register_command(cmd_xmllog, decorate=True)
 register_command(cmd_xmlls, decorate=True)
 log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
