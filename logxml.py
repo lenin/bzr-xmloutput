@@ -228,7 +228,7 @@ class XMLLineLogFormatter(log.LineLogFormatter):
         out.append('<timestamp>%s</timestamp>' % self.date_string(rev))
         ## TODO: fix hardcoded max_chars 
         out.append('<message>%s</message>' % 
-                   self.truncate(rev.get_summary(), max_chars))
+                   _escape_cdata(self.truncate(rev.get_summary(), max_chars)))
         out.append('</log>')
         return " ".join(out).rstrip('\n')
 
