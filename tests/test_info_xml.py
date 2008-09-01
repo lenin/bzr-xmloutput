@@ -27,6 +27,7 @@ from bzrlib import (
     osutils,
     repository,
     urlutils,
+    upgrade,
     )
 from bzrlib.osutils import format_date
 from bzrlib.tests import TestSkipped
@@ -294,6 +295,8 @@ class TestInfoXml(ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
+<format>1.6</format>
+<format>1.6.1-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -491,6 +494,8 @@ class TestInfoXml(ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
+<format>1.6</format>
+<format>1.6.1-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -661,6 +666,8 @@ class TestInfoXml(ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
+<format>1.6</format>
+<format>1.6.1-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -808,6 +815,8 @@ class TestInfoXml(ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
+<format>1.6</format>
+<format>1.6.1-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -1294,7 +1303,9 @@ class TestInfoXml(ExternalBase):
             (False, True): 'Lightweight checkout',
             (False, False): 'Checkout',
             }[(shared_repo is not None, light_checkout)]
-        format = {True: '<format>dirstate</format>\n' + 
+        format = {True: '<format>1.6</format>\n' +
+                        '<format>1.6.1-rich-root</format>\n' +
+                        '<format>dirstate</format>\n' + 
                         '<format>dirstate-tags</format>\n' + 
                         '<format>pack-0.92</format>\n' +
                         '<format>rich-root</format>\n' +

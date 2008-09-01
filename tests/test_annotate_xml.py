@@ -180,7 +180,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
                                 retcode=3)
         self.assertEqual('', out)
         self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><error><class>'
-                'BzrCommandError</class><dict><key>msg</key><value>xmlannotate'
+                'BzrCommandError</class><dict><key>_preformatted_string</key><value>xmlannotate'
                 ' --revision takes exactly 1 argument</value></dict><message>'
                 'xmlannotate --revision takes exactly 1 argument</message>'
                 '</error>',err)

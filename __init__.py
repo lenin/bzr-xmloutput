@@ -54,7 +54,7 @@ from xml_errors import handle_error_xml
 from bzrlib import commands
 from bzrlib.commands import display_command, register_command
 
-version_info = (0, 6, 1)
+version_info = (0, 6, 2)
 plugin_name = 'xmloutput'
 
 null_option = Option('null', help='Write an ascii NUL (\\0) as the final char')

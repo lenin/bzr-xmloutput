@@ -10,6 +10,7 @@ This plugin adds an commands (matching some builtins commands) with xml prefix t
  * xmlinfo
  * xmlplugins
  * xmlversion
+ * xmlls
 
 === How to install ===
  There are two main options to install Bazaar plugins, from source or directly 
