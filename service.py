@@ -140,6 +140,14 @@ def custom_commands_main(argv):
         raise Fault(32, str(XMLError(e)))
 
 
+def register_functions(server):
+    server.register_function(run_bzr, 'run_bzr_command')
+    server.register_function(run_bzr_xml, 'run_bzr')
+    import search
+    if search.is_available:
+        server.register_function(search.search, 'search')
+    
+
 class cmd_start_xmlrpc(commands.Command):
     """Start the xmlrpc service."""
 
@@ -158,7 +166,7 @@ class cmd_start_xmlrpc(commands.Command):
             hostname = socket.gethostname()
 
         if verbose:
-            self.outf.write('Listening on http://' + hostname + ':' + str(port))
+            self.outf.write('Listening on http://'+hostname+':'+str(port)+'\n')
             self.outf.flush()
 
         self.server = BzrXMLRPCServer((hostname, port), 
@@ -175,9 +183,25 @@ class cmd_start_xmlrpc(commands.Command):
             self.server.shutdown()
 
 
-def register_functions(server):
-    server.register_function(run_bzr, 'run_bzr_command')
-    server.register_function(run_bzr_xml, 'run_bzr')
-    import search
-    if search.is_available:
-        server.register_function(search.search, 'search')
+class cmd_stop_xmlrpc(commands.Command):
+    """Stops a xmlrpc service."""
+
+    hidden=True
+    takes_options = [
+            Option('hostname', argname='HOSTNAME', type=str, 
+                help='use the specified hostname, defaults to localhost'),
+            Option('port', argname='PORT', type=int, 
+                help='use the specified port, defaults to 11111'),
+            'verbose',
+            ]
+
+    @display_command
+    def run(self, port=11111, hostname='localhost', verbose=False):
+        url = "http://"+hostname+":"+str(port)
+        if verbose:
+            self.outf.write('Stopping xmlrpc service on ' + url + '\n')
+            self.outf.flush()
+        from xmlrpclib import Server
+        server = Server(url)
+        server.quit()
+

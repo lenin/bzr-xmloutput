@@ -405,6 +405,7 @@ register_command(cmd_xmlinfo, decorate=True)
 register_command(cmd_xmlplugins, decorate=True)
 register_command(cmd_xmlversion, decorate=True)
 register_command(service.cmd_start_xmlrpc, decorate=True)
+register_command(service.cmd_stop_xmlrpc, decorate=True)
 register_command(cmd_xmllog, decorate=True)
 register_command(cmd_xmlls, decorate=True)
 log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
