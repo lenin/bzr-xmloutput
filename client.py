@@ -19,22 +19,49 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
 
-
 from xmlrpclib import Server, Error
-import socket
-import os, sys
+import os
+import sys
 
-server = Server("http://localhost:11111")
+def setup_outf(encoding_type='replace'):
+    """Return a file linked to stdout, which has proper encoding."""
+    import codecs
+    import bzrlib
+    from bzrlib import osutils
+    if encoding_type == 'exact':
+        # force sys.stdout to be binary stream on win32
+        if sys.platform == 'win32':
+            fileno = getattr(sys.stdout, 'fileno', None)
+            if fileno:
+                import msvcrt
+                msvcrt.setmode(fileno(), os.O_BINARY)
+        outf = sys.stdout
+        return
 
-try:
-    args = ['bzr']
-    [args.append(arg) for arg in sys.argv[1:]]
-    exit_val, out, err = server.run_bzr_command(args, os.getcwd())
-    sys.stdout.write(out)
-    sys.stderr.write(err)
-    sys.stderr.flush();
-    sys.stdout.flush();
-    sys.exit(exit_val)
-except Error, v:
-    sys.stderr.write(v.__repr__())
-    raise v
+    output_encoding = osutils.get_terminal_encoding()
+
+    outf = codecs.getwriter(output_encoding)(sys.stdout,
+                    errors=encoding_type)
+    outf.encoding = output_encoding
+    return outf
+
+
+def main(argv=[]): 
+    server = Server("http://localhost:11111")
+    try:
+        args = ['bzr']
+        [args.append(arg) for arg in argv[1:]]
+        exit_val, out, err = server.run_bzr_command(args, os.getcwd())
+        outf = setup_outf()
+        outf.write(out)
+        sys.stderr.write(err)
+        outf.flush();
+        sys.stderr.flush();
+        sys.exit(exit_val)
+    except Error, exc:
+        sys.stderr.write(exc.__repr__())
+        raise
+
+
+if __name__ == '__main__':
+    main(sys.argv)

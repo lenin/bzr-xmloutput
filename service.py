@@ -19,19 +19,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-from xmlrpclib import Fault
-from xml_errors import XMLError
-import codecs, logging
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
-import socket, sys, os
+import sys, os
 from cStringIO import StringIO 
 import bzrlib
 from bzrlib.option import Option
 from bzrlib.commands import display_command
 from bzrlib import commands, trace, errors, osutils
+from xmlrpclib import Fault
+from xml_errors import XMLError
+import codecs, logging
 """)
+
+from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 run_dir = os.getcwdu()
 
@@ -40,10 +41,12 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
     finished=False
 
     def __init__(self, addr, logRequests=False, to_file=None):
-        SimpleXMLRPCServer.__init__(self, addr=addr, logRequests=logRequests)
+        SimpleXMLRPCServer.__init__(self, addr=addr, 
+            logRequests=logRequests)
         self.register_function(self.system_listMethods, 'list_methods')
         self.register_function(self.shutdown, 'quit')
         self.register_function(self.hello)
+        register_functions(self)
         self.to_file = to_file
         if to_file is None:
             self.to_file = sys.stdout
@@ -62,6 +65,10 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
         return 1
 
     def serve_forever(self):
+        import bzrlib.osutils
+        bzrlib.user_encoding = 'UTF-8'
+        bzrlib.osutils._cached_user_encoding = bzrlib.user_encoding
+        bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
         while not self.finished:
             self.handle_request()
 
@@ -146,62 +153,4 @@ def register_functions(server):
     import search
     if search.is_available:
         server.register_function(search.search, 'search')
-    
-
-class cmd_start_xmlrpc(commands.Command):
-    """Start the xmlrpc service."""
-
-    hidden=True
-    takes_options = [
-            Option('hostname', argname='HOSTNAME', type=str, 
-                help='use the specified hostname, defaults to localhost'),
-            Option('port', argname='PORT', type=int, 
-                help='use the specified port, defaults to 11111'),
-            'verbose',
-            ]
-
-    @display_command
-    def run(self, port=11111, hostname='localhost', verbose=False):
-        if hostname is None:
-            hostname = socket.gethostname()
-
-        if verbose:
-            self.outf.write('Listening on http://'+hostname+':'+str(port)+'\n')
-            self.outf.flush()
-
-        self.server = BzrXMLRPCServer((hostname, port), 
-                                     logRequests=verbose, to_file=self.outf)
-        register_functions(self.server)
-        
-        import bzrlib.osutils
-        bzrlib.user_encoding = 'UTF-8'
-        bzrlib.osutils._cached_user_encoding = bzrlib.user_encoding
-        bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
-        try:
-            self.server.serve_forever()
-        finally:
-            self.server.shutdown()
-
-
-class cmd_stop_xmlrpc(commands.Command):
-    """Stops a xmlrpc service."""
-
-    hidden=True
-    takes_options = [
-            Option('hostname', argname='HOSTNAME', type=str, 
-                help='use the specified hostname, defaults to localhost'),
-            Option('port', argname='PORT', type=int, 
-                help='use the specified port, defaults to 11111'),
-            'verbose',
-            ]
-
-    @display_command
-    def run(self, port=11111, hostname='localhost', verbose=False):
-        url = "http://"+hostname+":"+str(port)
-        if verbose:
-            self.outf.write('Stopping xmlrpc service on ' + url + '\n')
-            self.outf.flush()
-        from xmlrpclib import Server
-        server = Server(url)
-        server.quit()
 

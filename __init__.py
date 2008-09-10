@@ -29,7 +29,6 @@ adding a --xml option to each
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
 import bzrlib
-
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import sys
@@ -46,13 +45,14 @@ from bzrlib import (
 
 from bzrlib.workingtree import WorkingTree
 from bzrlib.option import Option, custom_help
+from bzrlib.commands import display_command, register_command
 import logxml
 import service
+import socket
 from xml_errors import handle_error_xml
 """)
 
-from bzrlib import commands
-from bzrlib.commands import display_command, register_command
+
 
 version_info = (0, 6, 2)
 plugin_name = 'xmloutput'
@@ -397,6 +397,57 @@ class cmd_xmlls(builtins.cmd_ls):
             self.outf.write('\0')
         self.outf.write('\n')
 
+class cmd_start_xmlrpc(commands.Command):
+    """Start the xmlrpc service."""
+
+    hidden=True
+    takes_options = [
+            Option('hostname', argname='HOSTNAME', type=str, 
+                help='use the specified hostname, defaults to localhost'),
+            Option('port', argname='PORT', type=int, 
+                help='use the specified port, defaults to 11111'),
+            'verbose',
+            ]
+
+    @display_command
+    def run(self, port=11111, hostname='localhost', verbose=False):
+        if hostname is None:
+            hostname = socket.gethostname()
+
+        if verbose:
+            self.outf.write('Listening on http://'+hostname+':'+str(port)+'\n')
+            self.outf.flush()
+
+        self.server = service.BzrXMLRPCServer((hostname, port), 
+                                     logRequests=verbose, to_file=self.outf)
+        
+        try:
+            self.server.serve_forever()
+        finally:
+            self.server.shutdown()
+
+
+class cmd_stop_xmlrpc(commands.Command):
+    """Stops a xmlrpc service."""
+
+    hidden=True
+    takes_options = [
+            Option('hostname', argname='HOSTNAME', type=str, 
+                help='use the specified hostname, defaults to localhost'),
+            Option('port', argname='PORT', type=int, 
+                help='use the specified port, defaults to 11111'),
+            'verbose',
+            ]
+
+    @display_command
+    def run(self, port=11111, hostname='localhost', verbose=False):
+        url = "http://"+hostname+":"+str(port)
+        if verbose:
+            self.outf.write('Stopping xmlrpc service on ' + url + '\n')
+            self.outf.flush()
+        from xmlrpclib import Server
+        server = Server(url)
+        server.quit()
 
 register_command(cmd_xmlstatus, decorate=True)
 register_command(cmd_xmlannotate, decorate=True)
@@ -404,8 +455,8 @@ register_command(cmd_xmlmissing, decorate=True)
 register_command(cmd_xmlinfo, decorate=True)
 register_command(cmd_xmlplugins, decorate=True)
 register_command(cmd_xmlversion, decorate=True)
-register_command(service.cmd_start_xmlrpc, decorate=True)
-register_command(service.cmd_stop_xmlrpc, decorate=True)
+register_command(cmd_start_xmlrpc, decorate=True)
+register_command(cmd_stop_xmlrpc, decorate=True)
 register_command(cmd_xmllog, decorate=True)
 register_command(cmd_xmlls, decorate=True)
 log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
