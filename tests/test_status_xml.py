@@ -187,8 +187,6 @@ class BranchStatus(TestXmlStatus):
         self.assertEquals(1, len(messageElem.findall('pending_merges')))
         self.assert_("Empty commit 3" in \
             messageElem.findall('pending_merges/log/message')[0].text)
-        self.assertEndsWith(
-            messageElem.findall('pending_merges/log/message')[0].text, "...")
 
     def test_tree_statusxml_ignores(self):
         """Tests branch status with ignores"""

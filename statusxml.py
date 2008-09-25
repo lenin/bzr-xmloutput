@@ -28,9 +28,10 @@ from bzrlib import (
     diff,
     trace,
     errors,
+    revision as _mod_revision,
     )
 
-
+from bzrlib.status import _get_sorted_revisions
 from bzrlib.osutils import terminal_width
 from bzrlib.xml_serializer import _escape_cdata
 from bzrlib.trace import warning
@@ -151,7 +152,6 @@ def show_tree_status_xml(wt, show_unchanged=None,
             # this
             delta.unversioned = [unversioned for unversioned in
                 delta.unversioned if not new.is_ignored(unversioned[0])]
-            #delta.show(to_file,
             show_tree_xml(delta, to_file,
                        show_ids=show_ids,
                        show_unchanged=show_unchanged, 
@@ -182,40 +182,69 @@ def show_pending_merges(new, to_file):
     parents = new.get_parent_ids()
     if len(parents) < 2:
         return
+    
     pending = parents[1:]
     branch = new.branch
     last_revision = parents[0]
     to_file.write('<pending_merges>')
-    if last_revision is not None:
-        try:
-            ignore = set(branch.repository.get_ancestry(last_revision))
-        except errors.NoSuchRevision:
-            # the last revision is a ghost : assume everything is new 
-            # except for it
-            ignore = set([None, last_revision])
-    else:
-        ignore = set([None])
     # TODO: this could be improved using merge_sorted - we'd get the same 
     # output rather than one level of indent.
+    graph = branch.repository.get_graph()
+    other_revisions = [last_revision]
     for merge in pending:
-        ignore.add(merge)
         try:
-            width = terminal_width()
-            m_revision = branch.repository.get_revision(merge)
-            to_file.write(logxml.line_log(m_revision))
-            inner_merges = branch.repository.get_ancestry(merge)
-            assert inner_merges[0] is None
-            inner_merges.pop(0)
-            inner_merges.reverse()
-            for mmerge in inner_merges:
-                if mmerge in ignore:
-                    continue
-                mm_revision = branch.repository.get_revision(mmerge)
-                to_file.write(logxml.line_log(mm_revision))
-                ignore.add(mmerge)
+            rev = branch.repository.get_revisions([merge])[0]
         except errors.NoSuchRevision:
-            to_file.write('<pending_merge>%s</pending_merge>' % merge)
+            # If we are missing a revision, just print out the revision id
+            show_ghost(to_file, merge)
+            other_revisions.append(merge)
+            continue
+        
+        # Log the merge, as it gets a slightly different formatting
+        to_file.write(logxml.line_log(rev))
+        # Find all of the revisions in the merge source, which are not in the
+        # last committed revision.
+        merge_extra = graph.find_unique_ancestors(merge, other_revisions)
+        other_revisions.append(merge)
+        merge_extra.discard(_mod_revision.NULL_REVISION)
+
+        # Get a handle to all of the revisions we will need
+        try:
+            revisions = dict((rev.revision_id, rev) for rev in
+                             branch.repository.get_revisions(merge_extra))
+        except errors.NoSuchRevision:
+            # One of the sub nodes is a ghost, check each one
+            revisions = {}
+            for revision_id in merge_extra:
+                try:
+                    rev = branch.repository.get_revisions([revision_id])[0]
+                except errors.NoSuchRevision:
+                    revisions[revision_id] = None
+                else:
+                    revisions[revision_id] = rev
+                    
+        # Display the revisions brought in by this merge.
+        rev_id_iterator = _get_sorted_revisions(merge, merge_extra,
+                            branch.repository.get_parent_map(merge_extra))
+        # Skip the first node
+        num, first, depth, eom = rev_id_iterator.next()
+        if first != merge:
+            raise AssertionError('Somehow we misunderstood how'
+                ' iter_topo_order works %s != %s' % (first, merge))
+        for num, sub_merge, depth, eom in rev_id_iterator:
+            rev = revisions[sub_merge]
+            if rev is None:
+                show_ghost(to_file, sub_merge)
+                continue
+            to_file.write(logxml.line_log(revisions[sub_merge]))
     to_file.write('</pending_merges>')
+
+
+def show_ghost(to_file, merge):
+    to_file.write('<pending_merge kind="ghost"><log><revisionid>'
+                  '%s</revisionid></log></pending_merge>' \
+                  % merge)
+
 
 def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
         short_status=False, show_unversioned=False):
