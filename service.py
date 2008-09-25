@@ -24,14 +24,12 @@ lazy_import(globals(), """
 import sys, os
 from cStringIO import StringIO 
 import bzrlib
-from bzrlib.option import Option
-from bzrlib.commands import display_command
 from bzrlib import commands, trace, errors, osutils
-from xmlrpclib import Fault, Binary
-from xml_errors import XMLError
 import codecs, logging
 """)
 
+from xml_errors import XMLError
+from xmlrpclib import Fault, Binary
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 run_dir = os.getcwdu()
