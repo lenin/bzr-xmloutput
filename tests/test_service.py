@@ -1,9 +1,9 @@
 
-from xmlrpclib import Server, Error
+import xmlrpclib
 import socket
 import threading
 
-from bzrlib.plugins.xmloutput import service
+from bzrlib.plugins.xmloutput.service import *
 from bzrlib import tests
 from bzrlib import transport
 import os, sys
@@ -35,8 +35,8 @@ class XMLRPCServer(transport.Server):
 
     def _get_xmlrpcd(xmlrpcServer):
         if XMLRPCServer._xmlrpcd is None:
-            XMLRPCServer._xmlrpcd =  service.BzrXMLRPCServer((host, port)) 
-            service.register_functions(XMLRPCServer._xmlrpcd)
+            XMLRPCServer._xmlrpcd =  BzrXMLRPCServer((host, port)) 
+            register_functions(XMLRPCServer._xmlrpcd)
         return XMLRPCServer._xmlrpcd
 
     def _xmlrpc_start(self):
@@ -126,7 +126,7 @@ class TestXmlRpcServer(tests.TestCase):
             self.server = XMLRPCServer()
             self.server.setUp()
             self.addCleanup(self.server.tearDown)
-        self.client = Server("http://%s:%s" % (host, str(port)))
+        self.client = xmlrpclib.Server("http://%s:%s" % (host, str(port)))
 
     def test_hello(self):
         response = self.client.hello()

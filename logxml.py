@@ -169,8 +169,7 @@ class XMLLogFormatter(log.LogFormatter):
         if not revision.rev.message:
             self.to_file.write('(no message)')
         else:
-            message = _escape_cdata(revision.rev.message.rstrip('\r\n')).splitlines()
-            self.to_file.write(os.linesep.join(message))
+            self.to_file.write(_format_message(revision.rev.message))
         self.to_file.write('</message>')
         if revision.delta is not None:
             from statusxml import show_tree_xml
@@ -212,7 +211,9 @@ class XMLLineLogFormatter(log.LineLogFormatter):
         self._max_chars = terminal_width() - 1
 
     def log_string(self, revno, rev, max_chars=50):
-        """Format log info into one string. Truncate tail of string
+        """Format log info into one string style. Don't truncate the string 
+        like LineLogFormatter because we are writting xml, and don't make sense
+        to truncate the string.
         :param  revno:      revision number (int) or None.
                             Revision numbers counts from 1.
         :param  rev:        revision info object
@@ -223,16 +224,25 @@ class XMLLineLogFormatter(log.LineLogFormatter):
         if revno:
             # show revno only when is not None
             out.append("<revno>%s</revno>" % revno)
+        elif rev.revision_id:
+            out.append("<revisionid>%s</revisionid>" % rev.revision_id)
         out.append('<committer>%s</committer>' % 
-                   self.truncate(self.short_author(rev), 20))
-        out.append('<timestamp>%s</timestamp>' % self.date_string(rev))
-        ## TODO: fix hardcoded max_chars 
-        out.append('<message>%s</message>' % 
-                   _escape_cdata(self.truncate(rev.get_summary(), max_chars)))
+                   _escape_cdata(rev.committer))
+        date_str = format_date(rev.timestamp,
+                            rev.timezone or 0,
+                            show_offset=True)
+        out.append('<timestamp>%s</timestamp>' % date_str)
+        
+        out.append('<message>%s</message>' % _format_message(rev.message))
         out.append('</log>')
         return " ".join(out).rstrip('\n')
+
 
 def line_log(rev):
     lf = XMLLineLogFormatter(None)
     return lf.log_string(None, rev)
 
+
+def _format_message(rev_message):
+    message = _escape_cdata(rev_message.rstrip('\r\n')).splitlines()
+    return os.linesep.join(message)

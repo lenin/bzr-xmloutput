@@ -22,12 +22,12 @@
 from xmlrpclib import Server, Error
 import os
 import sys
+from bzrlib import osutils
 
 def setup_outf(encoding_type='replace'):
     """Return a file linked to stdout, which has proper encoding."""
     import codecs
     import bzrlib
-    from bzrlib import osutils
     if encoding_type == 'exact':
         # force sys.stdout to be binary stream on win32
         if sys.platform == 'win32':
@@ -53,7 +53,7 @@ def main(argv=[]):
         [args.append(arg) for arg in argv[1:]]
         exit_val, out, err = server.run_bzr_command(args, os.getcwd())
         outf = setup_outf()
-        outf.write(out)
+        outf.write(out.data.decode(osutils.get_terminal_encoding(), 'replace'))
         sys.stderr.write(err)
         outf.flush();
         sys.stderr.flush();
