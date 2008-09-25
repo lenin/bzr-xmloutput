@@ -27,7 +27,7 @@ import bzrlib
 from bzrlib.option import Option
 from bzrlib.commands import display_command
 from bzrlib import commands, trace, errors, osutils
-from xmlrpclib import Fault
+from xmlrpclib import Fault, Binary
 from xml_errors import XMLError
 import codecs, logging
 """)
@@ -69,6 +69,7 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
         bzrlib.user_encoding = 'UTF-8'
         bzrlib.osutils._cached_user_encoding = bzrlib.user_encoding
         bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
+        self.encoding = bzrlib.user_encoding
         while not self.finished:
             self.handle_request()
 
@@ -121,17 +122,24 @@ def run_bzr_xml(argv, workdir):
 
 
 def _run_bzr(argv, workdir, func):
-    os.chdir(workdir)
-    exitval = func(argv)
-    sys.stderr.flush()
-    sys.stdout.flush()
-    if isinstance(exitval, Fault):
-        return_val = exitval
-    else: 
-        return_val = (exitval, sys.stdout.getvalue(),
-                    sys.stderr.getvalue())
-    os.chdir(run_dir)
-    return return_val
+    try:
+        os.chdir(workdir)
+        exitval = func(argv)
+        sys.stderr.flush()
+        sys.stdout.flush()
+        if isinstance(exitval, Fault):
+            return_val = exitval
+        else: 
+            # use a Binary object to wrap the output to avoid NULL and other 
+            # non xmlrpc friendly chars 
+            out = Binary(data=sys.stdout.getvalue())
+            return_val = (exitval, out, sys.stderr.getvalue())
+            os.chdir(run_dir)
+        return return_val
+    except:
+        import traceback
+        traceback.print_exc(file=sys.__stderr__)
+        raise
 
 
 def custom_commands_main(argv):
