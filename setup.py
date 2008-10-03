@@ -21,10 +21,15 @@
 """A Bazaar plugin that provides a option to generate XML output for builtins commands"""
 
 from distutils.core import setup
+from extras.bdist_nsis import bdist_nsis
+
+cmdclass = {
+    'bdist_nsis': bdist_nsis,
+}
 
 setup(
     name='bzr-xmloutput',
-    version='0.7.0',
+    version='0.8.0',
     maintainer='Guillermo Gonzalez',
     maintainer_email='guillo.gonzo@gmail.com',
     description="""A Bazaar plugin that provides a option to generate XML output for builtins commands""",
@@ -33,4 +38,5 @@ setup(
     packages=['bzrlib.plugins.xmloutput'],
     package_dir={'bzrlib.plugins.xmloutput': '.'},
     long_description="""This plugin adds commands (log, status, missing, etc) with xml prefix that generates XML output.""",
+    cmdclass=cmdclass,
 )

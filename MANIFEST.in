@@ -1,2 +1,4 @@
-include LICENSE
-include tests/*.py
+include LICENSE 
+recursive-include tests *.py
+recursive-include extras *.py
+recursive-include installer *.nsi _lib

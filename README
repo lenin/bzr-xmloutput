@@ -16,6 +16,9 @@ This plugin adds an commands (matching some builtins commands) with xml prefix t
  There are two main options to install Bazaar plugins, from source or directly 
  from the branch. 
  For further instructions visit:  http://bazaar-vcs.org/UsingPlugins.
+
+ For windows users using bzr standalone installed (bzr.exe), you should use the 
+ bzr-xmloutput-setup-x-x-x.exe installer.
  
  Notice: If you are installing bzr-xmloutput from the source tarball, the 
          defaut install location is bzrlib/plugins/xmloutput. To change this

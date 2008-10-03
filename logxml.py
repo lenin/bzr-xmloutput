@@ -9,7 +9,6 @@ from bzrlib import (
 from bzrlib.osutils import format_date
 from bzrlib.xml_serializer import _escape_cdata
 from bzrlib import log
-import StringIO
 import os
 """)
 
@@ -203,6 +202,7 @@ class XMLLogFormatter(log.LogFormatter):
             self.open_logs = self.open_logs - 1
         self.to_file.write('</logs>')
         
+
 class XMLLineLogFormatter(log.LineLogFormatter):
 
     def __init__(self, *args, **kwargs):

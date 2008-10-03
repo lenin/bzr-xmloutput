@@ -1,0 +1,22 @@
+Building NSIS installer for using bzr-xmloutput with standalone bzr.exe
+==============================================================
+
+To build NSIS installer you need NSIS program itself.
+
+To build installer you need to run command from tree root::
+
+	python setup.py bdist_nsis
+
+NSIS is able to run on Linux platform, so in theory this command should
+work even on Linux.
+
+Resulting installer will appear in tree root with name
+``bzr-xmloutput-setup-X.Y.Z.exe``.
+
+
+SimpleXMLRPCServer (mandatory)
+*****************
+SimpleXMLRPCServer.py should be placed in ``./installer/_lib`` directory.
+Usually you can copy them from your Python 2.5 ``site-packages``
+directory.
+
