@@ -53,7 +53,7 @@ from xml_errors import handle_error_xml
 """)
 
 
-version_info = (0, 9, 0, 'dev')
+version_info = (0, 9, 0, 'dev', 0)
 plugin_name = 'xmloutput'
 
 null_option = Option('null', help='Write an ascii NUL (\\0) as the final char')
