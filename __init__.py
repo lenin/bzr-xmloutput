@@ -21,8 +21,8 @@
 #               Martin Albisetti
 
 """
-This plugin provides xml output for status, log, annotate, missing, info, version and plugins
-adding a --xml option to each
+This plugin provides xml output for status, log, annotate, missing, info, 
+version and plugins adding a --xml option to each
 """
 """
 (most of this is code was modified from bzrlib.cmd_status, 
@@ -53,7 +53,7 @@ from xml_errors import handle_error_xml
 """)
 
 
-version_info = (0, 8, 0)
+version_info = (0, 9, 0, 'dev')
 plugin_name = 'xmloutput'
 
 null_option = Option('null', help='Write an ascii NUL (\\0) as the final char')
@@ -350,9 +350,10 @@ class cmd_xmllog(builtins.cmd_log):
             message=None,
             limit=None,
             null=False):
-        exit_val =  builtins.cmd_log.run(self, location, timezone,
-            verbose, show_ids, forward, revision,
-            logxml.XMLLogFormatter, message, limit)
+        exit_val =  builtins.cmd_log.run(self, location=location, 
+            timezone=timezone, verbose=verbose, show_ids=show_ids, 
+            forward=forward, revision=revision,
+            log_format=logxml.XMLLogFormatter, message=message, limit=limit)
         if null:
             self.outf.write('\0')
         self.outf.write('\n')

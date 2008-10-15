@@ -95,15 +95,23 @@ class TestXmlAnnotate(TestCaseWithTransport):
     def test_xmlannotate_cmd_show_ids(self):
         out, err = self.run_bzr('xmlannotate hello.txt --show-ids')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
+
         expected_xml = (''.join(['<?xml version="1.0"?>',
                                 '<annotation workingtree-root="%s" file="hello.txt">',
-                                '<entry fid="%s">my helicopter\n</entry>',
-                                '<entry fid="%s">your helicopter\n</entry>',
-                                '<entry fid="%s">all of\n</entry>',
-                                '<entry fid="">our helicopters\n',
-                                '</entry></annotation>\n']) %  
-                                    (wt_root_path, self.revision_id_1, 
-                                         self.revision_id_3, self.revision_id_4))
+                                '<entry revno="1" author="test@user" date="%s"',
+                                ' fid="%s">my helicopter</entry>',
+                                '<entry revno="3" author="user@test" date="%s"',
+                                ' fid="%s">your helicopter</entry>',
+                                '<entry revno="4" author="user@test" date="%s"',
+                                ' fid="%s">all of</entry>',
+                                '<entry revno="4" author="user@test" date="%s"',
+                                ' fid="%s">our helicopters</entry>',
+                                '</annotation>\n',]) %
+                                (wt_root_path, 
+                                self.time_revision_id_1, self.revision_id_1, 
+                                self.time_revision_id_3, self.revision_id_3,
+                                self.time_revision_id_4, self.revision_id_4,
+                                self.time_revision_id_4, self.revision_id_4))
         #TODO: assert xml and elementree (including attributes)
         max_len = max([len(self.revision_id_1),
                        len(self.revision_id_3),

@@ -32,6 +32,7 @@ from bzrlib import (
     bzrdir,
     conflicts,
     errors,
+    osutils,
     )
 import bzrlib.branch
 from bzrlib.osutils import pathjoin
@@ -390,10 +391,11 @@ class TestXmlStatusEncodings(TestXmlStatus):
     
     def setUp(self):
         TestCaseWithTransport.setUp(self)
-        self.user_encoding = bzrlib.user_encoding
+        self.user_encoding = osutils._cached_user_encoding
         self.stdout = sys.stdout
 
     def tearDown(self):
+        osutils._cached_user_encoding = self.user_encoding
         bzrlib.user_encoding = self.user_encoding
         sys.stdout = self.stdout
         TestCaseWithTransport.tearDown(self)
@@ -412,6 +414,7 @@ class TestXmlStatusEncodings(TestXmlStatus):
 
     def test_stdout_ascii_xml(self):
         sys.stdout = StringIO()
+        osutils._cached_user_encoding = 'ascii'
         bzrlib.user_encoding = 'ascii'
         working_tree = self.make_uncommitted_tree()
         stdout, stderr = self.run_bzr("xmlstatus")

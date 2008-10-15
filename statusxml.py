@@ -29,9 +29,9 @@ from bzrlib import (
     trace,
     errors,
     revision as _mod_revision,
+    status,
     )
 
-from bzrlib.status import _get_sorted_revisions
 from bzrlib.osutils import terminal_width
 from bzrlib.xml_serializer import _escape_cdata
 from bzrlib.trace import warning
@@ -140,7 +140,10 @@ def show_tree_status_xml(wt, show_unchanged=None,
         old.lock_read()
         new.lock_read()
         try:
-            diff._raise_if_nonexistent(specific_files, old, new)
+            try: 
+                diff._raise_if_nonexistent(specific_files, old, new)
+            except AttributeError:
+                status._raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
             to_file.write('<?xml version="1.0" encoding="UTF-8"?>')
             to_file.write('<status workingtree_root="%s">' % \
@@ -224,7 +227,7 @@ def show_pending_merges(new, to_file):
                     revisions[revision_id] = rev
                     
         # Display the revisions brought in by this merge.
-        rev_id_iterator = _get_sorted_revisions(merge, merge_extra,
+        rev_id_iterator = status._get_sorted_revisions(merge, merge_extra,
                             branch.repository.get_parent_map(merge_extra))
         # Skip the first node
         num, first, depth, eom = rev_id_iterator.next()

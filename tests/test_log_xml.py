@@ -21,6 +21,7 @@
 import os
 
 import bzrlib
+from bzrlib import osutils
 from bzrlib.tests.blackbox import ExternalBase
 from bzrlib.tests import TestCaseInTempDir, TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
@@ -484,9 +485,10 @@ class TestLogEncodings(TestCaseInTempDir):
 
     def setUp(self):
         TestCaseInTempDir.setUp(self)
-        self.user_encoding = bzrlib.user_encoding
+        self.user_encoding = osutils._cached_user_encoding
 
     def tearDown(self):
+        osutils._cached_user_encoding = self.user_encoding
         bzrlib.user_encoding = self.user_encoding
         TestCaseInTempDir.tearDown(self)
 
@@ -506,12 +508,13 @@ class TestLogEncodings(TestCaseInTempDir):
         else:
             encoded_msg = self._message.encode(encoding)
 
-        old_encoding = bzrlib.user_encoding
+        old_encoding = osutils._cached_user_encoding
         # This test requires that 'run_bzr' uses the current
         # bzrlib, because we override user_encoding, and expect
         # it to be used
         try:
-            bzrlib.user_encoding = 'ascii'
+            osutils._cached_user_encoding = 'ascii'
+            bzrlib.user_encoding  = 'ascii'
             # We should be able to handle any encoding
             out, err = bzr('xmllog', encoding=encoding)
             if not fail:
@@ -522,6 +525,7 @@ class TestLogEncodings(TestCaseInTempDir):
             else:
                 self.assertNotEqual(-1, out.find('Message with ?'))
         finally:
+            osutils._cached_user_encoding = old_encoding
             bzrlib.user_encoding = old_encoding
 
     def test_log_handles_encoding(self):
@@ -538,6 +542,7 @@ class TestLogEncodings(TestCaseInTempDir):
 
     def test_stdout_encoding(self):
         bzr = self.run_bzr
+        osutils._cached_user_encoding = "cp1251"
         bzrlib.user_encoding = "cp1251"
 
         bzr('init')
