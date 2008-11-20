@@ -21,11 +21,19 @@
 
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
-import sys, os
-from cStringIO import StringIO 
 import bzrlib
-from bzrlib import commands, trace, errors, osutils
-import codecs, logging
+from bzrlib import (
+    commands,
+    trace,
+    errors,
+    osutils
+    )
+import sys
+import os
+import codecs
+import logging
+import traceback
+from cStringIO import StringIO
 """)
 
 from xml_errors import XMLError
@@ -33,6 +41,7 @@ from xmlrpclib import Fault, Binary
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
 run_dir = os.getcwdu()
+
 
 class BzrXMLRPCServer(SimpleXMLRPCServer):
     
@@ -129,7 +138,7 @@ def _run_bzr(argv, workdir, func):
             return_val = exitval
         else: 
             # use a Binary object to wrap the output to avoid NULL and other 
-            # non xmlrpc friendly chars 
+            # non xmlrpc (or client xml parsers) friendly chars 
             out = Binary(data=sys.stdout.getvalue())
             return_val = (exitval, out, sys.stderr.getvalue())
             os.chdir(run_dir)
@@ -150,6 +159,7 @@ def custom_commands_main(argv):
     except errors.BzrError, e:
         raise Fault(42, str(XMLError(e)))
     except Exception, e:
+        traceback.print_exc(file=sys.__stderr__)
         raise Fault(32, str(XMLError(e)))
 
 

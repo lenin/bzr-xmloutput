@@ -5,10 +5,10 @@ lazy_import(globals(), """
 import bzrlib
 from bzrlib import (
     debug,
+    osutils,
+    log,
     )
-from bzrlib.osutils import format_date
 from bzrlib.xml_serializer import _escape_cdata
-from bzrlib import log
 import os
 """)
 
@@ -19,9 +19,9 @@ class XMLLogFormatter(log.LogFormatter):
     supports_merge_revisions = True
     supports_delta = True
     supports_tags = True
-    
+
     def __init__(self, to_file, show_ids=False, show_timezone='original'):
-        super(XMLLogFormatter, self).__init__(to_file=to_file, 
+        super(XMLLogFormatter, self).__init__(to_file=to_file,
                                show_ids=show_ids, show_timezone=show_timezone)
         self.log_count = 0
         self.start_with_merge = False
@@ -31,7 +31,7 @@ class XMLLogFormatter(log.LogFormatter):
         self.open_logs = 0
         self.open_merges = 0
         self.stack = []
-        
+
     def show(self, revno, rev, delta, tags=None):
         lr = log.LogRevision(rev, revno, 0, delta, tags)
         return self.log_revision(lr)
@@ -55,10 +55,10 @@ class XMLLogFormatter(log.LogFormatter):
                         self.previous_merge_depth
                     for m in range(0, merge_depth_diference):
                         actions.append(self.__open_merge)
-                    if merge_depth_diference > 1: 
+                    if merge_depth_diference > 1:
                         self.nested_merge_count += 1
                 elif self.log_count == 0:
-                    # first log is inside a merge, we show it as a top level 
+                    # first log is inside a merge, we show it as a top level
                     # we could support  a merge tag without parent log.
                     self.start_with_merge = True
             elif self.previous_merge_depth > revision.merge_depth:
@@ -86,10 +86,10 @@ class XMLLogFormatter(log.LogFormatter):
         else:
             actions.append(self.__close_log)
             if self.start_with_merge:
-                # we only care about the first log, the following logs are 
+                # we only care about the first log, the following logs are
                 # handlend in the logic of nested merges
                 self.start_with_merge = False
-                
+
         for action in actions:
             if type(action) == dict:
                 action.keys()[0](action[action.keys()[0]])
@@ -142,7 +142,7 @@ class XMLLogFormatter(log.LogFormatter):
                 self.to_file.write('<tag>%s</tag>' % tag)
             self.to_file.write('</tags>')
         if self.show_ids:
-            self.to_file.write('<revisionid>%s</revisionid>' %  
+            self.to_file.write('<revisionid>%s</revisionid>' %
                                 revision.rev.revision_id)
             if len(revision.rev.parent_ids) > 0:
                 self.to_file.write('<parents>')
@@ -159,17 +159,17 @@ class XMLLogFormatter(log.LogFormatter):
                 _escape_cdata(revision.rev.properties['branch-nick']))
         except KeyError:
             pass
-        date_str = format_date(revision.rev.timestamp,
+        date_str = osutils.format_date(revision.rev.timestamp,
                                revision.rev.timezone or 0,
                                self.show_timezone)
         self.to_file.write('<timestamp>%s</timestamp>' % date_str)
 
-        self.to_file.write('<message>')
+        self.to_file.write('<message><![CDATA[')
         if not revision.rev.message:
             self.to_file.write('(no message)')
         else:
             self.to_file.write(_format_message(revision.rev.message))
-        self.to_file.write('</message>')
+        self.to_file.write(']]></message>')
         if revision.delta is not None:
             from statusxml import show_tree_xml
             self.to_file.write('<affected-files>')
@@ -178,7 +178,7 @@ class XMLLogFormatter(log.LogFormatter):
 
     def begin_log(self):
         self.to_file.write('<?xml version="1.0" encoding="%s"?>' % \
-                bzrlib.user_encoding)
+                osutils.get_user_encoding())
         self.to_file.write('<logs>')
 
     def end_log(self):
@@ -196,22 +196,20 @@ class XMLLogFormatter(log.LogFormatter):
             if self.open_logs > 0:
                 self.to_file.write('</log>')
                 self.open_logs = self.open_logs - 1
-        else: 
+        else:
             if self.open_logs > 0:
                 self.to_file.write('</log>')
             self.open_logs = self.open_logs - 1
         self.to_file.write('</logs>')
-        
+
 
 class XMLLineLogFormatter(log.LineLogFormatter):
 
     def __init__(self, *args, **kwargs):
-        from bzrlib.osutils import terminal_width
         super(XMLLineLogFormatter, self).__init__(*args, **kwargs)
-        self._max_chars = terminal_width() - 1
 
     def log_string(self, revno, rev, max_chars=50):
-        """Format log info into one string style. Don't truncate the string 
+        """Format log info into one string style. Don't truncate the string
         like LineLogFormatter because we are writting xml, and don't make sense
         to truncate the string.
         :param  revno:      revision number (int) or None.
@@ -226,14 +224,14 @@ class XMLLineLogFormatter(log.LineLogFormatter):
             out.append("<revno>%s</revno>" % revno)
         elif rev.revision_id:
             out.append("<revisionid>%s</revisionid>" % rev.revision_id)
-        out.append('<committer>%s</committer>' % 
+        out.append('<committer>%s</committer>' %
                    _escape_cdata(rev.committer))
-        date_str = format_date(rev.timestamp,
+        date_str = osutils.format_date(rev.timestamp,
                             rev.timezone or 0,
                             show_offset=True)
         out.append('<timestamp>%s</timestamp>' % date_str)
-        
-        out.append('<message>%s</message>' % _format_message(rev.message))
+
+        out.append('<message><![CDATA[%s]]></message>' % _format_message(rev.message))
         out.append('</log>')
         return " ".join(out).rstrip('\n')
 
@@ -244,5 +242,4 @@ def line_log(rev):
 
 
 def _format_message(rev_message):
-    message = _escape_cdata(rev_message.rstrip('\r\n')).splitlines()
-    return os.linesep.join(message)
+    return rev_message.rstrip('\n')
