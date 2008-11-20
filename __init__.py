@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Copyright (C) 2007 Guillermo Gonzalez
-# 
+#
 # The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
-# Contributors: 
+# Contributors:
 #               Martin Albisetti
 
 """
-This plugin provides xml output for status, log, annotate, missing, info, 
+This plugin provides xml output for status, log, annotate, missing, info,
 version and plugins adding a --xml option to each
 """
 """
-(most of this is code was modified from bzrlib.cmd_status, 
+(most of this is code was modified from bzrlib.cmd_status,
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
 import bzrlib
@@ -53,7 +53,7 @@ from xml_errors import handle_error_xml
 """)
 
 
-version_info = (0, 9, 0, 'dev', 0)
+version_info = (0, 8, 1)
 plugin_name = 'xmloutput'
 
 null_option = Option('null', help='Write an ascii NUL (\\0) as the final char')
@@ -88,7 +88,7 @@ class cmd_xmlstatus(commands.Command):
 
     To see ignored files use 'bzr ignored'.  For details on the
     changes to file texts, use 'bzr diff'.
-    
+
     Note that --short or -S gives status flags for each item, similar
     to Subversion's status command. To get output similar to svn -q,
     use bzr -SV.
@@ -132,13 +132,13 @@ class cmd_xmlannotate(commands.Command):
     This prints out the given file with an annotation on the left side
     indicating which revision, author and date introduced the change.
 
-    If the origin is the same for a run of consecutive lines, it is 
+    If the origin is the same for a run of consecutive lines, it is
     shown only at the top, unless the --all option is given.
     """
     hidden = True
     takes_args = ['filename']
     takes_options = ['revision', 'show-ids', null_option]
-    
+
     encoding_type = 'exact'
 
     @display_command
@@ -170,13 +170,13 @@ class cmd_xmlannotate(commands.Command):
 
             file_version = tree.inventory[file_id].revision
             # always run with --all and --long option (to get the author of each line)
-            annotate_file_xml(branch=branch, rev_id=file_version, 
-                    file_id=file_id, to_file=self.outf, show_ids=show_ids, 
+            annotate_file_xml(branch=branch, rev_id=file_version,
+                    file_id=file_id, to_file=self.outf, show_ids=show_ids,
                     wt_root_path=wt_root_path, file_path=relpath)
             if null:
                 self.outf.write('\0')
             self.outf.write('\n')
-        finally:            
+        finally:
             if wt is not None:
                 wt.unlock()
             else:
@@ -185,7 +185,7 @@ class cmd_xmlannotate(commands.Command):
 
 class cmd_xmlmissing(commands.Command):
     """Show unmerged/unpulled revisions between two branches.
-    
+
     OTHER_BRANCH may be local or remote.
     """
     hidden = True
@@ -208,10 +208,10 @@ class cmd_xmlmissing(commands.Command):
     @handle_error_xml
     def run(self, *args, **kwargs):
         from missingxml import show_missing_xml
-        
+
         if self.outf is None:
             self.outf = sys.stdout
-        
+
         show_missing_xml(self, log_format=logxml.XMLLogFormatter, *args, **kwargs)
         if getattr(kwargs, 'null', False):
             self.outf.write('\0')
@@ -231,7 +231,7 @@ class cmd_xmlinfo(commands.Command):
     takes_args = ['location?']
     takes_options = ['verbose', null_option]
     encoding_type = 'replace'
-    
+
     @display_command
     @handle_error_xml
     def run(self, *args, **kwargs):
@@ -249,10 +249,10 @@ class cmd_xmlinfo(commands.Command):
             self.outf.write('\0')
         self.outf.write('\n')
 
-            
+
 class cmd_xmlplugins(commands.Command):
     """List the installed plugins.
-    
+
     This command displays the list of installed plugins including
     version of plugin and a short description of each.
 
@@ -271,7 +271,7 @@ class cmd_xmlplugins(commands.Command):
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
                 bzrlib.user_encoding)
         self.outf.write('<plugins>')
-        from bzrlib.xml_serializer import _escape_cdata 
+        from bzrlib.xml_serializer import _escape_cdata
         for name, plugin in bzrlib.plugin.plugins().items():
             self.outf.write('<plugin>')
             self.outf.write('<name>%s</name>' % name)
@@ -350,8 +350,8 @@ class cmd_xmllog(builtins.cmd_log):
             message=None,
             limit=None,
             null=False):
-        exit_val =  builtins.cmd_log.run(self, location=location, 
-            timezone=timezone, verbose=verbose, show_ids=show_ids, 
+        exit_val =  builtins.cmd_log.run(self, location=location,
+            timezone=timezone, verbose=verbose, show_ids=show_ids,
             forward=forward, revision=revision,
             log_format=logxml.XMLLogFormatter, message=message, limit=limit)
         if null:
@@ -402,9 +402,9 @@ class cmd_start_xmlrpc(commands.Command):
 
     hidden=True
     takes_options = [
-            Option('hostname', argname='HOSTNAME', type=str, 
+            Option('hostname', argname='HOSTNAME', type=str,
                 help='use the specified hostname, defaults to localhost'),
-            Option('port', argname='PORT', type=int, 
+            Option('port', argname='PORT', type=int,
                 help='use the specified port, defaults to 11111'),
             'verbose',
             ]
@@ -418,9 +418,9 @@ class cmd_start_xmlrpc(commands.Command):
             self.outf.write('Listening on http://'+hostname+':'+str(port)+'\n')
             self.outf.flush()
 
-        self.server = service.BzrXMLRPCServer((hostname, port), 
+        self.server = service.BzrXMLRPCServer((hostname, port),
                                      logRequests=verbose, to_file=self.outf)
-        
+
         try:
             self.server.serve_forever()
         finally:
@@ -432,9 +432,9 @@ class cmd_stop_xmlrpc(commands.Command):
 
     hidden=True
     takes_options = [
-            Option('hostname', argname='HOSTNAME', type=str, 
+            Option('hostname', argname='HOSTNAME', type=str,
                 help='use the specified hostname, defaults to localhost'),
-            Option('port', argname='PORT', type=int, 
+            Option('port', argname='PORT', type=int,
                 help='use the specified port, defaults to 11111'),
             'verbose',
             ]

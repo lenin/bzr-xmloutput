@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
-# Contributors: 
+# Contributors:
 #               Martin Albisetti
 
 """A Bazaar plugin that provides a option to generate XML output for builtins commands"""
@@ -29,7 +29,7 @@ cmdclass = {
 
 setup(
     name='bzr-xmloutput',
-    version='0.8.0',
+    version='0.8.1',
     maintainer='Guillermo Gonzalez',
     maintainer_email='guillo.gonzo@gmail.com',
     description="""A Bazaar plugin that provides a option to generate XML output for builtins commands""",
