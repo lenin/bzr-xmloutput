@@ -22,7 +22,7 @@
 #               Martin Albisetti
 
 """
-This code is a modified copy from bzrlib.annotate 
+This code is a modified copy from bzrlib.annotate
 (see there for copyrights and licensing)
 """
 
@@ -32,10 +32,10 @@ _annotate_file = None
 try:
     from bzrlib.annotate import _expand_annotations
 except ImportError:
-    # to support bzr < 1.8     
+    # to support bzr < 1.8
     from bzrlib.annotate import _annotate_file
-    
-    
+
+
 from bzrlib.annotate import _annotations
 from bzrlib.xml_serializer import _escape_cdata
 from bzrlib import user_encoding
@@ -43,18 +43,18 @@ from bzrlib import osutils
 
 empty_annotation = 'revno="" author="" date=""'
 
-def annotate_file_xml(branch, rev_id, file_id, to_file=None, 
+def annotate_file_xml(branch, rev_id, file_id, to_file=None,
             show_ids=False, wt_root_path=None, file_path=None, full=False):
     if to_file is None:
         to_file = sys.stdout
-    
+
     encoding = getattr(to_file, 'encoding', None) or \
             osutils.get_terminal_encoding()
     prevanno=''
     last_rev_id = None
     to_file.write('<?xml version="1.0"?>')
     to_file.write(('<annotation workingtree-root="%s" %s>' % \
-                  (wt_root_path.encode(encoding), 
+                  (wt_root_path.encode(encoding),
                   'file="%s"' % file_path)).encode(encoding, 'replace'))
 
     annotations = _annotations(branch.repository, file_id, rev_id)
@@ -62,8 +62,8 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
         annotation = list(_annotate_file(branch, rev_id, file_id))
     else:
         annotation = list(_expand_annotations(annotations, branch))
-        
-    for (revno_str, author, date_str, line_rev_id, 
+
+    for (revno_str, author, date_str, line_rev_id,
         text, origin) in _annotation_iter(annotation, annotations):
         if not show_ids:
             origin = None
@@ -78,16 +78,16 @@ def _annotation_iter(annotation, annotations):
         yield (revno_str, author, date_str, line_rev_id, text, origin)
 
 
-def _show_entry(to_file, prevanno, revno_str, author, 
+def _show_entry(to_file, prevanno, revno_str, author,
                 date_str, line_rev_id, text, fid):
     anno = 'revno="%s" author="%s" date="%s"' % \
                 (_escape_cdata(revno_str), _escape_cdata(author), date_str)
-    if anno.lstrip() == empty_annotation: 
+    if anno.lstrip() == empty_annotation:
         anno = prevanno
     if fid:
         to_file.write('<entry %s fid="%s">%s</entry>' % \
                     (anno, fid, _escape_cdata(text)))
     else:
-        to_file.write('<entry %s>%s</entry>' % \
-                    (anno, _escape_cdata(text)))
+        to_file.write('<entry %s>' % anno)
+        to_file.write('%s</entry>' % _escape_cdata(text))
     return anno

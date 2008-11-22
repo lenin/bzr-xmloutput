@@ -48,11 +48,11 @@ class TestLog(ExternalBase):
         for revno in self.full_log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1', '2', '3'])
         for message in self.full_log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() in 
+            self.assertTrue(message.text.strip() in
                             ['message1', 'message2', 'message3'])
 
         log_xml = fromstring(self.run_bzr("xmllog -r 1..")[0])
-        for elem1, elem2 in zip(log_xml.getiterator(), 
+        for elem1, elem2 in zip(log_xml.getiterator(),
                                 self.full_log_xml.getiterator()):
             self.assertEquals(elem1.tag, elem2.tag)
             self.assertEquals(elem1.text, elem2.text)
@@ -62,7 +62,7 @@ class TestLog(ExternalBase):
         self._prepare()
         log_xml = fromstring(self.run_bzr("xmllog -r ..3")[0])
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), 
+        for elem1, elem2 in zip(log_xml.getiterator(),
                                 self.full_log_xml.getiterator()):
             self.assertEquals(elem1.tag, elem2.tag)
             self.assertEquals(elem1.text, elem2.text)
@@ -72,7 +72,7 @@ class TestLog(ExternalBase):
         log_xml = fromstring(self.run_bzr("xmllog -r ..")[0])
         #self.assertEquals(self.full_log, log)
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), 
+        for elem1, elem2 in zip(log_xml.getiterator(),
                                 self.full_log_xml.getiterator()):
             self.assertEquals(elem1.tag, elem2.tag)
             self.assertEquals(elem1.text, elem2.text)
@@ -81,7 +81,7 @@ class TestLog(ExternalBase):
         self._prepare()
         log_xml = fromstring(self.run_bzr("xmllog -r -3..")[0])
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), 
+        for elem1, elem2 in zip(log_xml.getiterator(),
                                 self.full_log_xml.getiterator()):
             self.assertEquals(elem1.tag, elem2.tag)
             self.assertEquals(elem1.text, elem2.text)
@@ -90,7 +90,7 @@ class TestLog(ExternalBase):
         self._prepare()
         log_xml = fromstring(self.run_bzr("xmllog -r -3..-1")[0])
         #self.assertEqualDiff(self.full_log, log)
-        for elem1, elem2 in zip(log_xml.getiterator(), 
+        for elem1, elem2 in zip(log_xml.getiterator(),
                                 self.full_log_xml.getiterator()):
             self.assertEquals(elem1.tag, elem2.tag)
             self.assertEquals(elem1.text, elem2.text)
@@ -141,7 +141,7 @@ class TestLog(ExternalBase):
         log = self.run_bzr("xmllog -r revno:2:branch1..revno:3:branch2",
                           retcode=3)[0]
         log_xml = fromstring(self.run_bzr("xmllog -r revno:1:branch2..revno:3:branch2")[0])
-        self.assertEqualDiff(elementtree_tostring(self.full_log_xml), 
+        self.assertEqualDiff(elementtree_tostring(self.full_log_xml),
                              elementtree_tostring(log_xml))
         log_xml = fromstring(self.run_bzr("xmllog -r revno:1:branch2")[0])
         for revno in log_xml.findall('log/revno'):
@@ -154,7 +154,7 @@ class TestLog(ExternalBase):
             self.assertTrue(branch_nick.text not in ['branch1'])
         #self.assertTrue('branch nick: branch2\n' in log)
         #self.assertTrue('branch nick: branch1\n' not in log)
-        
+
     def test_log_nonexistent_file(self):
         # files that don't exist in either the basis tree or working tree
         # should give an error
@@ -168,8 +168,8 @@ class TestLog(ExternalBase):
         branch = tree.branch
         branch.tags.set_tag('tag1', branch.get_rev_id(1))
         branch.tags.set_tag('tag1.1', branch.get_rev_id(1))
-        branch.tags.set_tag('tag3', branch.last_revision()) 
-        
+        branch.tags.set_tag('tag3', branch.last_revision())
+
         log_xml = fromstring(self.run_bzr("xmllog -r-1")[0])
         for tag in log_xml.findall('log/tags/tag'):
             self.assertEquals(tag.text, 'tag3')
@@ -241,7 +241,7 @@ class TestLogMerges(ExternalBase):
 #message:
 #  merge branch 1
 #    ------------------------------------------------------------
-#    revno: 1.1.2  
+#    revno: 1.1.2
 #    committer: Robert Collins <foo@example.com>
 #    branch nick: child
 #    timestamp: Tue 2006-03-28 22:31:40 +1100
@@ -270,8 +270,8 @@ class TestLogMerges(ExternalBase):
 #  first post
 #""", out)
         # but we dont have a nice pattern matcher hooked up yet, so:
-        # we check for the indenting of the commit message and the 
-        # revision numbers 
+        # we check for the indenting of the commit message and the
+        # revision numbers
         #self.assertTrue('revno: 2' in out)
         #self.assertTrue('  merge branch 1' in out)
         #self.assertTrue('    revno: 1.1.2' in out)
@@ -286,12 +286,12 @@ class TestLogMerges(ExternalBase):
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1', '2'])
         for message in log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() in 
+            self.assertTrue(message.text.strip() in
                             ['merge branch 1', 'first post'])
         for revno in log_xml.findall('log/merge/log/revno'):
             self.assertTrue(revno.text in ['1.1.2', '1.1.1'])
         for message in log_xml.findall('log/merge/log/message'):
-            self.assertTrue(message.text.strip() in 
+            self.assertTrue(message.text.strip() in
                             ['merge branch 2', 'branch 1'])
         for revno in log_xml.findall('log/merge/log/merge/log/revno'):
             self.assertEquals(revno.text, '1.2.1')
@@ -305,7 +305,7 @@ class TestLogMerges(ExternalBase):
         # the log will look something like:
 #        self.assertEqual("""\
 #------------------------------------------------------------
-#revno: 1.1.2  
+#revno: 1.1.2
 #committer: Robert Collins <foo@example.com>
 #branch nick: child
 #timestamp: Tue 2006-03-28 22:31:40 +1100
@@ -320,8 +320,8 @@ class TestLogMerges(ExternalBase):
 #      branch 2
 #""", out)
         # but we dont have a nice pattern matcher hooked up yet, so:
-        # we check for the indenting of the commit message and the 
-        # revision numbers 
+        # we check for the indenting of the commit message and the
+        # revision numbers
         #self.assertTrue('revno: 2' not in out)
         #self.assertTrue('  merge branch 1' not in out)
         #self.assertTrue('revno: 1.1.2' in out)
@@ -339,7 +339,7 @@ class TestLogMerges(ExternalBase):
             self.assertTrue(revno.text not in ['1.1.1', '2', '1'])
         for message in log_xml.findall('log/message'):
             self.assertEquals(message.text.strip(), 'merge branch 2')
-            self.assertTrue(message.text.strip() not in 
+            self.assertTrue(message.text.strip() not in
                             ['merge branch 1', 'first post', 'branch 1'])
         for revno in log_xml.findall('log/merge/log/revno'):
             self.assertEquals(revno.text, '1.2.1')
@@ -353,7 +353,7 @@ class TestLogMerges(ExternalBase):
         # the log will look something like:
 #        self.assertEqual("""\
 #------------------------------------------------------------
-#revno: 1.1.2  
+#revno: 1.1.2
 #committer: Robert Collins <foo@example.com>
 #branch nick: child
 #timestamp: Tue 2006-03-28 22:31:40 +1100
@@ -375,8 +375,8 @@ class TestLogMerges(ExternalBase):
 #  branch 1
 #""", out)
         # but we dont have a nice pattern matcher hooked up yet, so:
-        # we check for the indenting of the commit message and the 
-        # revision numbers 
+        # we check for the indenting of the commit message and the
+        # revision numbers
         #self.assertTrue('revno: 2' not in out)
         #self.assertTrue('  merge branch 1' not in out)
         #self.assertTrue('revno: 1.1.2' in out)
@@ -392,9 +392,9 @@ class TestLogMerges(ExternalBase):
             self.assertTrue(revno.text in ['1.1.2', '1.1.1'])
             self.assertTrue(revno.text not in ['2', '1'])
         for message in log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() in 
+            self.assertTrue(message.text.strip() in
                             ['branch 1', 'merge branch 2'])
-            self.assertTrue(message.text.strip() not in 
+            self.assertTrue(message.text.strip() not in
                             ['merge branch 1', 'first post'])
         for revno in log_xml.findall('log/merge/log/revno'):
             self.assertEquals(revno.text, '1.2.1')
@@ -445,13 +445,13 @@ class TestLogNestedMerges(ExternalBase):
     </log>
 </logs>'''
         return xml
-    
+
     def test_nested_merges(self):
         log_xml = fromstring(self._prepare())
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1', '2'])
         for message in log_xml.findall('log/message'):
-            self.assertTrue(message.text.strip() in 
+            self.assertTrue(message.text.strip() in
                             ['first post', 'merge branch 1'])
         for revno in log_xml.findall('log/merge/log/revno'):
             self.assertEquals(revno.text, '1.1')
@@ -461,7 +461,7 @@ class TestLogNestedMerges(ExternalBase):
             self.assertEquals(revno.text, '1.1.1')
         for message in log_xml.findall('log/merge/merge/log/message'):
             self.assertEquals(message.text.strip(), 'merge first post')
-        
+
 class TestLogEncodings(TestCaseInTempDir):
 
     _mu = u'\xb5'
@@ -569,7 +569,8 @@ class TestLogEncodings(TestCaseInTempDir):
         test_in_cp866 = '\x92\xa5\xe1\xe2'
         test_in_cp1251 = '\xd2\xe5\xf1\xf2'
         # Make sure the log string is encoded in cp866
-        self.assertEquals(test_in_cp866, message)
+        cdata = '<![CDATA[%s]]'
+        self.assertEquals(cdata % test_in_cp866, message)
         #self.assertEquals(test_in_cp866, message.text.strip())
         # Make sure the cp1251 string is not found anywhere
         self.assertEquals(-1, stdout.find(test_in_cp1251))

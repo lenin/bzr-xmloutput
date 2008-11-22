@@ -176,7 +176,7 @@ class TestInfoXml(ExternalBase):
 </repository_stats>
 </info>
 
-''' % (datestring_first, datestring_first, 
+''' % (datestring_first, datestring_first,
        )
         expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
@@ -297,6 +297,8 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>1.6</format>
 <format>1.6.1-rich-root</format>
+<format>1.9</format>
+<format>1.9-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -496,6 +498,8 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>1.6</format>
 <format>1.6.1-rich-root</format>
+<format>1.9</format>
+<format>1.9-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -644,7 +648,7 @@ class TestInfoXml(ExternalBase):
         # Create lightweight checkout
         transport.mkdir('tree')
         transport.mkdir('tree/lightcheckout')
-        tree2 = branch1.create_checkout('tree/lightcheckout', 
+        tree2 = branch1.create_checkout('tree/lightcheckout',
             lightweight=True)
         branch2 = tree2.branch
         self.assertCheckoutStatusOutput('-v tree/lightcheckout', tree2,
@@ -668,6 +672,8 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>1.6</format>
 <format>1.6.1-rich-root</format>
+<format>1.9</format>
+<format>1.9-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -817,6 +823,8 @@ class TestInfoXml(ExternalBase):
 <formats>
 <format>1.6</format>
 <format>1.6.1-rich-root</format>
+<format>1.9</format>
+<format>1.9-rich-root</format>
 <format>dirstate</format>
 <format>dirstate-tags</format>
 <format>pack-0.92</format>
@@ -1178,7 +1186,7 @@ class TestInfoXml(ExternalBase):
         expected_xml = ''.join(expected_xml.split('\n'))+'\n'
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
-    
+
     def test_info_shared_repository_with_tree_in_root(self):
         format = bzrdir.format_registry.make_bzrdir('knit')
         transport = self.get_transport()
@@ -1256,7 +1264,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
 
-    def assertCheckoutStatusOutput(self, 
+    def assertCheckoutStatusOutput(self,
         command_string, lco_tree, shared_repo=None,
         repo_branch=None,
         tree_locked=False,
@@ -1271,7 +1279,7 @@ class TestInfoXml(ExternalBase):
         allow us, the test writers, to document what *should* be present in
         the output. Removing this separation would remove the value of the
         tests.
-        
+
         :param path: the path to the light checkout.
         :param lco_tree: the tree object for the light checkout.
         :param shared_repo: A shared repository is in use, expect that in
@@ -1305,8 +1313,10 @@ class TestInfoXml(ExternalBase):
             }[(shared_repo is not None, light_checkout)]
         format = {True: '<format>1.6</format>\n' +
                         '<format>1.6.1-rich-root</format>\n' +
-                        '<format>dirstate</format>\n' + 
-                        '<format>dirstate-tags</format>\n' + 
+                        '<format>1.9</format>\n'+
+                        '<format>1.9-rich-root</format>\n'+
+                        '<format>dirstate</format>\n' +
+                        '<format>dirstate-tags</format>\n' +
                         '<format>pack-0.92</format>\n' +
                         '<format>rich-root</format>\n' +
                         '<format>rich-root-pack</format>',
@@ -1351,12 +1361,12 @@ class TestInfoXml(ExternalBase):
         else:
             branch_data = ("<checkout_of_branch>%s</checkout_of_branch>" %
                 lco_tree.branch.bzrdir.root_transport.base)
-        
+
         if verbose:
             verbose_info = '<committers>0</committers>'
         else:
             verbose_info = ''
-            
+
         expected_xml = '''<?xml version="1.0"?>
 <info>
 <layout>%s</layout>
