@@ -20,9 +20,8 @@ class XMLLogFormatter(log.LogFormatter):
     supports_delta = True
     supports_tags = True
 
-    def __init__(self, to_file, show_ids=False, show_timezone='original'):
-        super(XMLLogFormatter, self).__init__(to_file=to_file,
-                               show_ids=show_ids, show_timezone=show_timezone)
+    def __init__(self, *args, **kwargs):
+        super(XMLLogFormatter, self).__init__(*args, **kwargs)
         self.log_count = 0
         self.start_with_merge = False
         self.nested_merge_count = 0

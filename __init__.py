@@ -56,7 +56,7 @@ from xml_errors import handle_error_xml
 version_info = (0, 8, 1)
 plugin_name = 'xmloutput'
 
-null_option = Option('null', help='Write an ascii NUL (\\0) as the final char')
+null_option = Option('null', help='Write an ascii NUL (\\0) as the final char.')
 
 
 class cmd_xmlstatus(commands.Command):
@@ -291,7 +291,7 @@ class cmd_xmlversion(commands.Command):
     """Show version of bzr."""
     hidden = True
     encoding_type = 'replace'
-    takes_options = [Option("short", help="Only print the version number"),
+    takes_options = [Option("short", help="Only print the version number."),
                     null_option]
 
     @display_command
@@ -403,9 +403,9 @@ class cmd_start_xmlrpc(commands.Command):
     hidden=True
     takes_options = [
             Option('hostname', argname='HOSTNAME', type=str,
-                help='use the specified hostname, defaults to localhost'),
+                help='Use the specified hostname, defaults to localhost.'),
             Option('port', argname='PORT', type=int,
-                help='use the specified port, defaults to 11111'),
+                help='Use the specified port, defaults to 11111.'),
             'verbose',
             ]
 
@@ -433,9 +433,9 @@ class cmd_stop_xmlrpc(commands.Command):
     hidden=True
     takes_options = [
             Option('hostname', argname='HOSTNAME', type=str,
-                help='use the specified hostname, defaults to localhost'),
+                help='Use the specified hostname, defaults to localhost.'),
             Option('port', argname='PORT', type=int,
-                help='use the specified port, defaults to 11111'),
+                help='Use the specified port, defaults to 11111.'),
             'verbose',
             ]
 
