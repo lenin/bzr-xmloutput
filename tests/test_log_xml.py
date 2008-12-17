@@ -409,7 +409,7 @@ class TestLogNestedMerges(ExternalBase):
         # This is a home-made xml because I don't know how to generate
         # this particular case of nested merges (which I found that happen
         # in bzr.dev itself)
-        xml = '''<?xml version="1.0" encoding="UTF-8"?>
+        xml = ('''<?xml version="1.0" encoding="%s"?>
 <logs>
     <log>
         <revno>1</revno>
@@ -443,7 +443,7 @@ class TestLogNestedMerges(ExternalBase):
             </log>
         </merge>
     </log>
-</logs>'''
+</logs>''' % bzrlib.user_encoding)
         return xml
 
     def test_nested_merges(self):

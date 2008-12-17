@@ -26,6 +26,7 @@ rather starts again from the run_bzr function.
 
 import os
 import time
+import bzrlib
 
 from bzrlib.tests import TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
@@ -107,8 +108,8 @@ class TestXmlAnnotate(TestCaseWithTransport):
                                 '<entry revno="4" author="user@test" date="%s"',
                                 ' fid="%s">our helicopters</entry>',
                                 '</annotation>\n',]) %
-                                (wt_root_path, 
-                                self.time_revision_id_1, self.revision_id_1, 
+                                (wt_root_path,
+                                self.time_revision_id_1, self.revision_id_1,
                                 self.time_revision_id_3, self.revision_id_3,
                                 self.time_revision_id_4, self.revision_id_4,
                                 self.time_revision_id_4, self.revision_id_4))
@@ -147,10 +148,10 @@ class TestXmlAnnotate(TestCaseWithTransport):
     def test_xmlannotate_cmd_revision(self):
         out, err = self.run_bzr('xmlannotate hello.txt -r1')
         wt_root_path = self.wt.id2abspath(self.wt.get_root_id())
-        expected_xml = (''.join(['<?xml version="1.0"?>', 
-                                '<annotation workingtree-root="%s" file="hello.txt">', 
-                                '<entry revno="1" author="test@user" date="%s">my helicopter</entry>', 
-                                '</annotation>\n']) % (wt_root_path, 
+        expected_xml = (''.join(['<?xml version="1.0"?>',
+                                '<annotation workingtree-root="%s" file="hello.txt">',
+                                '<entry revno="1" author="test@user" date="%s">my helicopter</entry>',
+                                '</annotation>\n']) % (wt_root_path,
                                                     self.time_revision_id_1))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
@@ -167,7 +168,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
                                 '<entry revno="1" author="test@user" date="%s">my helicopter</entry>',
                                 '<entry revno="3" author="user@test" date="%s">your helicopter</entry>',
                                 '</annotation>\n'])  % (wt_root_path,
-                                                     self.time_revision_id_1, 
+                                                     self.time_revision_id_1,
                                                      self.time_revision_id_3))
         #TODO: assert xml and elementree (including attributes)
         self.assertEqual('', err)
@@ -187,11 +188,11 @@ class TestXmlAnnotate(TestCaseWithTransport):
         out, err = self.run_bzr('xmlannotate hello.txt -r1..2',
                                 retcode=3)
         self.assertEqual('', out)
-        self.assertEqual('<?xml version="1.0" encoding="UTF-8"?><error><class>'
+        self.assertEqual('<?xml version="1.0" encoding="%s"?><error><class>'
                 'BzrCommandError</class><dict><key>_preformatted_string</key><value>xmlannotate'
                 ' --revision takes exactly 1 argument</value></dict><message>'
                 'xmlannotate --revision takes exactly 1 argument</message>'
-                '</error>',err)
+                '</error>' % bzrlib.user_encoding, err)
 
     def test_xmlannotate_empty_file(self):
         tree = self.make_branch_and_tree('tree')

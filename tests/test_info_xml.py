@@ -43,10 +43,10 @@ class TestInfoXml(ExternalBase):
             location = "/i/do/not/exist/"
         out, err = self.run_bzr('xmlinfo '+location, retcode=3)
         self.assertEqual(out, '')
-        self.assertEqual(err, '<?xml version="1.0" encoding="UTF-8"?><error>'
+        self.assertEqual('<?xml version="1.0" encoding="%s"?><error>'
                 '<class>NotBranchError</class><dict><key>path</key><value>'
                 '%s</value></dict><message>Not a branch: "%s".</message>'
-                '</error>' % (location, location))
+                '</error>' % (bzrlib.user_encoding, location, location), err)
 
     def test_info_standalone(self):
         transport = self.get_transport()
