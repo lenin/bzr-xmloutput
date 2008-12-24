@@ -29,7 +29,7 @@ cmdclass = {
 
 setup(
     name='bzr-xmloutput',
-    version='0.8.1',
+    version='0.8.2',
     maintainer='Guillermo Gonzalez',
     maintainer_email='guillo.gonzo@gmail.com',
     description="""A Bazaar plugin that provides a option to generate XML output for builtins commands""",
