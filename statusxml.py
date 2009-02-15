@@ -140,6 +140,7 @@ def show_tree_status_xml(wt, show_unchanged=None,
         old.lock_read()
         new.lock_read()
         try:
+            nonexistents = None
             try:
                 specific_files, nonexistents \
                         = status._filter_nonexistent(specific_files, old, new)
