@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2007 Guillermo Gonzalez
+# Copyright (C) 2007-2009 Guillermo Gonzalez
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ from distutils.core import setup
 from extras.bdist_nsis import bdist_nsis
 
 bzr_plugin_name = 'xmloutput'
-bzr_plugin_version = (0, 8, 2)
+bzr_plugin_version = (0, 8, 3)
 bzr_commands = ['xmlannotate', 'xmlinfo', 'xmllog', 'xmlls', 'xmlmissing',
         'xmlplugins', 'xmlstatus', 'xmlversion']
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     }
     setup(
         name='bzr-xmloutput',
-        version='0.8.2',
+        version='0.8.3',
         maintainer='Guillermo Gonzalez',
         maintainer_email='guillo.gonzo@gmail.com',
         description="""A Bazaar plugin that provides a option to generate 

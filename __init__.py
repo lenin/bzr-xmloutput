@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2007 Guillermo Gonzalez
+# Copyright (C) 2007-2009 Guillermo Gonzalez
 #
 # The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
 #
@@ -53,7 +53,7 @@ from xml_errors import handle_error_xml
 """)
 
 
-version_info = (0, 8, 2)
+version_info = (0, 8, 3)
 plugin_name = 'xmloutput'
 
 null_option = Option('null', help='Write an ascii NUL (\\0) as the final char.')
