@@ -364,6 +364,7 @@ class cmd_xmlls(builtins.cmd_ls):
     """XML representation of the list of files in a tree.
     """
 
+    hidden = True
     _see_also = ['xmlstatus']
     takes_args = ['path?']
     # TODO: Take a revision or remote path and list that tree instead.

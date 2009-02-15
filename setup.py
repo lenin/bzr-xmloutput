@@ -18,25 +18,34 @@
 # Contributors:
 #               Martin Albisetti
 
-"""A Bazaar plugin that provides a option to generate XML output for builtins commands"""
+"""A Bazaar plugin that provides a option to generate XML output for 
+builtins commands"""
 
 from distutils.core import setup
 from extras.bdist_nsis import bdist_nsis
 
-cmdclass = {
-    'bdist_nsis': bdist_nsis,
-}
+bzr_plugin_name = 'xmloutput'
+bzr_plugin_version = (0, 8, 2)
+bzr_commands = ['xmlannotate', 'xmlinfo', 'xmllog', 'xmlls', 'xmlmissing',
+        'xmlplugins', 'xmlstatus', 'xmlversion']
 
-setup(
-    name='bzr-xmloutput',
-    version='0.8.2',
-    maintainer='Guillermo Gonzalez',
-    maintainer_email='guillo.gonzo@gmail.com',
-    description="""A Bazaar plugin that provides a option to generate XML output for builtins commands""",
-    license='GNU GPL',
-    url='https://launchpad.net/bzr-xmloutput',
-    packages=['bzrlib.plugins.xmloutput'],
-    package_dir={'bzrlib.plugins.xmloutput': '.'},
-    long_description="""This plugin adds commands (log, status, missing, etc) with xml prefix that generates XML output.""",
-    cmdclass=cmdclass,
+if __name__ == '__main__':
+    cmdclass = {
+        'bdist_nsis': bdist_nsis,
+    }
+    setup(
+        name='bzr-xmloutput',
+        version='0.8.2',
+        maintainer='Guillermo Gonzalez',
+        maintainer_email='guillo.gonzo@gmail.com',
+        description="""A Bazaar plugin that provides a option to generate 
+        XML output for builtins commands""",
+        license='GNU GPL',
+        url='https://launchpad.net/bzr-xmloutput',
+        packages=['bzrlib.plugins.xmloutput'],
+        package_dir={'bzrlib.plugins.xmloutput': '.'},
+        long_description="""This plugin adds a xml variant to various builtin 
+        commands that generates XML output.""",
+        cmdclass={'bdist_nsis': bdist_nsis, },
 )
+
