@@ -1,4 +1,5 @@
-# Copyright (C) 2005, 2006, 2007 Canonical Ltd
+# Copyright (C) 2005, 2006, 2007, 2008, 2009 Canonical Ltd
+# Copyright (C) 2008, 2009 Guillermo Gonzalez 
 # -*- coding: utf-8 -*-
 #
 # This program is free software; you can redistribute it and/or modify
@@ -147,21 +148,17 @@ class TestLog(ExternalBase):
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text in ['1'])
             self.assertTrue(revno.text not in ['2'])
-        #self.assertTrue('revno: 1\n' in log)
-        #self.assertTrue('revno: 2\n' not in log)
         for branch_nick in log_xml.findall('log/branch-nick'):
             self.assertTrue(branch_nick.text in ['branch2'])
             self.assertTrue(branch_nick.text not in ['branch1'])
-        #self.assertTrue('branch nick: branch2\n' in log)
-        #self.assertTrue('branch nick: branch1\n' not in log)
 
     def test_log_nonexistent_file(self):
         # files that don't exist in either the basis tree or working tree
         # should give an error
         wt = self.make_branch_and_tree('.')
         out, err = self.run_bzr('xmllog does-not-exist', retcode=3)
-        self.assertContainsRe(
-            err, 'Path does not have any revision history: does-not-exist')
+        self.assertContainsRe(err, 
+                'Path unknown at end or start of revision range: does-not-exist')
 
     def test_log_with_tags(self):
         tree = self._prepare(format='dirstate-tags')
@@ -580,18 +577,9 @@ class TestLogFile(TestCaseWithTransport):
 
     def setUp(self):
         TestCaseWithTransport.setUp(self)
-
-    def test_log_local_branch_file(self):
-        """We should be able to log files in local treeless branches"""
-        tree = self.make_branch_and_tree('tree')
-        self.build_tree(['tree/file'])
-        tree.add('file')
-        tree.commit('revision 1')
-        tree.bzrdir.destroy_workingtree()
-        self.run_bzr('xmllog tree/file')
-
-    def test_log_file(self):
-        """The log for a particular file should only list revs for that file"""
+    
+    def prepare_tree(self, complex=False):
+        # The complex configuration includes deletes and renames
         tree = self.make_branch_and_tree('parent')
         self.build_tree(['parent/file1', 'parent/file2', 'parent/file3'])
         tree.add('file1')
@@ -605,68 +593,98 @@ class TestLogFile(TestCaseWithTransport):
         child_tree.commit(message='branch 1')
         tree.merge_from_branch(child_tree.branch)
         tree.commit(message='merge child branch')
+        if complex:
+            tree.remove('file2')
+            tree.commit('remove file2')
+            tree.rename_one('file3', 'file4')
+            tree.commit('file3 is now called file4')
+            tree.remove('file1')
+            tree.commit('remove file1')
         os.chdir('parent')
+
+    def test_log_local_branch_file(self):
+        """We should be able to log files in local treeless branches"""
+        tree = self.make_branch_and_tree('tree')
+        self.build_tree(['tree/file'])
+        tree.add('file')
+        tree.commit('revision 1')
+        tree.bzrdir.destroy_workingtree()
+        self.run_bzr('xmllog tree/file')
+
+    def test_log_file(self):
+        """The log for a particular file should only list revs for that file"""
+        self.prepare_tree()
         log_xml = fromstring(self.run_bzr('xmllog file1')[0])
-        #self.assertContainsRe(log, 'revno: 1\n')
-        #self.assertNotContainsRe(log, 'revno: 2\n')
-        #self.assertNotContainsRe(log, 'revno: 3\n')
-        #self.assertNotContainsRe(log, 'revno: 3.1.1\n')
-        #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertEquals(revno.text, '1')
             self.assertTrue(revno.text not in ['2', '3', '3.1.1', '4'])
         log_xml = fromstring(self.run_bzr('xmllog file2')[0])
-        #self.assertNotContainsRe(log, 'revno: 1\n')
-        #self.assertContainsRe(log, 'revno: 2\n')
-        #self.assertNotContainsRe(log, 'revno: 3\n')
-        #self.assertContainsRe(log, 'revno: 3.1.1\n')
-        #self.assertContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '3'])
             self.assertTrue(revno.text in ['2', '3.1.1', '4'])
         log_xml = fromstring(self.run_bzr('xmllog file3')[0])
-        #self.assertNotContainsRe(log, 'revno: 1\n')
-        #self.assertNotContainsRe(log, 'revno: 2\n')
-        #self.assertContainsRe(log, 'revno: 3\n')
-        #self.assertNotContainsRe(log, 'revno: 3.1.1\n')
-        #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '2', '3.1.1', '4'])
             self.assertEquals(revno.text, '3')
         log_xml = fromstring(self.run_bzr('xmllog -r3.1.1 file2')[0])
-        #self.assertNotContainsRe(log, 'revno: 1\n')
-        #self.assertNotContainsRe(log, 'revno: 2\n')
-        #self.assertNotContainsRe(log, 'revno: 3\n')
-        #self.assertContainsRe(log, 'revno: 3.1.1\n')
-        #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '2', '3', '4'])
             self.assertEquals(revno.text, '3.1.1')
         log_xml = fromstring(self.run_bzr('xmllog -r4 file2')[0])
-        #self.assertNotContainsRe(log, 'revno: 1\n')
-        #self.assertNotContainsRe(log, 'revno: 2\n')
-        #self.assertNotContainsRe(log, 'revno: 3\n')
-        #self.assertContainsRe(log, 'revno: 3.1.1\n')
-        #self.assertContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '2', '3'])
             self.assertTrue(revno.text in ['3.1.1', '4'])
         log_xml = fromstring(self.run_bzr('xmllog -r3.. file2')[0])
-        #self.assertNotContainsRe(log, 'revno: 1\n')
-        #self.assertNotContainsRe(log, 'revno: 2\n')
-        #self.assertNotContainsRe(log, 'revno: 3\n')
-        #self.assertContainsRe(log, 'revno: 3.1.1\n')
-        #self.assertContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '2', '3'])
             self.assertTrue(revno.text in ['3.1.1', '4'])
         log_xml = fromstring(self.run_bzr('xmllog -r..3 file2')[0])
-        #self.assertNotContainsRe(log, 'revno: 1\n')
-        #self.assertContainsRe(log, 'revno: 2\n')
-        #self.assertNotContainsRe(log, 'revno: 3\n')
-        #self.assertNotContainsRe(log, 'revno: 3.1.1\n')
-        #self.assertNotContainsRe(log, 'revno: 4\n')
         for revno in log_xml.findall('log/revno'):
             self.assertTrue(revno.text not in ['1', '3', '3.1.1', '4'])
             self.assertEquals(revno.text, '2')
+
+    def test_log_file_historical_missing(self):
+        # Check logging a deleted file gives an error if the
+        # file isn't found at the end or start of the revision range
+        self.prepare_tree(complex=True)
+        err_msg = "Path unknown at end or start of revision range: file2"
+        err = self.run_bzr('xmllog file2', retcode=3)[1]
+        self.assertContainsRe(err, err_msg)
+
+    def test_log_file_historical_end(self):
+        # Check logging a deleted file is ok if the file existed
+        # at the end the revision range
+        self.prepare_tree(complex=True)
+        log, err = self.run_bzr('xmllog -r..4 file2')
+        log_xml = fromstring(log)
+        self.assertEquals('', err)
+        revnos = log_xml.findall('log/revno')
+        self.assertEquals(revnos[0].text, '4')
+        self.assertEquals(revnos[1].text, '2')
+
+    def test_log_file_historical_start(self):
+        # Check logging a deleted file is ok if the file existed
+        # at the start of the revision range
+        self.prepare_tree(complex=True)
+        log, err = self.run_bzr('xmllog file1')
+        log_xml = fromstring(log)
+        self.assertEquals('', err)
+        revnos = log_xml.findall('log/revno')
+        self.assertEquals(revnos[0].text, '1')
+
+    def test_log_file_renamed(self):
+        """File matched against revision range, not current tree."""
+        self.prepare_tree(complex=True)
+
+        # Check logging a renamed file gives an error by default
+        err_msg = "Path unknown at end or start of revision range: file3"
+        err = self.run_bzr('xmllog file3', retcode=3)[1]
+        self.assertContainsRe(err, err_msg)
+
+        # Check we can see a renamed file if we give the right end revision
+        log, err = self.run_bzr('xmllog -r..4 file3')
+        log_xml = fromstring(log)
+        self.assertEquals('', err)
+        revnos = log_xml.findall('log/revno')
+        self.assertEquals(revnos[0].text, '3')
 

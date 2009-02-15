@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# Copyright (C) 2007 Guillermo Gonzalez
+# Copyright (C) 2007, 2008, 2009 Guillermo Gonzalez
 #
 # The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
 #
@@ -140,10 +140,14 @@ def show_tree_status_xml(wt, show_unchanged=None,
         old.lock_read()
         new.lock_read()
         try:
-            try: 
-                diff._raise_if_nonexistent(specific_files, old, new)
+            try:
+                specific_files, nonexistents \
+                        = status._filter_nonexistent(specific_files, old, new)
             except AttributeError:
-                status._raise_if_nonexistent(specific_files, old, new)
+                try:
+                    diff._raise_if_nonexistent(specific_files, old, new)
+                except AttributeError:
+                    status._raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
             to_file.write('<?xml version="1.0" encoding="UTF-8"?>')
             to_file.write('<status workingtree_root="%s">' % \
@@ -159,8 +163,8 @@ def show_tree_status_xml(wt, show_unchanged=None,
                        show_ids=show_ids,
                        show_unchanged=show_unchanged, 
                        show_unversioned=want_unversioned)
-            conflict_title = False
-            # show the new conflicts only for now. XXX: get them from the delta.
+            # show the new conflicts only for now. XXX: get them from the 
+            # delta.
             conflicts = new.conflicts()
             if specific_files is not None:
                 conflicts = conflicts.select_conflicts(new, specific_files,
@@ -171,6 +175,12 @@ def show_tree_status_xml(wt, show_unchanged=None,
                     to_file.write('<conflict type="%s">%s</conflict>' % 
                                   (conflict.typestring, _escape_cdata(conflict.path)))
                 to_file.write("</conflicts>")
+            if nonexistents:
+                to_file.write('<nonexistents>')
+                tag = 'nonexistent'
+                for nonexistent in nonexistents:
+                    to_file.write('<%s>%s</%s>' % (tag, nonexistent, tag))
+                to_file.write('</nonexistents>')
             if new_is_working_tree and show_pending:
                 show_pending_merges(new, to_file)
             to_file.write('</status>')
