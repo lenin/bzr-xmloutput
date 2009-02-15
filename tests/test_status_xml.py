@@ -214,10 +214,12 @@ class BranchStatus(TestXmlStatus):
         self.assertStatus(xml_status, wt)
 
         tof = StringIO()
-        self.assertRaises(errors.PathsDoNotExist,
-                          show_tree_status_xml,
-                          wt, specific_files=['bye.c','test.c','absent.c'], 
-                          to_file=tof)
+        show_tree_status_xml(wt, specific_files=['bye.c','test.c','absent.c'], to_file=tof)
+        log_xml = fromstring(tof.getvalue())
+        nonexistents = log_xml.findall('nonexistents/nonexistent')
+        unknowns = log_xml.findall('unknown')
+        self.assertEquals(1, len(nonexistents))
+        self.assertEquals(1, len(unknowns))
         
         self.assertStatus(create_xml(wt, {'unknown':[('file', 
             'directory/hello.c', {})]}), wt, specific_files=['directory'])
@@ -254,8 +256,11 @@ class BranchStatus(TestXmlStatus):
         # files that don't exist in either the basis tree or working tree
         # should give an error
         wt = self.make_branch_and_tree('.')
-        out, err = self.run_bzr('xmlstatus does-not-exist', retcode=3)
-        self.assertContainsRe(err, r'do not exist.*does-not-exist')
+        out, err = self.run_bzr('xmlstatus does-not-exist')
+        log_xml = fromstring(out)
+        status = log_xml.findall('nonexistents/nonexistent')
+        self.assertEquals(1, len([elem for elem in status]))
+        self.assertEquals(status[0].text, 'does-not-exist')
 
     def test_statusxml_out_of_date(self):
         """Simulate status of out-of-date tree after remote push"""
