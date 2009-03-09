@@ -20,12 +20,9 @@
 import sys
 
 from bzrlib.tests import (
-                          adapt_modules,
-                          TestCaseWithTransport,
-                          TestSuite,
-                          TestLoader,
-                          iter_suite_tests,
-                          )
+    TestCaseWithTransport,
+    TestLoader,
+    )
 from bzrlib.symbol_versioning import (
     deprecated_method,
     zero_eighteen,
