@@ -52,7 +52,7 @@ class XMLLogFormatter(log.LogFormatter):
                 if self.log_count > 0:
                     merge_depth_diference = revision.merge_depth - \
                         self.previous_merge_depth
-                    for m in range(0, merge_depth_diference):
+                    for m in range(merge_depth_diference):
                         actions.append(self.__open_merge)
                     if merge_depth_diference > 1:
                         self.nested_merge_count += 1
@@ -88,7 +88,6 @@ class XMLLogFormatter(log.LogFormatter):
                 # we only care about the first log, the following logs are
                 # handlend in the logic of nested merges
                 self.start_with_merge = False
-
         for action in actions:
             if type(action) == dict:
                 action.keys()[0](action[action.keys()[0]])
@@ -188,8 +187,11 @@ class XMLLogFormatter(log.LogFormatter):
         if not self.start_with_merge:
             # In case that the last log was inside a merge we need to close it
             if self.open_merges > 0:
-                for merge in range(0, self.open_merges):
+                for merge in range(self.open_merges):
                     self.to_file.write('</merge>')
+                    if self.open_logs > 0:
+                        self.to_file.write('</log>')
+                        self.open_logs -= 1
                     self.open_merges = self.open_merges - 1
             # to close the last opened log
             if self.open_logs > 0:
