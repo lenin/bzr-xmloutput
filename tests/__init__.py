@@ -19,46 +19,19 @@
 
 import sys
 
-from bzrlib.tests import (
-    TestCaseWithTransport,
-    TestLoader,
-    )
-from bzrlib.symbol_versioning import (
-    deprecated_method,
-    zero_eighteen,
-    )
-import bzrlib.ui as ui
+
+from bzrlib import tests
 
 
-def test_suite():
+def load_tests(basic_tests, module, loader):
     testmod_names = [
-                     'test_version_xml',
-                     'test_status_xml',
-                     'test_log_xml',
-                     'test_annotate_xml',
-                     'test_info_xml',
-                     'test_service',
-                     ]
-    
-    loader = TestLoader()
-#    suite = loader.loadTestsFromModuleNames(testmod_names) 
-    suite = loader.loadTestsFromModuleNames(["%s.%s" % (__name__, i) for i in testmod_names])
-
-    return suite
-
-
-class ExternalBase(TestCaseWithTransport):
-
-    @deprecated_method(zero_eighteen)
-    def runbzr(self, args, retcode=0):
-        if isinstance(args, basestring):
-            args = args.split()
-        return self.run_bzr(args, retcode=retcode)
-
-    def check_output(self, output, *args):
-        """Verify that the expected output matches what bzr says.
-
-        The output is supplied first, so that you can supply a variable
-        number of arguments to bzr.
-        """
-        self.assertEquals(self.run_bzr(*args)[0], output)
+        'test_version_xml',
+        'test_status_xml',
+        'test_log_xml',
+        'test_annotate_xml',
+        'test_info_xml',
+        'test_service',
+        ]
+    basic_tests.addTest(loader.loadTestsFromModuleNames(
+            ["%s.%s" % (__name__, tmn) for tmn in testmod_names]))
+    return basic_tests
