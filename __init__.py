@@ -313,7 +313,8 @@ class cmd_xmlversion(commands.Command):
 
 
 def xmllog_options():
-    opts = builtins.cmd_log.takes_options
+    # Take a copy of the log options before modifying it
+    opts = builtins.cmd_log.takes_options[:]
     opts.append(null_option)
     # Remove log_format since we requires our own
     opts.remove('log-format')
