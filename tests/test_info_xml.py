@@ -26,15 +26,14 @@ from bzrlib import (
     errors,
     osutils,
     repository,
+    tests,
     urlutils,
     upgrade,
     )
-from bzrlib.osutils import format_date
-from bzrlib.tests import TestSkipped
-from bzrlib.tests.blackbox import ExternalBase
+from bzrlib.tests import blackbox
 
 
-class TestInfoXml(ExternalBase):
+class TestInfoXml(blackbox.ExternalBase):
 
     def test_info_non_existing(self):
         if sys.platform == "win32":
@@ -46,7 +45,8 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('<?xml version="1.0" encoding="%s"?><error>'
                 '<class>NotBranchError</class><dict><key>path</key><value>'
                 '%s</value></dict><message>Not a branch: "%s".</message>'
-                '</error>' % (bzrlib.user_encoding, location, location), err)
+                '</error>' % (osutils.get_user_encoding(),
+                              location, location), err)
 
     def test_info_standalone(self):
         transport = self.get_transport()
@@ -113,7 +113,7 @@ class TestInfoXml(ExternalBase):
         self.assertEqual('', err)
         tree1.commit('commit one')
         rev = branch1.repository.get_revision(branch1.revision_history()[0])
-        datestring_first = format_date(rev.timestamp, rev.timezone)
+        datestring_first = osutils.format_date(rev.timestamp, rev.timezone)
 
         # Branch standalone with push location
         branch2 = branch1.bzrdir.sprout('branch').open_branch()
@@ -345,7 +345,7 @@ class TestInfoXml(ExternalBase):
         tree1.add('b')
         tree1.commit('commit two')
         rev = branch1.repository.get_revision(branch1.revision_history()[-1])
-        datestring_last = format_date(rev.timestamp, rev.timezone)
+        datestring_last = osutils.format_date(rev.timestamp, rev.timezone)
 
         # Out of date branched standalone branch will not be detected
         out, err = self.run_bzr('xmlinfo -v branch')
@@ -664,7 +664,7 @@ class TestInfoXml(ExternalBase):
         tree2.add('a')
         tree2.commit('commit one')
         rev = repo.get_revision(branch2.revision_history()[0])
-        datestring_first = format_date(rev.timestamp, rev.timezone)
+        datestring_first = osutils.format_date(rev.timestamp, rev.timezone)
         out, err = self.run_bzr('xmlinfo tree/lightcheckout --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
@@ -815,7 +815,7 @@ class TestInfoXml(ExternalBase):
 
         # Out of date lightweight checkout
         rev = repo.get_revision(branch1.revision_history()[-1])
-        datestring_last = format_date(rev.timestamp, rev.timezone)
+        datestring_last = osutils.format_date(rev.timestamp, rev.timezone)
         out, err = self.run_bzr('xmlinfo tree/lightcheckout --verbose')
         expected_xml = '''<?xml version="1.0"?>
 <info>
@@ -1020,7 +1020,7 @@ class TestInfoXml(ExternalBase):
         tree1.add('a')
         tree1.commit('commit one')
         rev = repo.get_revision(branch1.revision_history()[0])
-        datestring_first = format_date(rev.timestamp, rev.timezone)
+        datestring_first = osutils.format_date(rev.timestamp, rev.timezone)
         out, err = self.run_bzr('xmlinfo -v repo/branch1')
         expected_xml = '''<?xml version="1.0"?>
 <info>
@@ -1528,7 +1528,7 @@ class TestInfoXml(ExternalBase):
 
     def test_info_locking_oslocks(self):
         if sys.platform == "win32":
-            raise TestSkipped("don't use oslocks on win32 in unix manner")
+            raise tests.TestSkipped("don't use oslocks on win32 in unix manner")
 
         tree = self.make_branch_and_tree('branch',
                                          format=bzrlib.bzrdir.BzrDirFormat6())

@@ -43,7 +43,6 @@ from bzrlib import (
     errors
     )
 
-from bzrlib.workingtree import WorkingTree
 from bzrlib.option import Option, custom_help
 from bzrlib.commands import display_command, register_command
 import logxml
@@ -56,7 +55,8 @@ from xml_errors import handle_error_xml
 version_info = (0, 8, 3)
 plugin_name = 'xmloutput'
 
-null_option = Option('null', help='Write an ascii NUL (\\0) as the final char.')
+null_option = option.Option('null',
+                            help='Write an ascii NUL (\\0) as the final char.')
 
 
 class cmd_xmlstatus(commands.Command):
@@ -312,48 +312,32 @@ class cmd_xmlversion(commands.Command):
         to_file.write('\n')
 
 
+def xmllog_options():
+    # Take a copy of the log options before modifying it
+    opts = builtins.cmd_log.takes_options[:]
+    opts.append(null_option)
+    # Remove log_format since we requires our own
+    opts.remove('log-format')
+    return opts
+
+
 class cmd_xmllog(builtins.cmd_log):
     """Show log of a branch, file, or directory as XML."""
     hidden = True
-    takes_args = ['location?']
-    takes_options = [
-            Option('forward',
-                   help='Show from oldest to newest.'),
-            Option('timezone',
-                   type=str,
-                   help='Display timezone as local, original, or utc.'),
-            custom_help('verbose',
-                   help='Show files changed in each revision.'),
-            'show-ids',
-            'revision',
-            Option('message',
-                   short_name='m',
-                   help='Show revisions whose message matches this '
-                        'regular expression.',
-                   type=str),
-            Option('limit',
-                   short_name='l',
-                   help='Limit the output to the first N revisions.',
-                   argname='N',
-                   type=bzrlib.builtins._parse_limit),
-            null_option
-            ]
-    encoding_type = 'replace'
+
+    takes_options = xmllog_options()
 
     @display_command
     @handle_error_xml
-    def run(self, location=None, timezone='original',
-            verbose=False,
-            show_ids=False,
-            forward=False,
-            revision=None,
-            message=None,
-            limit=None,
-            null=False):
-        exit_val =  builtins.cmd_log.run(self, location=location,
-            timezone=timezone, verbose=verbose, show_ids=show_ids,
-            forward=forward, revision=revision,
-            log_format=logxml.XMLLogFormatter, message=message, limit=limit)
+    def run(self, *args, **kwargs):
+        # Force our specific formatter
+        kwargs['log_format'] = logxml.XMLLogFormatter
+        # Filter out our specific option
+        try:
+            null = kwargs.pop('null')
+        except KeyError:
+            null = False
+        exit_val =  builtins.cmd_log.run(self, *args, **kwargs)
         if null:
             self.outf.write('\0')
         self.outf.write('\n')
@@ -464,7 +448,10 @@ log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
                               'Detailed XML log format')
 
 
-def test_suite():
-    import tests
-    return tests.test_suite()
-
+def load_tests(basic_tests, module, loader):
+    testmod_names = [
+        'tests',
+        ]
+    basic_tests.addTest(loader.loadTestsFromModuleNames(
+            ["%s.%s" % (__name__, tmn) for tmn in testmod_names]))
+    return basic_tests

@@ -157,8 +157,9 @@ class TestLog(ExternalBase):
         # should give an error
         wt = self.make_branch_and_tree('.')
         out, err = self.run_bzr('xmllog does-not-exist', retcode=3)
-        self.assertContainsRe(err, 
-                'Path unknown at end or start of revision range: does-not-exist')
+        self.assertContainsRe(
+            err,
+            'Path unknown at end or start of revision range: does-not-exist')
 
     def test_log_with_tags(self):
         tree = self._prepare(format='dirstate-tags')

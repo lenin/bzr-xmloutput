@@ -41,8 +41,7 @@ from bzrlib import (
 
 from bzrlib.errors import (NoWorkingTree, NotBranchError,
                            NoRepositoryPresent, NotLocalUrl)
-from bzrlib.symbol_versioning import (deprecated_function,
-        zero_eighteen)
+
 
 def get_lines_xml(self):
     return ["<%s>%s</%s>" % (l.replace(' ', '_'), u, l.replace(' ', '_')) for l, u in self.locs ]

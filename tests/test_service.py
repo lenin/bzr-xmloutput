@@ -122,6 +122,7 @@ class TestXmlRpcServer(tests.TestCase):
     server = None
 
     def setUp(self):
+        tests.TestCase.setUp(self)
         if self.server is None:
             self.server = XMLRPCServer()
             self.server.setUp()
