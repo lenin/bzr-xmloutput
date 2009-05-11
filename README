@@ -1,9 +1,9 @@
 == bzr-xmloutput ==
 
-This plugin adds an commands (matching some builtins commands) with xml prefix that generates XML output.
+This plugin adds an option (--xml) to log and provides an xml version of some builtinss commands that generate XML output. Also it provides a xmlrpc service
 
 === Supported commands ===
- * xmllog
+ * log
  * xmlstatus
  * xmlannotate
  * xmlmissing
@@ -11,8 +11,15 @@ This plugin adds an commands (matching some builtins commands) with xml prefix t
  * xmlplugins
  * xmlversion
  * xmlls
+ * start-xmlrpc
+  * this starts the xmlrpc service, that provides the following functions:
+   * run_bzr: allow to execute any bzr command
+   * run_bzr_xml: similar to run_bzr, but report errors in xml format
+   * search: provides integration with bzr-search (if it's available)
+ * stop-xmlrpc
 
 === How to install ===
+                                                   
  There are two main options to install Bazaar plugins, from source or directly 
  from the branch. 
  For further instructions visit:  http://bazaar-vcs.org/UsingPlugins.
@@ -27,7 +34,129 @@ This plugin adds an commands (matching some builtins commands) with xml prefix t
 
 === TODO ===
  * tests for plugins and missing
+ * tags?
+ * testament?
+
 
 === Contributors ===
  * Martin Albisetti
+ * Vincent Ladeuil
+ * Adrian Wilkins
+ * Aaron Bentley
+                                                   
+== XML formats ==
 
+=== Log ===
+<logs>: contains '''<log>''' entries
+
+<log>: represents a commit which can contain: revno, revisionid, committer, branch-nick, timestamp, message, merge, affected-files.
+
+<merge>: contains '''<log>''' entries.
+
+<affected-files>: can contain any of the elements present in '''<status>'''
+
+example:
+{{{<logs>
+    <log>
+        <revno>2872</revno>
+	<committer>Canonical.com Patch Queue Manager &lt;fake@no-mail.net&gt;</committer>
+	<branch-nick>+trunk</branch-nick>
+	<timestamp>Fri 2007-09-28 05:14:35 +0100</timestamp>
+	<message><![CDATA[(robertc) Add bzrlib.errors.!InternalBzrError. (Robert Collins)]]></message>
+	<affected-files>
+	    <modified>
+	       <file>NEWS</file>
+	       <file>bzrlib/errors.py</file>
+	    </modified>
+	</affected-files>
+    <log>
+<logs>}}}
+
+=== Status ===
+
+<status>: it has one attribute: '''workingtree_root''', which is the  path to the workingtree root. It can contain: '''modified''', '''unknown''', '''renamed''', '''kind-changed''', '''removed''', '''conflicts''', '''added'''.
+
+<modified>, <unknown>, <renamed>, <kind-changed>, <removed>, <conflicts>, <added>: contain directory and/or file elements.
+
+<file>: contains the relative path to the file, and can contain the following attributes: oldpath, oldkind and newkind, fid.
+
+<directory>: contains the relative path to the directory, and can contain the following attributes: oldpath, oldkind and newkind, suffix.
+
+{{{<status workingtree_root="/Users/guillermo/Projects/BazaarEclipse/bzr-eclipse/trunk/">
+	<modified>
+		<file fid="commandlineclient.ja-20070416055005-sc8qpmryqhgx5f65-24">
+			!BazaarClient/src/main/org/vcs/bazaar/client/commandline/!CommandLineClient.java
+		</file>
+	</modified>
+	<unknown>
+		<file>!BazaarClient/src/main/org/vcs/bazaar/client/IPlugin.java</file>
+		<file>!BazaarClient/src/main/org/vcs/bazaar/client/commandline/commands/Plugins.java</file>
+	</unknown>
+</status>}}}
+
+
+=== Missing ===
+
+'''<missing>''': can contain: '''<last_location>''', '''<extra_revisions>''' and '''<missing_revisions>'''.
+
+'''<extra_revisions>''' and '''<missing_revision>''': contains a '''<logs>''' element.
+
+{{{<missing>
+	<last_location>
+		/Users/guillermo/Projects/BazaarEclipse/bzr-eclipse/trunk/
+	</last_location>
+	<extra_revisions size="1">
+		<logs>
+			<log>
+				<revno>116</revno>
+				<committer>
+					Guillermo Gonzalez &lt;nospam@mail.com&gt;
+				</committer>
+				<branch-nick>quickdiff-integration</branch-nick>
+				<timestamp>Fri 2007-12-21 19:34:45 -0300</timestamp>
+				<message>* merge with quickdiff branch</message>
+			</log>
+		</logs>
+	</extra_revisions>
+</missing>}}}
+
+
+=== Annotate ===
+
+<annotation>: It has two attributes: '''workingtree_root''', which is the path to the workingtree root, and '''file''', which is the file being annotated.
+<entry>: Each represents a line. It has '''revno''', '''author''' and '''date''' as attributes, and contains the text as a value.
+
+{{{<annotation workingtree-root="/home/beuno/test_project/" file="test_file">
+	<entry revno="1" author="argentina@gmail.com" date="20080303">This is a test file.</entry>
+	<entry revno="6" author="guillo.gonzo@gmail.com" date="20070404"></entry>
+	<entry revno="3" author="argentina@gmail.com" date="20080303">It has multiple lines...</entry>
+	<entry revno="3" author="argentina@gmail.com" date="20080222">...just as an example :)</entry>
+</annotation>}}}
+
+
+=== Info ===
+'''<info>''' is the container for the information provided
+
+'''<layout>''' displays the current layout
+
+'''<formats>''' contains the formats the current branch has, '''<format>''' contains the name of the storage format
+
+'''<location>''' can contain '''<shared_repository>''', '''<repository_branch>''' and/or '''<branch_root>'''. These represent paths or URLs. 
+
+'''<related_branches>''' contains '''<push_branch>''' and '''<parent_branch>'''. These represent paths or URLs.
+
+Example output:
+{{{<info>
+	<layout>Repository tree</layout>
+	<formats>
+		<format>pack-0.92</format>
+	</formats>
+	<location>
+		<shared_repository>/home/beuno/test_project</shared_repository>
+		<repository_branch>.</repository_branch>
+	</location>
+	<related_branches>
+		<push_branch></push_branch>
+		<parent_branch>http://bazaar-vcs.org/bzr/bzr.dev/</parent_branch>
+	</related_branches>
+</info>}}}
