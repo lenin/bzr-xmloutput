@@ -2,7 +2,7 @@
 # -*- encoding: utf-8 -*-
 # Copyright (C) 2007, 2008, 2009 Guillermo Gonzalez
 #
-# The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
+# The code taken from bzrlib is under: Copyright (C) 2005-2007 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@ from bzrlib.trace import warning
 import logxml
 """)
 
-from bzrlib import user_encoding
 
 def show_tree_status_xml(wt, show_unchanged=None,
                      specific_files=None,
@@ -60,13 +59,13 @@ def show_tree_status_xml(wt, show_unchanged=None,
     <modified/>
     <kind changed/>
     <unknown/>
-    
+
     Each group can have multiple child's of this element's:
 
     <file [oldpath] [oldkind, newkind] [fid]>
     <directory [oldpath] [oldkind, newkind] [suffix]>
 
-    A simple example: 
+    A simple example:
     <status workingtree_root="/home/guillo/Unison-root/sandbox/bazaar/bzr/0.15/">
         <renamed>
             <file oldpath="INSTALL"  >INSTALL.txt</file>
@@ -83,20 +82,20 @@ def show_tree_status_xml(wt, show_unchanged=None,
         </unknown>
     </status>
 
-    By default this compares the working tree to a previous revision. 
-    If the revision argument is given, summarizes changes between the 
+    By default this compares the working tree to a previous revision.
+    If the revision argument is given, summarizes changes between the
     working tree and another, or between two revisions.
 
-    The result is written out as Unicode and to_file should be able 
+    The result is written out as Unicode and to_file should be able
     to encode that.
 
     If showing the status of a working tree, extra information is included
     about unknown files, conflicts, and pending merges.
 
-    :param show_unchanged: Deprecated parameter. If set, includes unchanged 
+    :param show_unchanged: Deprecated parameter. If set, includes unchanged
         files.
     :param specific_files: If set, a list of filenames whose status should be
-        shown.  It is an error to give a filename that is not in the working 
+        shown.  It is an error to give a filename that is not in the working
         tree, or in the working inventory or in the basis inventory.
     :param show_ids: If set, includes each file's id.
     :param to_file: If set, write to this file (default stdout.)
@@ -113,7 +112,7 @@ def show_tree_status_xml(wt, show_unchanged=None,
 
     if to_file is None:
         to_file = sys.stdout
-    
+
     wt.lock_read()
     try:
         new_is_working_tree = True
@@ -162,9 +161,9 @@ def show_tree_status_xml(wt, show_unchanged=None,
                 delta.unversioned if not new.is_ignored(unversioned[0])]
             show_tree_xml(delta, to_file,
                        show_ids=show_ids,
-                       show_unchanged=show_unchanged, 
+                       show_unchanged=show_unchanged,
                        show_unversioned=want_unversioned)
-            # show the new conflicts only for now. XXX: get them from the 
+            # show the new conflicts only for now. XXX: get them from the
             # delta.
             conflicts = new.conflicts()
             if specific_files is not None:
@@ -173,8 +172,9 @@ def show_tree_status_xml(wt, show_unchanged=None,
             if len(conflicts) > 0:
                 to_file.write("<conflicts>")
                 for conflict in conflicts:
-                    to_file.write('<conflict type="%s">%s</conflict>' % 
-                                  (conflict.typestring, _escape_cdata(conflict.path)))
+                    to_file.write('<conflict type="%s">%s</conflict>' %
+                                  (conflict.typestring,
+                                   _escape_cdata(conflict.path)))
                 to_file.write("</conflicts>")
             if nonexistents:
                 to_file.write('<nonexistents>')
@@ -196,12 +196,12 @@ def show_pending_merges(new, to_file):
     parents = new.get_parent_ids()
     if len(parents) < 2:
         return
-    
+
     pending = parents[1:]
     branch = new.branch
     last_revision = parents[0]
     to_file.write('<pending_merges>')
-    # TODO: this could be improved using merge_sorted - we'd get the same 
+    # TODO: this could be improved using merge_sorted - we'd get the same
     # output rather than one level of indent.
     graph = branch.repository.get_graph()
     other_revisions = [last_revision]
@@ -213,7 +213,7 @@ def show_pending_merges(new, to_file):
             show_ghost(to_file, merge)
             other_revisions.append(merge)
             continue
-        
+
         # Log the merge, as it gets a slightly different formatting
         to_file.write(logxml.line_log(rev))
         # Find all of the revisions in the merge source, which are not in the
@@ -236,7 +236,7 @@ def show_pending_merges(new, to_file):
                     revisions[revision_id] = None
                 else:
                     revisions[revision_id] = rev
-                    
+
         # Display the revisions brought in by this merge.
         rev_id_iterator = status._get_sorted_revisions(merge, merge_extra,
                             branch.repository.get_parent_map(merge_extra))
@@ -273,10 +273,10 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
             if len(item) == 5 and item[4]:
                 path += '*'
             if show_ids:
-                kind_id=''
+                kind_id = ''
                 if fid:
-                    kind_id=get_kind_id_element(kind, fid)
-                to_file.write('<%s %s>%s</%s>' % (kind, kind_id, 
+                    kind_id = get_kind_id_element(kind, fid)
+                to_file.write('<%s %s>%s</%s>' % (kind, kind_id,
                                                   _escape_cdata(path), kind))
             else:
                 to_file.write('<%s>%s</%s>' % (kind, _escape_cdata(path), kind))
@@ -285,33 +285,33 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
         to_file.write('<removed>')
         show_list(delta.removed)
         to_file.write('</removed>')
-    
+
     if delta.added:
         to_file.write('<added>')
         show_list(delta.added)
         to_file.write('</added>')
-    
+
     extra_modified = []
     if delta.renamed:
         to_file.write('<renamed>')
-        for (oldpath, newpath, fid, kind, 
+        for (oldpath, newpath, fid, kind,
              text_modified, meta_modified) in delta.renamed:
             if text_modified or meta_modified:
-                extra_modified.append((newpath, fid, kind, 
+                extra_modified.append((newpath, fid, kind,
                                 text_modified, meta_modified))
             metamodified = ''
             if meta_modified:
                 metamodified = 'meta_modified="true"'
             if show_ids:
-                kind_id=''
+                kind_id = ''
                 if fid:
-                    kind_id=get_kind_id_element(kind, fid)
+                    kind_id = get_kind_id_element(kind, fid)
                 to_file.write('<%s oldpath="%s" %s %s>%s</%s>' % \
-                        (kind, _escape_cdata(oldpath), metamodified, 
+                        (kind, _escape_cdata(oldpath), metamodified,
                          kind_id, _escape_cdata(newpath), kind))
-            else: 
+            else:
                 to_file.write('<%s oldpath="%s" %s >%s</%s>' % \
-                        (kind, _escape_cdata(oldpath), metamodified, 
+                        (kind, _escape_cdata(oldpath), metamodified,
                          _escape_cdata(newpath), kind))
         to_file.write('</renamed>')
 
@@ -323,7 +323,7 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
             else:
                 suffix = ''
             to_file.write('<%s oldkind="%s" %s>%s</%s>' % \
-                       (new_kind, old_kind, suffix, 
+                       (new_kind, old_kind, suffix,
                         _escape_cdata(path), new_kind))
         to_file.write('</kind_changed>')
 
@@ -332,7 +332,7 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
         show_list(delta.modified)
         show_list(extra_modified)
         to_file.write('</modified>')
-            
+
     if show_unchanged and delta.unchanged:
         to_file.write('<unchanged>')
         show_list(delta.unchanged)
@@ -344,12 +344,12 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
         to_file.write('</unknown>')
 
 def get_kind_id_element(kind, fid):
-    kind_id=''
+    kind_id = ''
     if kind == 'directory':
-        kind_id='suffix="%s"' % fid
+        kind_id = 'suffix="%s"' % fid
     elif kind == 'symlink':
-        kind_id=''
+        kind_id = ''
     else:
-        kind_id='fid="%s"' %fid
+        kind_id = 'fid="%s"' % fid
     return kind_id
 

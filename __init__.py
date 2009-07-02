@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2007-2009 Guillermo Gonzalez
 #
-# The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
+# The code taken from bzrlib is under: Copyright (C) 2005-2007 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -169,7 +169,8 @@ class cmd_xmlannotate(commands.Command):
                 raise bzrlib.errors.NotVersionedError(filename)
 
             file_version = tree.inventory[file_id].revision
-            # always run with --all and --long option (to get the author of each line)
+            # always run with --all and --long options
+            # to get the author of each line
             annotate_file_xml(branch=branch, rev_id=file_version,
                     file_id=file_id, to_file=self.outf, show_ids=show_ids,
                     wt_root_path=wt_root_path, file_path=relpath)
@@ -212,7 +213,8 @@ class cmd_xmlmissing(commands.Command):
         if self.outf is None:
             self.outf = sys.stdout
 
-        show_missing_xml(self, log_format=logxml.XMLLogFormatter, *args, **kwargs)
+        show_missing_xml(self, log_format=logxml.XMLLogFormatter,
+                         *args, **kwargs)
         if getattr(kwargs, 'null', False):
             self.outf.write('\0')
         self.outf.write('\n')
@@ -364,7 +366,8 @@ class cmd_xmlls(builtins.cmd_ls):
                    short_name='V'),
             Option('ignored', help='Print ignored files.'),
             Option('kind',
-                   help='List entries of a particular kind: file, directory, symlink.',
+                   help='List entries of a particular kind: file, ' + \
+                   'directory, symlink.',
                    type=unicode),
             null_option
             ]

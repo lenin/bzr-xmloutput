@@ -106,7 +106,7 @@ class XMLLogFormatter(log.LogFormatter):
 
     def __close_merge(self, num=1):
         for item in self.stack.__reversed__():
-      	    self.to_file.write('</%s>' % item)
+            self.to_file.write('</%s>' % item)
             self.stack.pop()
             if item == 'merge':
                 self.open_merges -= 1
@@ -123,7 +123,7 @@ class XMLLogFormatter(log.LogFormatter):
 
     def __close_log(self):
         for item in self.stack.__reversed__():
-       	    self.to_file.write('</%s>' % item)
+            self.to_file.write('</%s>' % item)
             self.stack.pop()
             if item == 'log':
                 self.open_logs -= 1
@@ -232,7 +232,8 @@ class XMLLineLogFormatter(log.LineLogFormatter):
                             show_offset=True)
         out.append('<timestamp>%s</timestamp>' % date_str)
 
-        out.append('<message><![CDATA[%s]]></message>' % _format_message(rev.message))
+        out.append('<message><![CDATA[%s]]></message>' % \
+                   _format_message(rev.message))
         out.append('</log>')
         return " ".join(out).rstrip('\n')
 
