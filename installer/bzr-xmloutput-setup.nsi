@@ -1,5 +1,5 @@
 !define PRODUCT_NAME "bzr-xmloutput"
-!define PRODUCT_VERSION "0.8.4"
+!define PRODUCT_VERSION "0.8.5"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 
