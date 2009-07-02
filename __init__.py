@@ -52,7 +52,7 @@ from xml_errors import handle_error_xml
 """)
 
 
-version_info = (0, 8, 4)
+version_info = (0, 8, 5)
 plugin_name = 'xmloutput'
 
 null_option = option.Option('null',

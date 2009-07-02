@@ -18,14 +18,14 @@
 # Contributors:
 #               Martin Albisetti
 
-"""A Bazaar plugin that provides a option to generate XML output for 
+"""A Bazaar plugin that provides a option to generate XML output for
 builtins commands"""
 
 from distutils.core import setup
 from extras.bdist_nsis import bdist_nsis
 
 bzr_plugin_name = 'xmloutput'
-bzr_plugin_version = (0, 8, 4)
+bzr_plugin_version = (0, 8, 5)
 bzr_commands = ['xmlannotate', 'xmlinfo', 'xmllog', 'xmlls', 'xmlmissing',
         'xmlplugins', 'xmlstatus', 'xmlversion']
 
@@ -35,16 +35,16 @@ if __name__ == '__main__':
     }
     setup(
         name='bzr-xmloutput',
-        version='0.8.4',
+        version='0.8.5',
         maintainer='Guillermo Gonzalez',
         maintainer_email='guillo.gonzo@gmail.com',
-        description="""A Bazaar plugin that provides a option to generate 
+        description="""A Bazaar plugin that provides a option to generate
         XML output for builtins commands""",
         license='GNU GPL',
         url='https://launchpad.net/bzr-xmloutput',
         packages=['bzrlib.plugins.xmloutput'],
         package_dir={'bzrlib.plugins.xmloutput': '.'},
-        long_description="""This plugin adds a xml variant to various builtin 
+        long_description="""This plugin adds a xml variant to various builtin
         commands that generates XML output.""",
         cmdclass={'bdist_nsis': bdist_nsis, },
 )
