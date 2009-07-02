@@ -1,5 +1,5 @@
 # Copyright (C) 2005, 2006, 2007, 2008, 2009 Canonical Ltd
-# Copyright (C) 2008, 2009 Guillermo Gonzalez 
+# Copyright (C) 2008, 2009 Guillermo Gonzalez
 # -*- coding: utf-8 -*-
 #
 # This program is free software; you can redistribute it and/or modify
@@ -133,7 +133,7 @@ class TestLog(ExternalBase):
         #    '</dict><message>Start revision must be older than the end '
         #    'revision.</message></error>',),
         self.run_bzr_error(('Start revision must be older than '
-            'the end revision.'),
+            'the end revision.',),
                            ['xmllog', '-r3..1'])
 
     def test_log_revno_n_path(self):
@@ -578,7 +578,7 @@ class TestLogFile(TestCaseWithTransport):
 
     def setUp(self):
         TestCaseWithTransport.setUp(self)
-    
+
     def prepare_tree(self, complex=False):
         # The complex configuration includes deletes and renames
         tree = self.make_branch_and_tree('parent')
