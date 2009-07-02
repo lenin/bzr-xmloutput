@@ -28,10 +28,10 @@ from bzrlib.xml_serializer import _escape_cdata
 """)
 
 
-def show_ls_xml(outf, revision=None, non_recursive=False, 
-            from_root=False, unknown=False, versioned=False, 
+def show_ls_xml(outf, revision=None, non_recursive=False,
+            from_root=False, unknown=False, versioned=False,
             ignored=False, kind=None, path=None, verbose=False):
-    
+
     if kind and kind not in ('file', 'directory', 'symlink'):
         raise errors.BzrCommandError('invalid kind specified')
 
@@ -80,7 +80,17 @@ def show_ls_xml(outf, revision=None, non_recursive=False,
                 fkind = '<kind>%s</kind>' % fkind
                 status_kind = '<status_kind>%s</status_kind>' % long_status_kind[fc]
                 fpath = '<path>%s</path>' % _escape_cdata(fp)
-                outstring = '<item>%s%s%s%s</item>' % (fid, fkind, fpath, status_kind)
+                if fc == 'I' and ignored:
+                    # get the pattern
+                    if tree.basedir in fp:
+                        pat = tree.is_ignored(tree.relpath(fp))
+                    else:
+                        pat = tree.is_ignored(fp)
+                    pattern = '<pattern>%s</pattern>' % _escape_cdata(pat)
+                else:
+                    pattern = ''
+                outstring = '<item>%s%s%s%s%s</item>' % (fid, fkind, fpath,
+                                                       status_kind, pattern)
                 outf.write(outstring)
     finally:
         outf.write('</list>')
