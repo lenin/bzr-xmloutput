@@ -30,6 +30,7 @@ from bzrlib import (
     errors,
     revision as _mod_revision,
     status,
+    osutils,
     )
 
 from bzrlib.osutils import terminal_width
@@ -149,7 +150,8 @@ def show_tree_status_xml(wt, show_unchanged=None,
                 except AttributeError:
                     status._raise_if_nonexistent(specific_files, old, new)
             want_unversioned = not versioned
-            to_file.write('<?xml version="1.0" encoding="UTF-8"?>')
+            to_file.write('<?xml version="1.0" encoding="%s"?>' % \
+                    osutils.get_user_encoding())
             to_file.write('<status workingtree_root="%s">' % \
                         wt.id2abspath(wt.get_root_id()))
             delta = new.changes_from(old, want_unchanged=show_unchanged,
