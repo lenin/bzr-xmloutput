@@ -245,6 +245,9 @@ class cmd_xmlinfo(commands.Command):
         else:
             noise_level = 0
         from infoxml import show_bzrdir_info_xml
+        if location != None:
+            from bzrlib.urlutils import normalize_url
+            location = normalize_url(location)
         show_bzrdir_info_xml(bzrdir.BzrDir.open_containing(location)[0],
                              verbose=noise_level, outfile=self.outf)
         if getattr(kwargs, 'null', False):
