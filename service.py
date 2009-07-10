@@ -153,7 +153,12 @@ def custom_commands_main(argv):
     import bzrlib.ui
     bzrlib.ui.ui_factory = bzrlib.ui.SilentUIFactory()
     try:
-        argv = [a.decode(bzrlib.user_encoding) for a in argv[1:]]
+        _argv = []
+        for a in argv[1:]:
+            if isinstance(a, str):
+                a = a.decode(bzrlib.user_encoding)
+            _argv.append(a)
+        argv = _argv
         ret = commands.run_bzr(argv)
         return ret
     except errors.BzrError, e:

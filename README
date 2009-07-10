@@ -43,6 +43,7 @@ This plugin adds an option (--xml) to log and provides an xml version of some bu
  * Vincent Ladeuil
  * Adrian Wilkins
  * Aaron Bentley
+ * Renato Silva
                                                    
 == XML formats ==
 

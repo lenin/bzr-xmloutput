@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 
 import xmlrpclib
 import threading
@@ -39,3 +40,12 @@ class TestXmlRpcServer(tests.TestCase):
         self.assertNotEquals(out.data, "")
         #self.assertEquals(out.data, "")
 
+    def test_custom_commands_main__should_support_non_ascii_unicode(self):
+        from xmlrpclib import Fault
+        try:
+            response = custom_commands_main([u'bzr', u'log', u'Maçã'])
+        except Fault, f:
+            if (f.faultCode == 32): # Not a Bazaar Error
+                self.assertNotContainsRe(f.faultString, 'UnicodeEncodeError')
+            else:
+                pass

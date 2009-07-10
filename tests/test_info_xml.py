@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+#
 # Copyright (C) 2006, 2007 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,6 +36,19 @@ from bzrlib.tests import blackbox
 
 
 class TestInfoXml(blackbox.ExternalBase):
+
+    def test_should_normalize_non_ascii_url(self):
+        root = '/C:' if sys.platform == 'win32' else ''
+        url = u'file://%s/Maçã/does/not/exist' % root
+        out, err = self.run_bzr(['xmlinfo', url], retcode=3)
+        from bzrlib.urlutils import normalize_url
+        nurl = normalize_url(url)
+        self.assertEqual(
+            '<?xml version="1.0" encoding="%s"?>'
+            '<error><class>NotBranchError</class><dict><key>path</key>'
+            '<value>%s/</value></dict><message>Not a branch: "%s/".</message>'
+            '</error>' % (osutils.get_user_encoding(), nurl, nurl), err)
+
 
     def test_info_non_existing(self):
         if sys.platform == "win32":
