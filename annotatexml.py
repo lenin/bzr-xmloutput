@@ -54,7 +54,7 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
     last_rev_id = None
     to_file.write('<?xml version="1.0"?>')
     to_file.write(('<annotation workingtree-root="%s" %s>' % \
-                  (wt_root_path.encode(encoding),
+                  (wt_root_path,
                   'file="%s"' % file_path)).encode(encoding, 'replace'))
 
     annotations = _annotations(branch.repository, file_id, rev_id)
