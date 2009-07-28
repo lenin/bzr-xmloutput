@@ -44,11 +44,11 @@ run_dir = os.getcwdu()
 
 
 class BzrXMLRPCServer(SimpleXMLRPCServer):
-    
+
     finished=False
 
     def __init__(self, addr, logRequests=False, to_file=None):
-        SimpleXMLRPCServer.__init__(self, addr=addr, 
+        SimpleXMLRPCServer.__init__(self, addr=addr,
             logRequests=logRequests)
         self.register_function(self.system_listMethods, 'list_methods')
         self.register_function(self.shutdown, 'quit')
@@ -57,15 +57,14 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
         self.to_file = to_file
         if to_file is None:
             self.to_file = sys.stdout
-         
-    
+
     def register_signal(self, signum):
         signal.signal(signum, self.signal_handler)
-        
+
     def signal_handler(self, signum, frame):
         print "Caught signal", signum
         self.shutdown()
-        
+
     def shutdown(self):
         self.finished=True
         self.server_close()
@@ -77,6 +76,9 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
         bzrlib.osutils._cached_user_encoding = bzrlib.user_encoding
         bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
         self.encoding = bzrlib.user_encoding
+        # support new super lazy commands (bzr-1.17)
+        if getattr(commands, 'install_bzr_command_hooks'):
+            commands.install_bzr_command_hooks()
         while not self.finished:
             self.handle_request()
 
@@ -90,7 +92,7 @@ class redirect_output(object):
         self.writer_factory = codecs.getwriter('utf8')
         self.func = func
         self.logger_removed = False
-        
+
     def __call__(self, *args, **kwargs):
         if self.logger_removed:
             self.remove_logger()
@@ -104,14 +106,14 @@ class redirect_output(object):
             self.remove_logger()
             sys.stdout = sys.__stdout__
             sys.stderr = sys.__stderr__
-    
+
     def set_logger(self):
         """add sys.stderr as a log handler"""
         encoded_stderr = self.writer_factory(sys.stderr, errors='replace')
         stderr_handler = logging.StreamHandler(encoded_stderr)
         stderr_handler.setLevel(logging.INFO)
         logging.getLogger('bzr').addHandler(stderr_handler)
-    
+
     def remove_logger(self):
         """removes extra log handlers, only keeps the .bzr.log handler"""
         self.logger_removed = True
@@ -136,9 +138,9 @@ def _run_bzr(argv, workdir, func):
         sys.stdout.flush()
         if isinstance(exitval, Fault):
             return_val = exitval
-        else: 
-            # use a Binary object to wrap the output to avoid NULL and other 
-            # non xmlrpc (or client xml parsers) friendly chars 
+        else:
+            # use a Binary object to wrap the output to avoid NULL and other
+            # non xmlrpc (or client xml parsers) friendly chars
             out = Binary(data=sys.stdout.getvalue())
             return_val = (exitval, out, sys.stderr.getvalue())
             os.chdir(run_dir)
@@ -156,7 +158,7 @@ def custom_commands_main(argv):
         _argv = []
         for a in argv[1:]:
             if isinstance(a, str):
-                a = a.decode(bzrlib.user_encoding)
+                a = a.decode(bzrlib.osutils.get_user_encoding())
             _argv.append(a)
         argv = _argv
         ret = commands.run_bzr(argv)
