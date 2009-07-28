@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# Copyright (C) 2007 Guillermo Gonzalez
+# Copyright (C) 2007-2009 Guillermo Gonzalez
 #
-# The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
+# The code taken from bzrlib is under: Copyright (C) 2005-2007 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 # Contributors:
 #               Martin Albisetti
 
-"""This code is a modified copy from bzrlib.info (see there for copyrights and licensing)"""
+"""This code is a modified copy from bzrlib.info (see there for copyrights and
+licensing)
+"""
 
 __all__ = ['show_bzrdir_info_xml']
 
@@ -44,8 +46,12 @@ from bzrlib.errors import (NoWorkingTree, NotBranchError,
 
 
 def get_lines_xml(self):
-    return ["<%s>%s</%s>" % (l.replace(' ', '_'), u, l.replace(' ', '_')) for l, u in self.locs ]
+    """Returns the locations lines as xml."""
+    return ["<%s>%s</%s>" % (l.replace(' ', '_'), u, l.replace(' ', '_')) \
+            for l, u in self.locs ]
+
 info.LocationList.get_lines_xml = get_lines_xml
+
 
 def show_bzrdir_info_xml(a_bzrdir, verbose=False, outfile=None):
     """Output to stdout the 'info' for a_bzrdir."""
@@ -80,13 +86,14 @@ def show_bzrdir_info_xml(a_bzrdir, verbose=False, outfile=None):
     try:
         outfile.write('<?xml version="1.0"?>')
         outfile.write('<info>')
-        show_component_info_xml(a_bzrdir, repository, branch, tree, verbose, 
+        show_component_info_xml(a_bzrdir, repository, branch, tree, verbose,
                                 outfile)
         outfile.write('</info>')
     finally:
         lockable.unlock()
-        
-def show_component_info_xml(control, repository, branch=None, 
+
+
+def show_component_info_xml(control, repository, branch=None,
                             working=None, verbose=1, outfile=None):
     """Write info about all bzrdir components to stdout"""
     if outfile is None:
@@ -96,7 +103,8 @@ def show_component_info_xml(control, repository, branch=None,
     if verbose is True:
         verbose = 2
     layout = info.describe_layout(repository, branch, working)
-    formats = info.describe_format(control, repository, branch, working).split(' or ')
+    formats = info.describe_format(control, repository,
+                                   branch, working).split(' or ')
     outfile.write('<layout>%s</layout>' % layout)
     outfile.write('<formats>')
     if len(formats) > 1:
@@ -105,7 +113,7 @@ def show_component_info_xml(control, repository, branch=None,
     else:
         outfile.write('<format>%s</format>' % formats[0])
     outfile.write('</formats>')
-    _show_location_info_xml(info.gather_location_info(repository, branch, 
+    _show_location_info_xml(info.gather_location_info(repository, branch,
                             working), outfile)
     if branch is not None:
         _show_related_info_xml(branch, outfile)
@@ -136,7 +144,8 @@ def _show_location_info_xml(locs, outfile):
         path_list.add_url(name, loc)
     outfile.writelines(path_list.get_lines_xml())
     outfile.write('</location>')
-    
+
+
 def _show_related_info_xml(branch, outfile):
     """Show parent and push location of branch."""
     locs = info._gather_related_branches(branch)
@@ -144,22 +153,22 @@ def _show_related_info_xml(branch, outfile):
         outfile.write('<related_branches>')
         outfile.writelines(locs.get_lines_xml())
         outfile.write('</related_branches>')
-        
-def _show_format_info_xml(control=None, repository=None, 
+
+def _show_format_info_xml(control=None, repository=None,
                           branch=None, working=None, outfile=None):
     """Show known formats for control, working, branch and repository."""
     outfile.write('<format>')
     if control:
-        outfile.write('<control>%s</control>' % 
+        outfile.write('<control>%s</control>' %
                       control._format.get_format_description())
     if working:
-        outfile.write('<working_tree>%s</working_tree>' % 
+        outfile.write('<working_tree>%s</working_tree>' %
                       working._format.get_format_description())
     if branch:
-        outfile.write('<branch>%s</branch>' % 
+        outfile.write('<branch>%s</branch>' %
                       branch._format.get_format_description())
     if repository:
-        outfile.write('<repository>%s</repository>' % 
+        outfile.write('<repository>%s</repository>' %
                repository._format.get_format_description())
     outfile.write('</format>')
 
@@ -198,7 +207,7 @@ def _show_missing_revisions_branch_xml(branch, outfile):
         local_extra, remote_extra = missing.find_unmerged(branch, master)
         if remote_extra:
             outfile.write('<branch_stats>')
-            outfile.write('<missing_revisions>%d<missing_revisions>' % 
+            outfile.write('<missing_revisions>%d<missing_revisions>' %
                           len(remote_extra))
             outfile.write('</branch_stats>')
 
@@ -217,8 +226,9 @@ def _show_missing_revisions_working_xml(working, outfile):
     if branch_revno and tree_last_id != branch_last_revision:
         tree_last_revno = branch.revision_id_to_revno(tree_last_id)
         missing_count = branch_revno - tree_last_revno
-        outfile.write('<missing_revisions>%d</missing_revisions>' % 
+        outfile.write('<missing_revisions>%d</missing_revisions>' %
                       missing_count)
+
 
 def _show_working_stats_xml(working, outfile):
     """Show statistics about a working tree."""
@@ -245,13 +255,14 @@ def _show_working_stats_xml(working, outfile):
 
     dir_cnt = 0
     for file_id in work_inv:
-        if (work_inv.get_file_kind(file_id) == 'directory' and 
+        if (work_inv.get_file_kind(file_id) == 'directory' and
             not work_inv.is_root(file_id)):
             dir_cnt += 1
-    outfile.write('<versioned_subdirectories>%d</versioned_subdirectories>' % 
+    outfile.write('<versioned_subdirectories>%d</versioned_subdirectories>' %
                  (dir_cnt))
-    
+
     outfile.write('</working_tree_stats>')
+
 
 def _show_branch_stats_xml(branch, verbose, outfile):
     """Show statistics about a branch."""
@@ -273,6 +284,7 @@ def _show_branch_stats_xml(branch, verbose, outfile):
                osutils.format_date(timestamp, timezone))
     outfile.write('</branch_history>')
     return stats
+
 
 def _show_repository_info_xml(repository, outfile):
     """Show settings of a repository."""

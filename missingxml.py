@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# Copyright (C) 2007 Martin Albisetti
+# Copyright (C) 2007-2009 Martin Albisetti
 #
-# The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
+# The code taken from bzrlib is under: Copyright (C) 2005-2007 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,18 +32,19 @@ from bzrlib import user_encoding
 from bzrlib import ui, urlutils, errors
 from bzrlib.branch import Branch
 from bzrlib.log import LogRevision, log_formatter, log_formatter_registry
-from bzrlib.missing import ( 
-        iter_log_revisions, 
-        find_unmerged) 
+from bzrlib.missing import (
+        iter_log_revisions,
+        find_unmerged)
+
 
 def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
-        theirs_only=False, log_format=None, long=False, short=False, line=False, 
+        theirs_only=False, log_format=None, long=False, short=False, line=False,
         show_ids=False, verbose=False, this=False, other=False):
-        
+    """output missing info as xml"""
     if this:
-      mine_only = this
+        mine_only = this
     if other:
-      theirs_only = other
+        theirs_only = other
 
     local_branch = Branch.open_containing(u".")[0]
     parent = local_branch.get_parent()
@@ -56,7 +57,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                                             self.outf.encoding)
 
     remote_branch = Branch.open(other_branch)
-    
+
     if remote_branch.base == local_branch.base:
         remote_branch = local_branch
     local_branch.lock_read()
@@ -66,7 +67,8 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
             self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
                         user_encoding)
             self.outf.write('<missing>')
-            self.outf.write('<last_location>' + display_url + '</last_location>')
+            self.outf.write('<last_location>' + display_url + \
+                            '</last_location>')
             local_extra, remote_extra = find_unmerged(local_branch,
                                                       remote_branch)
             if log_format is None:
@@ -83,8 +85,8 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                     lf = log_format(to_file=self.outf,
                                     show_ids=show_ids,
                                     show_timezone='original')
-                    showlogs(self, iter_log_revisions(local_extra, 
-                                    local_branch.repository, 
+                    showlogs(self, iter_log_revisions(local_extra,
+                                    local_branch.repository,
                                     verbose), lf)
                 self.outf.write('</extra_revisions>')
                 printed_local = True
@@ -98,7 +100,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                                     show_ids=show_ids,
                                     show_timezone='original')
                     showlogs(self, iter_log_revisions(remote_extra,
-                                    remote_branch.repository, 
+                                    remote_branch.repository,
                                     verbose), lf)
                 self.outf.write('</missing_revisions>')
                 printed_local = True
@@ -112,10 +114,10 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
             remote_branch.unlock()
     finally:
         local_branch.unlock()
-    
+
     if printed_local == False:
         self.outf.write('</missing>')
-        
+
     if not status_code and parent is None and other_branch is not None:
         local_branch.lock_write()
         try:
@@ -126,7 +128,9 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
             local_branch.unlock()
     return status_code
 
+
 def showlogs(self, iterator, lf):
+    """Show the logs for missing (using line)"""
     self.outf.write('<logs>')
     for revision in iterator:
         lf.log_revision(revision)
