@@ -23,8 +23,7 @@
 """
 This plugin provides xml output for status, log, annotate, missing, info,
 version and plugins adding a --xml option to each
-"""
-"""
+
 (most of this is code was modified from bzrlib.cmd_status,
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
@@ -391,7 +390,7 @@ class cmd_xmlls(builtins.cmd_ls):
 class cmd_start_xmlrpc(commands.Command):
     """Start the xmlrpc service."""
 
-    hidden=True
+    hidden = True
     takes_options = [
             Option('hostname', argname='HOSTNAME', type=str,
                 help='Use the specified hostname, defaults to localhost.'),
@@ -421,7 +420,7 @@ class cmd_start_xmlrpc(commands.Command):
 class cmd_stop_xmlrpc(commands.Command):
     """Stops a xmlrpc service."""
 
-    hidden=True
+    hidden = True
     takes_options = [
             Option('hostname', argname='HOSTNAME', type=str,
                 help='Use the specified hostname, defaults to localhost.'),

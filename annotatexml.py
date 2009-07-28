@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
-# Copyright (C) 2007 Guillermo Gonzalez
+# Copyright (C) 2007-2009 Guillermo Gonzalez
 #
-# The code taken from bzrlib is under: Copyright (C) 2005, 2006, 2007 Canonical Ltd
+# The code taken from bzrlib is under: Copyright (C) 2005-2007 Canonical Ltd
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,12 +45,13 @@ empty_annotation = 'revno="" author="" date=""'
 
 def annotate_file_xml(branch, rev_id, file_id, to_file=None,
             show_ids=False, wt_root_path=None, file_path=None, full=False):
+    """custom annotate_file that spits xml """
     if to_file is None:
         to_file = sys.stdout
 
     encoding = getattr(to_file, 'encoding', None) or \
             osutils.get_terminal_encoding()
-    prevanno=''
+    prevanno = ''
     last_rev_id = None
     to_file.write('<?xml version="1.0"?>')
     to_file.write(('<annotation workingtree-root="%s" %s>' % \
@@ -73,6 +74,7 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
 
 
 def _annotation_iter(annotation, annotations):
+    """a annotaion iterator """
     for ((revno_str, author, date_str, line_rev_id, text), \
             (origin, text_dup)) in zip(annotation, annotations):
         yield (revno_str, author, date_str, line_rev_id, text, origin)
@@ -80,6 +82,7 @@ def _annotation_iter(annotation, annotations):
 
 def _show_entry(to_file, prevanno, revno_str, author,
                 date_str, line_rev_id, text, fid):
+    """output one entry of the annotation"""
     anno = 'revno="%s" author="%s" date="%s"' % \
                 (_escape_cdata(revno_str), _escape_cdata(author), date_str)
     if anno.lstrip() == empty_annotation:
