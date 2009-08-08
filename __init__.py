@@ -305,6 +305,8 @@ class cmd_xmlversion(commands.Command):
         to_file = self.outf
         if to_file is None:
             to_file = sys.stdout
+        self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
+                bzrlib.user_encoding)
         if short:
             to_file.write("<version><bazaar><version>" + \
             bzrlib.version_string + \
