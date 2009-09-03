@@ -38,8 +38,7 @@ if __name__ == '__main__':
         version='0.8.5',
         maintainer='Guillermo Gonzalez',
         maintainer_email='guillo.gonzo@gmail.com',
-        description="""A Bazaar plugin that provides a option to generate
-        XML output for builtins commands""",
+        description="""A Bazaar plugin that provides a option to generate XML output for builtins commands""",
         license='GNU GPL',
         url='https://launchpad.net/bzr-xmloutput',
         packages=['bzrlib.plugins.xmloutput'],
