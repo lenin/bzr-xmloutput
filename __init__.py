@@ -456,9 +456,12 @@ log.log_formatter_registry.register('xml', logxml.XMLLogFormatter,
 
 
 def load_tests(basic_tests, module, loader):
-    testmod_names = [
-        'tests',
-        ]
-    basic_tests.addTest(loader.loadTestsFromModuleNames(
-            ["%s.%s" % (__name__, tmn) for tmn in testmod_names]))
-    return basic_tests
+    try:
+        testmod_names = [
+            'tests',
+            ]
+        basic_tests.addTest(loader.loadTestsFromModuleNames(
+                ["%s.%s" % (__name__, tmn) for tmn in testmod_names]))
+        return basic_tests
+    except ImportError:
+        return None
