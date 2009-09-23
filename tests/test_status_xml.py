@@ -17,7 +17,7 @@
 """Tests of status command.
 
 Most of these depend on the particular formatting used.
-As such they really are blackbox tests even though some of the 
+As such they really are blackbox tests even though some of the
 tests are not using self.capture. If we add tests for the programmatic
 interface later, they will be non blackbox tests.
 """
@@ -56,7 +56,7 @@ for p in plugins:
         import imp
         path.append(plugins[p].module.__path__[0])
         fp, pathname, description = imp.find_module('statusxml')
-        show_tree_status_xml = imp.load_module('statusxml', fp, pathname, 
+        show_tree_status_xml = imp.load_module('statusxml', fp, pathname,
             description).show_tree_status_xml
 
 def create_xml(wt, status_dict):
@@ -74,26 +74,26 @@ def create_xml(wt, status_dict):
     return status
 
 class TestXmlStatus(TestCaseWithTransport):
-    
+
     def assertStatus(self, expected_xml_element, working_tree,
         revision=None, specific_files=None):
         """Run status in working_tree and look for output.
-        
+
         :param expected_lines: The lines to look for.
         :param working_tree: The tree to run status in.
         """
-        output_string = self.status_string(working_tree, revision, 
+        output_string = self.status_string(working_tree, revision,
             specific_files)
         output_elem = fromstring(output_string)
-        self.assertEqual(len(output_elem.findall('added/*')), 
+        self.assertEqual(len(output_elem.findall('added/*')),
             len(expected_xml_element.findall('added/*')))
-        self.assertEqual(len(output_elem.findall('modified')), 
+        self.assertEqual(len(output_elem.findall('modified')),
             len(expected_xml_element.findall('modified')))
         self.assertEqual(len(output_elem.findall('unknown')),
             len(expected_xml_element.findall('unknown')))
-        self.assertEqual(len(output_elem.findall('deleted')), 
+        self.assertEqual(len(output_elem.findall('deleted')),
             len(expected_xml_element.findall('deleted')))
-        self.assertEqual(len(output_elem.findall('renamed')), 
+        self.assertEqual(len(output_elem.findall('renamed')),
             len(expected_xml_element.findall('renamed')))
         self.assertEqual(len(output_elem.findall('kind_changed')),
             len(expected_xml_element.findall('kind_changed')))
@@ -103,7 +103,7 @@ class TestXmlStatus(TestCaseWithTransport):
             len(expected_xml_element.findall('pending_merges')))
         self.assertEqual(len(output_elem.findall('conflicts')),
             len(expected_xml_element.findall('conflicts')))
-    
+
     def status_string(self, wt, revision=None, specific_files=None):
         # use a real file rather than StringIO because it doesn't handle
         # Unicode very well.
@@ -114,7 +114,7 @@ class TestXmlStatus(TestCaseWithTransport):
 
 
 class BranchStatus(TestXmlStatus):
-    
+
     def test_branch_statusxml(self):
         """Test basic branch status"""
         wt = self.make_branch_and_tree('.')
@@ -135,7 +135,7 @@ class BranchStatus(TestXmlStatus):
 
         wt.add_parent_tree_id('pending@pending-0-0')
         with_pending_merges = create_xml(wt, {'unknown':[('file', 'bye.c', {}),
-            ('file', 'hello.c', {})], 
+            ('file', 'hello.c', {})],
                 'pending_merges':[('pending_merge','pending@pending-0-0', {})]})
         self.assertStatus(with_pending_merges, wt)
 
@@ -149,14 +149,14 @@ class BranchStatus(TestXmlStatus):
         wt.commit('Test message')
 
         revs = [RevisionSpec.from_string('0')]
-        two_added = create_xml(wt, {'added':[('file', 'bye.c', {}), 
+        two_added = create_xml(wt, {'added':[('file', 'bye.c', {}),
             ('file', 'hello.c', {})]})
         self.assertStatus(two_added, wt, revision=revs)
 
         self.build_tree(['more.c'])
         wt.add('more.c')
         wt.commit('Another test message')
-        
+
         revs.append(RevisionSpec.from_string('1'))
         self.assertStatus(two_added, wt, revision=revs)
 
@@ -176,7 +176,7 @@ class BranchStatus(TestXmlStatus):
         self.assertEquals(1, len(messageElem.findall('pending_merges')))
         self.assertEquals(1, len(messageElem.findall('pending_merges/log')))
         self.assertEndsWith(
-            messageElem.findall('pending_merges/log/message')[0].text, 
+            messageElem.findall('pending_merges/log/message')[0].text,
             "Empty commit 2")
         wt2.commit("merged")
         # must be long to make sure we see elipsis at the end
@@ -208,7 +208,7 @@ class BranchStatus(TestXmlStatus):
         wt.add('directory')
         wt.add('test.c')
         wt.commit('testing')
-        
+
         xml_status = create_xml(wt, {'unknown':[('file','bye.c', {}),
             ('directory', 'dir2', {}), ('file', 'directory/hello.c', {})]})
         self.assertStatus(xml_status, wt)
@@ -220,11 +220,11 @@ class BranchStatus(TestXmlStatus):
         unknowns = log_xml.findall('unknown')
         self.assertEquals(1, len(nonexistents))
         self.assertEquals(1, len(unknowns))
-        
-        self.assertStatus(create_xml(wt, {'unknown':[('file', 
+
+        self.assertStatus(create_xml(wt, {'unknown':[('file',
             'directory/hello.c', {})]}), wt, specific_files=['directory'])
-        
-        self.assertStatus(create_xml(wt, {'unknown':[('directory', 
+
+        self.assertStatus(create_xml(wt, {'unknown':[('directory',
             'dir2', {})]}), wt, specific_files=['dir2'])
 
         revs = [RevisionSpec.from_string('0'), RevisionSpec.from_string('1')]
@@ -242,14 +242,14 @@ class BranchStatus(TestXmlStatus):
 
         tree.set_conflicts(conflicts.ConflictList(
             [conflicts.ContentsConflict('dir2')]))
-        self.assertStatus(create_xml(tree, 
-            {'conflicts':[('directory','dir2', {})]}), 
+        self.assertStatus(create_xml(tree,
+            {'conflicts':[('directory','dir2', {})]}),
             tree, specific_files=['dir2'])
 
         tree.set_conflicts(conflicts.ConflictList(
             [conflicts.ContentsConflict('dir2/file1')]))
-        self.assertStatus(create_xml(tree, 
-            {'conflicts':[('file','dir2/file1', {})]}), 
+        self.assertStatus(create_xml(tree,
+            {'conflicts':[('file','dir2/file1', {})]}),
             tree, specific_files=['dir2'])
 
     def test_statusxml_nonexistent_file(self):
@@ -287,7 +287,7 @@ class CheckoutStatus(BranchStatus):
         super(CheckoutStatus, self).setUp()
         mkdir('codir')
         chdir('codir')
-        
+
     def make_branch_and_tree(self, relpath):
         source = self.make_branch(pathjoin('..', relpath))
         checkout = bzrdir.BzrDirMetaFormat1().initialize(relpath)
@@ -350,7 +350,7 @@ class TestStatus(TestCaseWithTransport):
 
     # Not yet implemneted
     #def assertStatusContains(self, xpath):
-    #    """Run status, and assert it contains the given attribute at the 
+    #    """Run status, and assert it contains the given attribute at the
     #       given element"""
     #    for key in changes.keys():
     #        status_kind = E(key)
@@ -393,15 +393,19 @@ class TestStatus(TestCaseWithTransport):
 
 
 class TestXmlStatusEncodings(TestXmlStatus):
-    
+
     def setUp(self):
         TestCaseWithTransport.setUp(self)
-        self.user_encoding = osutils._cached_user_encoding
+        self.old_user_encoding = osutils._cached_user_encoding
+        self.old_get_user_encoding = osutils.get_user_encoding
         self.stdout = sys.stdout
 
     def tearDown(self):
-        osutils._cached_user_encoding = self.user_encoding
-        bzrlib.user_encoding = self.user_encoding
+        osutils._cached_user_encoding = self.old_user_encoding
+        if hasattr(bzrlib, 'user_encoding'):
+            bzrlib.user_encoding = self.old_user_encoding
+        osutils._cached_user_encoding = self.old_user_encoding
+        osutils.get_user_encoding = self.old_get_user_encoding
         sys.stdout = self.stdout
         TestCaseWithTransport.tearDown(self)
 
@@ -420,7 +424,9 @@ class TestXmlStatusEncodings(TestXmlStatus):
     def test_stdout_ascii_xml(self):
         sys.stdout = StringIO()
         osutils._cached_user_encoding = 'ascii'
-        bzrlib.user_encoding = 'ascii'
+        bzrlib.osutils.get_user_encoding = lambda: 'ascii'
+        if hasattr(bzrlib, 'user_encoding'):
+            bzrlib.user_encoding = 'ascii'
         working_tree = self.make_uncommitted_tree()
         stdout, stderr = self.run_bzr("xmlstatus")
         messageElem = fromstring(stdout)

@@ -441,7 +441,7 @@ class TestLogNestedMerges(ExternalBase):
             </log>
         </merge>
     </log>
-</logs>''' % bzrlib.user_encoding)
+</logs>''' % bzrlib.osutils.get_user_encoding())
         return xml
 
     def test_nested_merges(self):
@@ -483,11 +483,15 @@ class TestLogEncodings(TestCaseInTempDir):
 
     def setUp(self):
         TestCaseInTempDir.setUp(self)
-        self.user_encoding = osutils._cached_user_encoding
+        self.old_user_encoding = osutils._cached_user_encoding
+        self.old_get_user_encoding = osutils.get_user_encoding
 
     def tearDown(self):
-        osutils._cached_user_encoding = self.user_encoding
-        bzrlib.user_encoding = self.user_encoding
+        osutils._cached_user_encoding = self.old_user_encoding
+        if hasattr(bzrlib, 'user_encoding'):
+            bzrlib.user_encoding = self.old_user_encoding
+        osutils._cached_user_encoding = self.old_user_encoding
+        osutils.get_user_encoding = self.old_get_user_encoding
         TestCaseInTempDir.tearDown(self)
 
     def create_branch(self):
@@ -512,7 +516,9 @@ class TestLogEncodings(TestCaseInTempDir):
         # it to be used
         try:
             osutils._cached_user_encoding = 'ascii'
-            bzrlib.user_encoding  = 'ascii'
+            bzrlib.osutils.get_user_encoding = lambda: 'ascii'
+            if hasattr(bzrlib, 'user_encoding'):
+                bzrlib.user_encoding = 'ascii'
             # We should be able to handle any encoding
             out, err = bzr('xmllog', encoding=encoding)
             if not fail:
@@ -524,7 +530,8 @@ class TestLogEncodings(TestCaseInTempDir):
                 self.assertNotEqual(-1, out.find('Message with ?'))
         finally:
             osutils._cached_user_encoding = old_encoding
-            bzrlib.user_encoding = old_encoding
+            if hasattr(bzrlib, 'user_encoding'):
+                bzrlib.user_encoding = old_encoding
 
     def test_log_handles_encoding(self):
         self.create_branch()
@@ -540,8 +547,10 @@ class TestLogEncodings(TestCaseInTempDir):
 
     def test_stdout_encoding(self):
         bzr = self.run_bzr
-        osutils._cached_user_encoding = "cp1251"
-        bzrlib.user_encoding = "cp1251"
+        osutils._cached_user_encoding = 'cp1251'
+        bzrlib.osutils.get_user_encoding = lambda: 'cp1251'
+        if hasattr(bzrlib, 'user_encoding'):
+            bzrlib.user_encoding = 'cp1251'
 
         bzr('init')
         self.build_tree(['a'])

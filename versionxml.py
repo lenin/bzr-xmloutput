@@ -110,10 +110,11 @@ def _show_source_tree(to_file):
 def _show_bzr_config(to_file):
     config_dir = os.path.normpath(config.config_dir())  # use native slashes
     if not isinstance(config_dir, unicode):
-        config_dir = config_dir.decode(bzrlib.user_encoding)
+        config_dir = config_dir.decode(bzrlib.osutils.get_user_encoding())
     bzr_log_filename = trace._bzr_log_filename
     if not isinstance(bzr_log_filename, unicode):
-        bzr_log_filename = trace._bzr_log_filename.decode(bzrlib.user_encoding)
+        bzr_log_filename = trace._bzr_log_filename.decode(
+            bzrlib.osutils.get_user_encoding())
     to_file.write('<configuration>%s</configuration>' % config_dir)
     to_file.write('<log_file>%s</log_file>' % bzr_log_filename)
 

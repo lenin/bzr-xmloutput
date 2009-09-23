@@ -310,21 +310,14 @@ class TestInfoXml(blackbox.ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
-<format>1.6</format>
-<format>1.6.1-rich-root</format>
-<format>1.9</format>
-<format>1.9-rich-root</format>
-<format>dirstate</format>
-<format>dirstate-tags</format>
-<format>pack-0.92</format>
-<format>rich-root</format>
-<format>rich-root-pack</format>
+<format>2a</format>
+<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>lightcheckout</light_checkout_root><checkout_of_branch>standalone</checkout_of_branch></location>
 <format>
 <control>Meta directory format 1</control>
-<working_tree>Working tree format 4</working_tree>
+<working_tree>Working tree format 6</working_tree>
 <branch>Branch format 4</branch>
 <repository>Weave repository format 6</repository>
 </format>
@@ -511,21 +504,14 @@ class TestInfoXml(blackbox.ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
-<format>1.6</format>
-<format>1.6.1-rich-root</format>
-<format>1.9</format>
-<format>1.9-rich-root</format>
-<format>dirstate</format>
-<format>dirstate-tags</format>
-<format>pack-0.92</format>
-<format>rich-root</format>
-<format>rich-root-pack</format>
+<format>2a</format>
+<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>lightcheckout</light_checkout_root><checkout_of_branch>standalone</checkout_of_branch></location>
 <format>
 <control>Meta directory format 1</control>
-<working_tree>Working tree format 4</working_tree>
+<working_tree>Working tree format 6</working_tree>
 <branch>Branch format 4</branch>
 <repository>Weave repository format 6</repository>
 </format>
@@ -567,7 +553,7 @@ class TestInfoXml(blackbox.ExternalBase):
 <info>
 <layout>Standalone branch</layout>
 <formats>
-<format>pack-0.92</format>
+<format>2a</format>
 </formats>
 <location>
 <branch_root>branch</branch_root></location>
@@ -685,21 +671,14 @@ class TestInfoXml(blackbox.ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
-<format>1.6</format>
-<format>1.6.1-rich-root</format>
-<format>1.9</format>
-<format>1.9-rich-root</format>
-<format>dirstate</format>
-<format>dirstate-tags</format>
-<format>pack-0.92</format>
-<format>rich-root</format>
-<format>rich-root-pack</format>
+<format>2a</format>
+<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>tree/lightcheckout</light_checkout_root><checkout_of_branch>repo/branch</checkout_of_branch><shared_repository>repo</shared_repository></location>
 <format>
 <control>Meta directory format 1</control>
-<working_tree>Working tree format 4</working_tree>
+<working_tree>Working tree format 6</working_tree>
 <branch>%s</branch>
 <repository>%s</repository>
 </format>
@@ -739,13 +718,13 @@ class TestInfoXml(blackbox.ExternalBase):
 <info>
 <layout>Checkout</layout>
 <formats>
-<format>dirstate</format>
+<format>unnamed</format>
 </formats>
 <location>
 <checkout_root>tree/checkout</checkout_root><checkout_of_branch>repo/branch</checkout_of_branch></location>
 <format>
 <control>Meta directory format 1</control>
-<working_tree>Working tree format 4</working_tree>
+<working_tree>Working tree format 6</working_tree>
 <branch>%s</branch>
 <repository>%s</repository>
 </format>
@@ -787,13 +766,13 @@ class TestInfoXml(blackbox.ExternalBase):
 <info>
 <layout>Checkout</layout>
 <formats>
-<format>dirstate</format>
+<format>unnamed</format>
 </formats>
 <location>
 <checkout_root>tree/checkout</checkout_root><checkout_of_branch>repo/branch</checkout_of_branch></location>
 <format>
 <control>Meta directory format 1</control>
-<working_tree>Working tree format 4</working_tree>
+<working_tree>Working tree format 6</working_tree>
 <branch>%s</branch>
 <repository>%s</repository>
 </format>
@@ -836,21 +815,14 @@ class TestInfoXml(blackbox.ExternalBase):
 <info>
 <layout>Lightweight checkout</layout>
 <formats>
-<format>1.6</format>
-<format>1.6.1-rich-root</format>
-<format>1.9</format>
-<format>1.9-rich-root</format>
-<format>dirstate</format>
-<format>dirstate-tags</format>
-<format>pack-0.92</format>
-<format>rich-root</format>
-<format>rich-root-pack</format>
+<format>2a</format>
+<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>tree/lightcheckout</light_checkout_root><checkout_of_branch>repo/branch</checkout_of_branch><shared_repository>repo</shared_repository></location>
 <format>
 <control>Meta directory format 1</control>
-<working_tree>Working tree format 4</working_tree>
+<working_tree>Working tree format 6</working_tree>
 <branch>%s</branch>
 <repository>%s</repository>
 </format>
@@ -1326,16 +1298,9 @@ class TestInfoXml(blackbox.ExternalBase):
             (False, True): 'Lightweight checkout',
             (False, False): 'Checkout',
             }[(shared_repo is not None, light_checkout)]
-        format = {True: '<format>1.6</format>\n' +
-                        '<format>1.6.1-rich-root</format>\n' +
-                        '<format>1.9</format>\n'+
-                        '<format>1.9-rich-root</format>\n'+
-                        '<format>dirstate</format>\n' +
-                        '<format>dirstate-tags</format>\n' +
-                        '<format>pack-0.92</format>\n' +
-                        '<format>rich-root</format>\n' +
-                        '<format>rich-root-pack</format>',
-                  False: '<format>dirstate</format>'}[light_checkout]
+        format = {True: '<format>2a</format>\n' +
+                        '<format>development-subtree</format>\n',
+                  False: '<format>unnamed</format>'}[light_checkout]
         if repo_locked:
             repo_locked = lco_tree.branch.repository.get_physical_lock_status()
         if repo_locked or branch_locked or tree_locked:

@@ -20,7 +20,8 @@ class XMLError(errors.BzrError):
 
     def __str__(self):
         """__str__"""
-        xml = '<?xml version="1.0" encoding="%s"?>' % bzrlib.user_encoding
+        xml = '<?xml version="1.0" encoding="%s"?>' % \
+                bzrlib.osutils.get_user_encoding()
         try:
             xml += '<error>%s</error>' % self.get_cause_xml()
         except Exception, e:
