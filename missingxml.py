@@ -28,8 +28,7 @@
 OTHER_BRANCH may be local or remote.
 """
 
-from bzrlib import user_encoding
-from bzrlib import ui, urlutils, errors
+from bzrlib import ui, urlutils, errors, osutils
 from bzrlib.branch import Branch
 from bzrlib.log import LogRevision, log_formatter, log_formatter_registry
 from bzrlib.missing import (
@@ -65,7 +64,7 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
         remote_branch.lock_read()
         try:
             self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
-                        user_encoding)
+                        osutils.get_user_encoding())
             self.outf.write('<missing>')
             self.outf.write('<last_location>' + display_url + \
                             '</last_location>')

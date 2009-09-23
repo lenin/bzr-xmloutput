@@ -23,7 +23,7 @@
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import os
-from bzrlib import user_encoding, bzrdir, errors, osutils, xml_serializer
+from bzrlib import bzrdir, errors, osutils, xml_serializer
 from bzrlib.xml_serializer import _escape_cdata
 """)
 
