@@ -192,7 +192,7 @@ class TestXmlAnnotate(TestCaseWithTransport):
                 'BzrCommandError</class><dict><key>_preformatted_string</key><value>xmlannotate'
                 ' --revision takes exactly 1 argument</value></dict><message>'
                 'xmlannotate --revision takes exactly 1 argument</message>'
-                '</error>' % bzrlib.user_encoding, err)
+                '</error>' % bzrlib.osutils.get_user_encoding(), err)
 
     def test_xmlannotate_empty_file(self):
         tree = self.make_branch_and_tree('tree')

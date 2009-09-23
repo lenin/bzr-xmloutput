@@ -78,10 +78,12 @@ class BzrXMLRPCServer(SimpleXMLRPCServer):
     def serve_forever(self):
         """Start serving, and block"""
         import bzrlib.osutils
-        bzrlib.user_encoding = 'UTF-8'
-        bzrlib.osutils._cached_user_encoding = bzrlib.user_encoding
-        bzrlib.osutils.bzrlib.user_encoding = bzrlib.user_encoding
-        self.encoding = bzrlib.user_encoding
+        default_encoding = 'UTF-8'
+        if hasattr(bzrlib, 'user_encoding'):
+            bzrlib.user_encoding = default_encoding
+            bzrlib.osutils.bzrlib.user_encoding = default_encoding
+        bzrlib.osutils._cached_user_encoding = default_encoding
+        self.encoding = default_encoding
         # support new super lazy commands (bzr-1.17)
         if getattr(commands, 'install_bzr_command_hooks'):
             commands.install_bzr_command_hooks()

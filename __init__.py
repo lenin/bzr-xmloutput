@@ -273,7 +273,7 @@ class cmd_xmlplugins(commands.Command):
             self.outf = sys.stdout
 
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
-                bzrlib.user_encoding)
+                bzrlib.osutils.get_user_encoding())
         self.outf.write('<plugins>')
         from bzrlib.xml_serializer import _escape_cdata
         for name, plugin in bzrlib.plugin.plugins().items():
@@ -306,7 +306,7 @@ class cmd_xmlversion(commands.Command):
         if to_file is None:
             to_file = sys.stdout
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
-                bzrlib.user_encoding)
+                bzrlib.osutils.get_user_encoding())
         if short:
             to_file.write("<version><bazaar><version>" + \
             bzrlib.version_string + \
@@ -383,7 +383,7 @@ class cmd_xmlls(builtins.cmd_ls):
     def run(self, *args, **kwargs):
         import lsxml
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
-                bzrlib.user_encoding)
+                bzrlib.osutils.get_user_encoding())
         lsxml.show_ls_xml(self.outf, *args, **kwargs)
         if getattr(kwargs, 'null', False):
             self.outf.write('\0')
