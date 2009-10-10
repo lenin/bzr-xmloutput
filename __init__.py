@@ -21,12 +21,13 @@
 #               Martin Albisetti
 
 """
-This plugin provides xml output for status, log, annotate, missing, info,
-version and plugins adding a --xml option to each
+This plugin adds an option (--xml) to log and provides an xml version of some
+builtinss commands that generate XML output and a xmlrpc service
 
 (most of this is code was modified from bzrlib.cmd_status,
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
+import info
 import bzrlib
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
@@ -51,8 +52,8 @@ from xml_errors import handle_error_xml
 """)
 
 
-version_info = (0, 8, 5)
-plugin_name = 'xmloutput'
+version_info = info.bzr_plugin_version
+plugin_name = info.bzr_plugin_name
 
 null_option = option.Option('null',
                             help='Write an ascii NUL (\\0) as the final char.')
