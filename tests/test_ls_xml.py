@@ -125,3 +125,21 @@ class TestLSXML(TestCaseWithTransport):
                            'path': 'subdir/b',
                            'status_kind': 'versioned'}]
         self.assertEquals(expected_files, self.run_xmlls())
+
+    def test_lsxml_non_recursive(self):
+        self.build_tree(['subdir/', 'subdir/b'])
+        self.wt.add(['a', 'subdir/', 'subdir/b', '.bzrignore'],
+            ['a-id', 'subdir-id', 'subdirb-id', 'bzrignore-id'])
+        expected_files = [{'id': 'bzrignore-id',
+                           'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'versioned'},
+                          {'id': 'a-id',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'},
+                          {'id': 'subdir-id',
+                           'kind': 'directory',
+                           'path': 'subdir',
+                           'status_kind': 'versioned'}]
+        self.assertEquals(expected_files, self.run_xmlls('--non-recursive'))
