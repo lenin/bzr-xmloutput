@@ -45,13 +45,16 @@ class TestLSXML(TestCaseWithTransport):
             command += ' ' + args
         out, err = self.run_bzr(command)
         self.assertEqual('', err)
-        # parse the output and convert it into a list structure:
-        #   [ [ kind, path, status_kind ], ... ]
+        # parse the output and convert it into more usable structure:
+        #   [ { 'kind': 'file, 'path': 'foo', ... }, ... ]
         lst = fromstring(out)
-        items = lst.findall('item')
-        return [[i.find('kind').text,
-                 i.find('path').text,
-                 i.find('status_kind').text] for i in items]
+        items = []
+        for item_elem in lst.findall('item'):
+            item = {}
+            for attr in item_elem.getchildren():
+                item[attr.tag] = attr.text
+            items.append(item)
+        return items
         
     #def test_lsxml_null_verbose(self):
     #    # Can't supply both
@@ -60,8 +63,12 @@ class TestLSXML(TestCaseWithTransport):
 
     def test_lsxml_basic(self):
         """Test the abilities of 'bzr xmlls'"""
-        expected_files = [['file', '.bzrignore', 'unknown'],
-            ['file', 'a', 'unknown']]
+        expected_files = [{'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'unknown'},
+                          {'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'unknown'}]
         self.assertEquals(expected_files, self.run_xmlls())
         self.assertEquals(expected_files, self.run_xmlls('--unknown'))
         self.assertEquals([], self.run_xmlls('--ignored'))
@@ -74,22 +81,47 @@ class TestLSXML(TestCaseWithTransport):
         self.assertEquals([], self.run_xmlls('--ignored -V'))
 
     def test_lsxml_added(self):
-        self.wt.add(['a'])
-        expected_files = [['file', '.bzrignore', 'unknown'],
-            ['file', 'a', 'versioned']]
+        self.wt.add(['a'], ['a-id'])
+        expected_files = [{'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'unknown'},
+                          {'id': 'a-id',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'}]
         self.assertEquals(expected_files, self.run_xmlls())
         
         self.wt.commit('add')
         self.build_tree(['subdir/'])
-        expected_files = [['file', '.bzrignore', 'unknown'],
-            ['file', 'a', 'versioned'],
-            ['directory', 'subdir', 'unknown']]
+        expected_files = [{'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'unknown'},
+                          {'id': 'a-id',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'},
+                          {'kind': 'directory',
+                           'path': 'subdir',
+                           'status_kind': 'unknown'}]
         self.assertEquals(expected_files, self.run_xmlls())
         
         self.build_tree(['subdir/b'])
-        self.wt.add(['subdir/', 'subdir/b', '.bzrignore'])
-        expected_files = [['file', '.bzrignore', 'versioned'],
-            ['file', 'a', 'versioned'],
-            ['directory', 'subdir', 'versioned'],
-            ['file', 'subdir/b', 'versioned']]
+        self.wt.add(['subdir/', 'subdir/b', '.bzrignore'],
+            ['subdir-id', 'subdirb-id', 'bzrignore-id'])
+        expected_files = [{'id': 'bzrignore-id',
+                           'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'versioned'},
+                          {'id': 'a-id',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'},
+                          {'id': 'subdir-id',
+                           'kind': 'directory',
+                           'path': 'subdir',
+                           'status_kind': 'versioned'},
+                          {'id': 'subdirb-id',
+                           'kind': 'file',
+                           'path': 'subdir/b',
+                           'status_kind': 'versioned'}]
         self.assertEquals(expected_files, self.run_xmlls())
