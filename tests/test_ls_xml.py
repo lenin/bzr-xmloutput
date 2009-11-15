@@ -63,37 +63,37 @@ class TestLSXML(TestCaseWithTransport):
 
     def test_lsxml_basic(self):
         """Test the abilities of 'bzr xmlls'"""
-        expected_files = [{'kind': 'file',
+        expected_items = [{'kind': 'file',
                            'path': '.bzrignore',
                            'status_kind': 'unknown'},
                           {'kind': 'file',
                            'path': 'a',
                            'status_kind': 'unknown'}]
-        self.assertEquals(expected_files, self.run_xmlls())
-        self.assertEquals(expected_files, self.run_xmlls('--unknown'))
+        self.assertEquals(expected_items, self.run_xmlls())
+        self.assertEquals(expected_items, self.run_xmlls('--unknown'))
         self.assertEquals([], self.run_xmlls('--ignored'))
         self.assertEquals([], self.run_xmlls('--versioned'))
         self.assertEquals([], self.run_xmlls('-V'))
-        self.assertEquals(expected_files,
+        self.assertEquals(expected_items,
                           self.run_xmlls('--unknown --ignored --version'))
-        self.assertEquals(expected_files,
+        self.assertEquals(expected_items,
                           self.run_xmlls('--unknown --ignored -V'))
         self.assertEquals([], self.run_xmlls('--ignored -V'))
 
     def test_lsxml_added(self):
         self.wt.add(['a'], ['a-id'])
-        expected_files = [{'kind': 'file',
+        expected_items = [{'kind': 'file',
                            'path': '.bzrignore',
                            'status_kind': 'unknown'},
                           {'id': 'a-id',
                            'kind': 'file',
                            'path': 'a',
                            'status_kind': 'versioned'}]
-        self.assertEquals(expected_files, self.run_xmlls())
+        self.assertEquals(expected_items, self.run_xmlls())
         
         self.wt.commit('add')
         self.build_tree(['subdir/'])
-        expected_files = [{'kind': 'file',
+        expected_items = [{'kind': 'file',
                            'path': '.bzrignore',
                            'status_kind': 'unknown'},
                           {'id': 'a-id',
@@ -103,12 +103,12 @@ class TestLSXML(TestCaseWithTransport):
                           {'kind': 'directory',
                            'path': 'subdir',
                            'status_kind': 'unknown'}]
-        self.assertEquals(expected_files, self.run_xmlls())
+        self.assertEquals(expected_items, self.run_xmlls())
         
         self.build_tree(['subdir/b'])
         self.wt.add(['subdir/', 'subdir/b', '.bzrignore'],
             ['subdir-id', 'subdirb-id', 'bzrignore-id'])
-        expected_files = [{'id': 'bzrignore-id',
+        expected_items = [{'id': 'bzrignore-id',
                            'kind': 'file',
                            'path': '.bzrignore',
                            'status_kind': 'versioned'},
@@ -124,13 +124,13 @@ class TestLSXML(TestCaseWithTransport):
                            'kind': 'file',
                            'path': 'subdir/b',
                            'status_kind': 'versioned'}]
-        self.assertEquals(expected_files, self.run_xmlls())
+        self.assertEquals(expected_items, self.run_xmlls())
 
     def test_lsxml_non_recursive(self):
         self.build_tree(['subdir/', 'subdir/b'])
         self.wt.add(['a', 'subdir/', 'subdir/b', '.bzrignore'],
             ['a-id', 'subdir-id', 'subdirb-id', 'bzrignore-id'])
-        expected_files = [{'id': 'bzrignore-id',
+        expected_items = [{'id': 'bzrignore-id',
                            'kind': 'file',
                            'path': '.bzrignore',
                            'status_kind': 'versioned'},
@@ -142,4 +142,4 @@ class TestLSXML(TestCaseWithTransport):
                            'kind': 'directory',
                            'path': 'subdir',
                            'status_kind': 'versioned'}]
-        self.assertEquals(expected_files, self.run_xmlls('--non-recursive'))
+        self.assertEquals(expected_items, self.run_xmlls('--non-recursive'))
