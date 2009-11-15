@@ -175,8 +175,7 @@ class TestLSXML(TestCaseWithTransport):
                            'kind': 'file',
                            'path': 'subdir/b',
                            'status_kind': 'versioned'},]
-        self.assertEquals(expected_items,
-                          self.run_xmlls('subdir'))
+        self.assertEquals(expected_items, self.run_xmlls('subdir'))
 
         # Check what happens in a sub-directory, referring to parent
         os.chdir('subdir')
@@ -194,7 +193,22 @@ class TestLSXML(TestCaseWithTransport):
                            'kind': 'file',
                            'path': 'subdir/b',
                            'status_kind': 'versioned'}]
-        self.assertEquals(expected_items,
-                          self.run_xmlls('..'))
+        self.assertEquals(expected_items, self.run_xmlls('..'))
         self.run_bzr_error(['cannot specify both --from-root and PATH'],
                            'xmlls --from-root ..')
+
+    def test_lsxml_revision(self):
+        self.wt.add(['a'], ['a-id'])
+        self.wt.commit('add')
+
+        self.build_tree(['subdir/'])
+
+        # Check what happens when we supply a specific revision
+        expected_items = [{'id': 'a-id',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'}]
+        self.assertEquals(expected_items, self.run_xmlls('--revision 1'))
+
+        os.chdir('subdir')
+        self.assertEquals([], self.run_xmlls('--revision 1'))
