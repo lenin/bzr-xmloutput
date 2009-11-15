@@ -212,3 +212,22 @@ class TestLSXML(TestCaseWithTransport):
 
         os.chdir('subdir')
         self.assertEquals([], self.run_xmlls('--revision 1'))
+
+    def test_lsxml_branch(self):
+        """If a branch is specified, files are listed from it"""
+        self.build_tree(['subdir/', 'subdir/b'])
+        self.wt.add(['subdir', 'subdir/b'], ['subdir-id', 'subdirb-id'])
+        self.wt.commit('committing')
+        branch = self.make_branch('branchdir')
+        branch.pull(self.wt.branch)
+        expected_items = [{'id': 'subdir-id',
+                           'kind': 'directory',
+                           'path': 'branchdir/subdir',
+                           'status_kind': 'versioned'},
+                          {'id': 'subdirb-id',
+                           'kind': 'file',
+                           'path': 'branchdir/subdir/b',
+                           'status_kind': 'versioned'}]
+        self.assertEquals(expected_items, self.run_xmlls('branchdir'))
+        self.assertEquals(expected_items,
+                          self.run_xmlls('branchdir --revision 1'))
