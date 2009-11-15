@@ -143,3 +143,22 @@ class TestLSXML(TestCaseWithTransport):
                            'path': 'subdir',
                            'status_kind': 'versioned'}]
         self.assertEquals(expected_items, self.run_xmlls('--non-recursive'))
+
+        # Check what happens in a sub-directory
+        os.chdir('subdir')
+        expcted_items = [{'id': 'subdirb-id',
+                          'kind': 'file',
+                          'path': 'b',
+                          'status_kind': 'versioned'}]
+        self.assertEquals(expcted_items, self.run_xmlls())
+        expcted_items = [{'id': 'subdirb-id',
+                          'kind': 'file',
+                          'path': 'subdir/b',
+                          'status_kind': 'versioned'}]
+        self.assertEquals(expcted_items, self.run_xmlls('--from-root'))
+        expected_items = [{'id': 'subdirb-id',
+                           'kind': 'file',
+                           'path': 'subdir/b',
+                           'status_kind': 'versioned'}]
+        self.assertEquals(expected_items,
+                          self.run_xmlls('--from-root --non-recursive'))
