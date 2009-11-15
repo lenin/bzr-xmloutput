@@ -42,19 +42,21 @@ def show_ls_xml(outf, revision=None, non_recursive=False,
 
     if path is None:
         fs_path = '.'
-        prefix = ''
     else:
         if from_root:
             raise errors.BzrCommandError('cannot specify both --from-root'
                                          ' and PATH')
         fs_path = path
-        prefix = path
     tree, branch, relpath = bzrdir.BzrDir.open_containing_tree_or_branch(
             fs_path)
+    
+    prefix = None
     if from_root:
-        relpath = u''
-    elif relpath:
-        relpath += '/'
+        if relpath:
+            prefix = relpath + '/'
+    elif fs_path != '.':
+        prefix = fs_path + '/'
+
     if revision is not None:
         tree = branch.repository.revision_tree(
             revision[0].as_revision_id(branch))
@@ -64,34 +66,33 @@ def show_ls_xml(outf, revision=None, non_recursive=False,
     tree.lock_read()
     try:
         outf.write('<list>')
-        for fp, fc, fkind, fid, entry in tree.list_files(include_root=False):
-            if fp.startswith(relpath):
-                fp = osutils.pathjoin(prefix, fp[len(relpath):])
-                if non_recursive and '/' in fp:
-                    continue
-                if not all and not selection[fc]:
-                    continue
-                if kind is not None and fkind != kind:
-                    continue
-                if fid is None:
-                    fid = ''
+        for fp, fc, fkind, fid, entry in tree.list_files(include_root=False,
+                from_dir=relpath, recursive=not non_recursive):
+            if not all and not selection[fc]:
+                continue
+            if kind is not None and fkind != kind:
+                continue
+            if prefix:
+                fp = osutils.pathjoin(prefix, fp)
+            if fid is None:
+                fid = ''
+            else:
+                fid = '<id>%s</id>' % fid
+            fkind = '<kind>%s</kind>' % fkind
+            status_kind = '<status_kind>%s</status_kind>' % long_status_kind[fc]
+            fpath = '<path>%s</path>' % _escape_cdata(fp)
+            if fc == 'I' and ignored:
+                # get the pattern
+                if tree.basedir in fp:
+                    pat = tree.is_ignored(tree.relpath(fp))
                 else:
-                    fid = '<id>%s</id>' % fid
-                fkind = '<kind>%s</kind>' % fkind
-                status_kind = '<status_kind>%s</status_kind>' % long_status_kind[fc]
-                fpath = '<path>%s</path>' % _escape_cdata(fp)
-                if fc == 'I' and ignored:
-                    # get the pattern
-                    if tree.basedir in fp:
-                        pat = tree.is_ignored(tree.relpath(fp))
-                    else:
-                        pat = tree.is_ignored(fp)
-                    pattern = '<pattern>%s</pattern>' % _escape_cdata(pat)
-                else:
-                    pattern = ''
-                outstring = '<item>%s%s%s%s%s</item>' % (fid, fkind, fpath,
-                                                       status_kind, pattern)
-                outf.write(outstring)
+                    pat = tree.is_ignored(fp)
+                pattern = '<pattern>%s</pattern>' % _escape_cdata(pat)
+            else:
+                pattern = ''
+            outstring = '<item>%s%s%s%s%s</item>' % (fid, fkind, fpath,
+                                                   status_kind, pattern)
+            outf.write(outstring)
     finally:
         outf.write('</list>')
         tree.unlock()
