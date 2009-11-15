@@ -231,3 +231,48 @@ class TestLSXML(TestCaseWithTransport):
         self.assertEquals(expected_items, self.run_xmlls('branchdir'))
         self.assertEquals(expected_items,
                           self.run_xmlls('branchdir --revision 1'))
+
+    def test_lsxml_ignored(self):
+        # Now try to do ignored files.
+        self.wt.add(['a', '.bzrignore'], ['a-id', 'bzrignore-id'])
+        self.build_tree(['blah.py', 'blah.pyo', 'user-ignore'])
+        expected_items = [{'id': 'bzrignore-id',
+                           'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'versioned'},
+                          {'id': 'a-id',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'},
+                          {'kind': 'file',
+                           'path': 'blah.py',
+                           'status_kind': 'unknown'},
+                          {'kind': 'file',
+                           'path': 'blah.pyo',
+                           'status_kind': 'ignored'},
+                          {'kind': 'file',
+                           'path': 'user-ignore',
+                           'status_kind': 'ignored'}]
+        self.assertEquals(expected_items, self.run_xmlls())
+        expected_items = [{'kind': 'file',
+                           'path': 'blah.pyo',
+                           'pattern': '*.pyo',
+                           'status_kind': 'ignored'},
+                          {'kind': 'file',
+                           'path': 'user-ignore',
+                           'pattern': 'user-ignore',
+                           'status_kind': 'ignored'}]
+        self.assertEquals(expected_items, self.run_xmlls('--ignored'))
+        expected_items = [{'kind': 'file',
+                           'path': 'blah.py',
+                           'status_kind': 'unknown'}]
+        self.assertEquals(expected_items, self.run_xmlls('--unknown'))
+        expected_items = [{'id': 'bzrignore-id',
+                           'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'versioned'},
+                          {'id': 'a-id',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'}]
+        self.assertEquals(expected_items, self.run_xmlls('--versioned'))
