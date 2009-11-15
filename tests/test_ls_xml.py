@@ -292,3 +292,13 @@ class TestLSXML(TestCaseWithTransport):
         self.assertEquals(expected_items, self.run_xmlls('--kind=directory'))
         self.assertEquals([], self.run_xmlls('--kind=symlink'))
         self.run_bzr_error(['invalid kind specified'], 'xmlls --kind=pile')
+
+    def test_lsxml_path_nonrecursive(self):
+        expected_items = [{'kind': 'file',
+                           'path': '%s/.bzrignore' % self.test_dir,
+                           'status_kind': 'unknown'},
+                          {'kind': 'file',
+                           'path': '%s/a' % self.test_dir,
+                           'status_kind': 'unknown'}]
+        self.assertEquals(expected_items,
+                          self.run_xmlls('%s --non-recursive' % self.test_dir))
