@@ -167,14 +167,10 @@ class TestLSXML(TestCaseWithTransport):
         """If a path is specified, files are listed with that prefix"""
         self.build_tree(['subdir/', 'subdir/b'])
         self.wt.add(['subdir', 'subdir/b'], ['subdir-id', 'subdirb-id'])
-        expected_items = [{'id': 'subdir-id',
-                           'kind': 'directory',
-                           'path': 'subdir',
-                           'status_kind': 'versioned'},
-                          {'id': 'subdirb-id',
+        expected_items = [{'id': 'subdirb-id',
                            'kind': 'file',
                            'path': 'subdir/b',
-                           'status_kind': 'versioned'},]
+                           'status_kind': 'versioned'}]
         self.assertEquals(expected_items, self.run_xmlls('subdir'))
 
         # Check what happens in a sub-directory, referring to parent
