@@ -162,3 +162,39 @@ class TestLSXML(TestCaseWithTransport):
                            'status_kind': 'versioned'}]
         self.assertEquals(expected_items,
                           self.run_xmlls('--from-root --non-recursive'))
+
+    def test_lsxml_path(self):
+        """If a path is specified, files are listed with that prefix"""
+        self.build_tree(['subdir/', 'subdir/b'])
+        self.wt.add(['subdir', 'subdir/b'], ['subdir-id', 'subdirb-id'])
+        expected_items = [{'id': 'subdir-id',
+                           'kind': 'directory',
+                           'path': 'subdir',
+                           'status_kind': 'versioned'},
+                          {'id': 'subdirb-id',
+                           'kind': 'file',
+                           'path': 'subdir/b',
+                           'status_kind': 'versioned'},]
+        self.assertEquals(expected_items,
+                          self.run_xmlls('subdir'))
+
+        # Check what happens in a sub-directory, referring to parent
+        os.chdir('subdir')
+        expected_items = [{'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'unknown'},
+                          {'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'unknown'},
+                          {'id': 'subdir-id',
+                           'kind': 'directory',
+                           'path': 'subdir',
+                           'status_kind': 'versioned'},
+                          {'id': 'subdirb-id',
+                           'kind': 'file',
+                           'path': 'subdir/b',
+                           'status_kind': 'versioned'}]
+        self.assertEquals(expected_items,
+                          self.run_xmlls('..'))
+        self.run_bzr_error(['cannot specify both --from-root and PATH'],
+                           'xmlls --from-root ..')
