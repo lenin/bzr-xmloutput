@@ -176,18 +176,18 @@ class TestLSXML(TestCaseWithTransport):
         # Check what happens in a sub-directory, referring to parent
         os.chdir('subdir')
         expected_items = [{'kind': 'file',
-                           'path': '.bzrignore',
+                           'path': '../.bzrignore',
                            'status_kind': 'unknown'},
                           {'kind': 'file',
-                           'path': 'a',
+                           'path': '../a',
                            'status_kind': 'unknown'},
                           {'id': 'subdir-id',
                            'kind': 'directory',
-                           'path': 'subdir',
+                           'path': '../subdir',
                            'status_kind': 'versioned'},
                           {'id': 'subdirb-id',
                            'kind': 'file',
-                           'path': 'subdir/b',
+                           'path': '../subdir/b',
                            'status_kind': 'versioned'}]
         self.assertEquals(expected_items, self.run_xmlls('..'))
         self.run_bzr_error(['cannot specify both --from-root and PATH'],
