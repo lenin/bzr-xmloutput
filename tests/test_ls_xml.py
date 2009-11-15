@@ -276,3 +276,19 @@ class TestLSXML(TestCaseWithTransport):
                            'path': 'a',
                            'status_kind': 'versioned'}]
         self.assertEquals(expected_items, self.run_xmlls('--versioned'))
+
+    def test_lsxml_kinds(self):
+        self.build_tree(['subdir/'])
+        expected_items = [{'kind': 'file',
+                           'path': '.bzrignore',
+                           'status_kind': 'unknown'},
+                          {'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'unknown'}]
+        self.assertEquals(expected_items, self.run_xmlls('--kind=file'))
+        expected_items = [{'kind': 'directory',
+                           'path': 'subdir',
+                           'status_kind': 'unknown'}]
+        self.assertEquals(expected_items, self.run_xmlls('--kind=directory'))
+        self.assertEquals([], self.run_xmlls('--kind=symlink'))
+        self.run_bzr_error(['invalid kind specified'], 'xmlls --kind=pile')
