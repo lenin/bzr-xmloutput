@@ -25,6 +25,7 @@ from bzrlib import tests
 
 def load_tests(basic_tests, module, loader):
     testmod_names = [
+        'test_ls_xml',
         'test_version_xml',
         'test_status_xml',
         'test_log_xml',
