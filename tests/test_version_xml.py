@@ -16,6 +16,8 @@
 
 """Black-box tests for bzr version."""
 
+import sys
+
 import bzrlib
 from bzrlib import osutils, trace
 from bzrlib.tests import (
@@ -40,7 +42,10 @@ class TestVersionXML(TestCase):
         self.assertEquals(1, len(versionElem.findall('bazaar/configuration')))
         self.assertEquals(1, len(versionElem.findall('bazaar/log_file')))
         self.assertEquals(1, len(versionElem.findall('bazaar/copyright')))
-        self.assertEquals(1, len(versionElem.findall('python/executable')))
+        if sys.platform == "win32":
+            self.assertEquals(1, len(versionElem.findall('python/dll')))
+        else:
+            self.assertEquals(1, len(versionElem.findall('python/executable')))
         self.assertEquals(1, len(versionElem.findall('python/version')))
         self.assertEquals(1, len(versionElem.findall('python/standard_library')))
 
