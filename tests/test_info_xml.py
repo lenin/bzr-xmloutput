@@ -38,6 +38,9 @@ from bzrlib.tests import blackbox
 class TestInfoXml(blackbox.ExternalBase):
 
     def test_should_normalize_non_ascii_url(self):
+        # we disable isolation because the error we want to catch is triggered
+        # outside of the jail
+        self.disable_directory_isolation()
         root = '/C:' if sys.platform == 'win32' else ''
         url = u'file://%s/Maçã/does/not/exist' % root
         out, err = self.run_bzr(['xmlinfo', url], retcode=3)
@@ -46,22 +49,30 @@ class TestInfoXml(blackbox.ExternalBase):
         self.assertEqual(
             '<?xml version="1.0" encoding="%s"?>'
             '<error><class>NotBranchError</class><dict><key>path</key>'
-            '<value>%s/</value></dict><message>Not a branch: "%s/".</message>'
+            '<value>%s/</value><key>extra</key><value></value>'
+            '<key>detail</key><value></value></dict>'
+            '<message>Not a branch: "%s/".</message>'
             '</error>' % (osutils.get_user_encoding(), nurl, nurl), err)
 
 
     def test_info_non_existing(self):
+        # we disable isolation because the error we want to catch is triggered
+        # outside of the jail
+        self.disable_directory_isolation()
         if sys.platform == "win32":
             location = "C:/i/do/not/exist/"
         else:
             location = "/i/do/not/exist/"
         out, err = self.run_bzr('xmlinfo '+location, retcode=3)
         self.assertEqual(out, '')
-        self.assertEqual('<?xml version="1.0" encoding="%s"?><error>'
-                '<class>NotBranchError</class><dict><key>path</key><value>'
-                '%s</value></dict><message>Not a branch: "%s".</message>'
-                '</error>' % (osutils.get_user_encoding(),
-                              location, location), err)
+        self.assertEqual(
+            '<?xml version="1.0" encoding="%s"?><error>'
+            '<class>NotBranchError</class><dict><key>path</key><value>'
+            '%s</value><key>extra</key><value></value>'
+            '<key>detail</key><value></value></dict>'
+            '<message>Not a branch: "%s".</message>'
+            '</error>' % (osutils.get_user_encoding(),
+                          location, location), err)
 
     def test_info_standalone(self):
         transport = self.get_transport()
@@ -311,7 +322,6 @@ class TestInfoXml(blackbox.ExternalBase):
 <layout>Lightweight checkout</layout>
 <formats>
 <format>2a</format>
-<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>lightcheckout</light_checkout_root><checkout_of_branch>standalone</checkout_of_branch></location>
@@ -505,7 +515,6 @@ class TestInfoXml(blackbox.ExternalBase):
 <layout>Lightweight checkout</layout>
 <formats>
 <format>2a</format>
-<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>lightcheckout</light_checkout_root><checkout_of_branch>standalone</checkout_of_branch></location>
@@ -672,7 +681,6 @@ class TestInfoXml(blackbox.ExternalBase):
 <layout>Lightweight checkout</layout>
 <formats>
 <format>2a</format>
-<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>tree/lightcheckout</light_checkout_root><checkout_of_branch>repo/branch</checkout_of_branch><shared_repository>repo</shared_repository></location>
@@ -816,7 +824,6 @@ class TestInfoXml(blackbox.ExternalBase):
 <layout>Lightweight checkout</layout>
 <formats>
 <format>2a</format>
-<format>development-subtree</format>
 </formats>
 <location>
 <light_checkout_root>tree/lightcheckout</light_checkout_root><checkout_of_branch>repo/branch</checkout_of_branch><shared_repository>repo</shared_repository></location>
@@ -1298,8 +1305,7 @@ class TestInfoXml(blackbox.ExternalBase):
             (False, True): 'Lightweight checkout',
             (False, False): 'Checkout',
             }[(shared_repo is not None, light_checkout)]
-        format = {True: '<format>2a</format>\n' +
-                        '<format>development-subtree</format>\n',
+        format = {True: '<format>2a</format>\n',
                   False: '<format>unnamed</format>'}[light_checkout]
         if repo_locked:
             repo_locked = lco_tree.branch.repository.get_physical_lock_status()
