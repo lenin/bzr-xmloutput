@@ -17,7 +17,7 @@
 bzr_plugin_name = "xmloutput"
 
 # versions ending in 'dev' mean development version
-bzr_plugin_version = (0, 8, 6)
+bzr_plugin_version = (0, 8, 7, 'dev')
 
 bzr_commands = ['xmlannotate', 'xmlinfo', 'xmlmissing', 'xmllog', 'xmlls',
                 'xmlplugins', 'xmlversion', 'start-xmlrpc', 'stop-xmlrpc']
