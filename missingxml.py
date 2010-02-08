@@ -62,10 +62,10 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
     local_branch.lock_read()
     try:
         remote_branch.lock_read()
-        try:
-            self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
+        self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
                         osutils.get_user_encoding())
-            self.outf.write('<missing>')
+        self.outf.write('<missing>')
+        try:
             self.outf.write('<last_location>' + display_url + \
                             '</last_location>')
             local_extra, remote_extra = find_unmerged(local_branch,
@@ -88,9 +88,6 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                                     local_branch.repository,
                                     verbose), lf)
                 self.outf.write('</extra_revisions>')
-                printed_local = True
-            else:
-                printed_local = False
             if remote_extra and not mine_only:
                 self.outf.write('<missing_revisions size="%d">' %
                                 len(remote_extra))
@@ -102,20 +99,17 @@ def show_missing_xml(self, other_branch=None, reverse=False, mine_only=False,
                                     remote_branch.repository,
                                     verbose), lf)
                 self.outf.write('</missing_revisions>')
-                printed_local = True
             if not remote_extra and not local_extra:
                 status_code = 0
                 # self.outf.write("Branches are up to date.\n")
             else:
                 status_code = 1
-            self.outf.write('</missing>')
+
         finally:
             remote_branch.unlock()
     finally:
-        local_branch.unlock()
-
-    if printed_local == False:
         self.outf.write('</missing>')
+        local_branch.unlock()
 
     if not status_code and parent is None and other_branch is not None:
         local_branch.lock_write()
