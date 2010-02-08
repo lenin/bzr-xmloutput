@@ -1,6 +1,6 @@
 == bzr-xmloutput ==
 
-This plugin adds an option (--xml) to log and provides an xml version of some builtinss commands that generate XML output and a xmlrpc service.
+This plugin adds an --xml option to log command, an xml version of some builtins command and a xmlrpc service.
 
 === Supported commands ===
  * log

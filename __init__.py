@@ -21,8 +21,10 @@
 #               Martin Albisetti
 
 """
-This plugin adds an option (--xml) to log and provides an xml version of some
-builtinss commands that generate XML output and a xmlrpc service
+This plugin adds an option (--xml) to log and provides an xml version of some builtin commands.
+
+A xmlrpc service it's also provided, in order to keep bzr loaded in memory and
+avoid the startup overhead.
 
 (most of this is code was modified from bzrlib.cmd_status,
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
