@@ -167,7 +167,8 @@ def _run_bzr(argv, workdir, func):
 def custom_commands_main(argv):
     """custom commands.main that handle errors using XMLError"""
     import bzrlib.ui
-    bzrlib.ui.ui_factory = bzrlib.ui.SilentUIFactory()
+    bzrlib.ui.ui_factory = bzrlib.ui.make_ui_for_terminal(
+        sys.stdin, sys.stdout, sys.stderr)
     try:
         _argv = []
         for a in argv[1:]:
