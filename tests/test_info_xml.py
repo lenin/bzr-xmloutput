@@ -239,8 +239,8 @@ class TestInfoXml(blackbox.ExternalBase):
 <added>0</added>
 <removed>0</removed>
 <renamed>0</renamed>
-<unknown>1</unknown>
-<ignored>0</ignored>
+<unknown>0</unknown>
+<ignored>1</ignored>
 <versioned_subdirectories>0</versioned_subdirectories>
 </working_tree_stats>
 <branch_history>
@@ -437,8 +437,8 @@ class TestInfoXml(blackbox.ExternalBase):
 <added>0</added>
 <removed>0</removed>
 <renamed>0</renamed>
-<unknown>1</unknown>
-<ignored>0</ignored>
+<unknown>0</unknown>
+<ignored>1</ignored>
 <versioned_subdirectories>0</versioned_subdirectories>
 </working_tree_stats>
 <branch_history>
@@ -1418,7 +1418,8 @@ class TestInfoXml(blackbox.ExternalBase):
         # Do a light checkout of the heavy one
         transport.mkdir('tree/lightcheckout')
         lco_dir = bzrlib.bzrdir.BzrDirMetaFormat1().initialize('tree/lightcheckout')
-        bzrlib.branch.BranchReferenceFormat().initialize(lco_dir, co_branch)
+        bzrlib.branch.BranchReferenceFormat().initialize(lco_dir,
+                                                         target_branch=co_branch)
         lco_dir.create_workingtree()
         lco_tree = lco_dir.open_workingtree()
 
@@ -1515,6 +1516,11 @@ class TestInfoXml(blackbox.ExternalBase):
     def test_info_locking_oslocks(self):
         if sys.platform == "win32":
             raise tests.TestSkipped("don't use oslocks on win32 in unix manner")
+        # This test tests old (all-in-one, OS lock using) behaviour which
+        # simply cannot work on windows (and is indeed why we changed our
+        # design. As such, don't try to remove the thisFailsStrictLockCheck
+        # call here.
+        self.thisFailsStrictLockCheck()
 
         tree = self.make_branch_and_tree('branch',
                                          format=bzrlib.bzrdir.BzrDirFormat6())
@@ -1607,3 +1613,27 @@ class TestInfoXml(blackbox.ExternalBase):
         self.assertEqualDiff(expected_xml, out)
         self.assertEqual('', err)
         tree.unlock()
+
+    def test_info_stacked(self):
+        # We have a mainline
+        trunk_tree = self.make_branch_and_tree('mainline', format='1.6')
+        trunk_tree.commit('mainline')
+        # and a branch from it which is stacked
+        new_dir = trunk_tree.bzrdir.sprout('newbranch', stacked=True)
+        out, err = self.run_bzr('xmlinfo  newbranch')
+        expected_xml = '''<?xml version="1.0"?>
+<info>
+<layout>Standalone tree</layout>
+<formats>
+<format>1.6</format>
+</formats>
+<location><branch_root>newbranch</branch_root></location>
+<related_branches>
+<parent_branch>mainline</parent_branch>
+<stacked_on>mainline</stacked_on>
+</related_branches>
+</info>'''
+        expected_xml = ''.join(expected_xml.split('\n'))+'\n'
+        self.assertEqual(expected_xml, out)
+        self.assertEqual("", err)
+
