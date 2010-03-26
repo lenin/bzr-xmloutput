@@ -41,10 +41,7 @@ class TestXmlRpcServer(tests.TestCase):
         exit, out, err = self.client.run_bzr(['bzr', 'xmlversion'], '.')
         self.assertEquals(exit, 0)
         self.assertEquals(err, "")
-        # FIXME: I don't understand why out.data comes back tmpty :-/
-        # -- vila 100127
-#        self.assertNotEquals(out.data, "")
-        self.assertEquals(out.data, "")
+        self.assertNotEquals(out.data, "")
 
     def test_custom_commands_main__should_support_non_ascii_unicode(self):
         from xmlrpclib import Fault
