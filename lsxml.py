@@ -19,13 +19,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
 
+import os
 
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
-import os
-from bzrlib import bzrdir, errors, osutils, xml_serializer
-from bzrlib.xml_serializer import _escape_cdata
+from bzrlib import bzrdir, errors, osutils
 """)
+
+from writer import _escape_cdata
 
 
 def show_ls_xml(outf, revision=None, non_recursive=False,

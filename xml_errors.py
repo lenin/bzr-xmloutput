@@ -1,15 +1,16 @@
 """ XMLError handling module """
+
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
-import bzrlib
 from bzrlib import (
     errors,
-    debug,
+    osutils,
+    trace,
     )
 """)
 
-from bzrlib.xml_serializer import _escape_cdata
-from bzrlib import trace
+from writer import _escape_cdata
+
 
 class XMLError(errors.BzrError):
     """ A class that wraps an BzrError and 'serialize' it as xml."""
@@ -21,7 +22,7 @@ class XMLError(errors.BzrError):
     def __str__(self):
         """__str__"""
         xml = '<?xml version="1.0" encoding="%s"?>' % \
-                bzrlib.osutils.get_user_encoding()
+                osutils.get_user_encoding()
         try:
             xml += '<error>%s</error>' % self.get_cause_xml()
         except Exception, e:

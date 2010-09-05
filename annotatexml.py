@@ -35,10 +35,11 @@ except ImportError:
     # to support bzr < 1.8
     from bzrlib.annotate import _annotate_file
 
-
 from bzrlib.annotate import _annotations
-from bzrlib.xml_serializer import _escape_cdata
 from bzrlib import osutils
+
+from writer import _escape_cdata
+
 
 empty_annotation = 'revno="" author="" date=""'
 
