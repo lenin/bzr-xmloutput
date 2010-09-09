@@ -35,7 +35,8 @@ from bzrlib import (
     trace,
     )
 from bzrlib.version import _get_bzr_source_tree
-from bzrlib.xml_serializer import _escape_cdata
+
+from writer import _escape_cdata
 
 
 def show_version_xml(show_config=True, show_copyright=True, to_file=None):

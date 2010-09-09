@@ -1,5 +1,7 @@
 # -*- encoding: utf-8 -*-
 
+import os
+
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import bzrlib
@@ -8,9 +10,9 @@ from bzrlib import (
     osutils,
     log,
     )
-from bzrlib.xml_serializer import _escape_cdata
-import os
 """)
+
+from writer import _escape_cdata
 
 
 class XMLLogFormatter(log.LogFormatter):

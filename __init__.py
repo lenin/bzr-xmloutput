@@ -41,7 +41,6 @@ from bzrlib import (
     option,
     log,
     workingtree,
-    xml_serializer,
     errors
     )
 
@@ -278,7 +277,7 @@ class cmd_xmlplugins(commands.Command):
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
                 bzrlib.osutils.get_user_encoding())
         self.outf.write('<plugins>')
-        from bzrlib.xml_serializer import _escape_cdata
+        from writer import _escape_cdata
         for name, plugin in bzrlib.plugin.plugins().items():
             self.outf.write('<plugin>')
             self.outf.write('<name>%s</name>' % name)

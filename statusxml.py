@@ -26,18 +26,17 @@ lazy_import(globals(), """
 import os, sys, time
 from bzrlib import (
     diff,
-    trace,
     errors,
+    osutils,
     revision as _mod_revision,
     status,
-    osutils,
+    trace,
     )
 
-from bzrlib.osutils import terminal_width
-from bzrlib.xml_serializer import _escape_cdata
-from bzrlib.trace import warning
 import logxml
 """)
+
+from writer import _escape_cdata
 
 
 def show_tree_status_xml(wt, show_unchanged=None,
@@ -119,7 +118,7 @@ def show_tree_status_xml(wt, show_unchanged=None,
         new_is_working_tree = True
         if revision is None:
             if wt.last_revision() != wt.branch.last_revision():
-                warning("working tree is out of date, run 'bzr update'")
+                trace.warning("working tree is out of date, run 'bzr update'")
             new = wt
             old = new.basis_tree()
         elif len(revision) > 0:
