@@ -9,7 +9,7 @@ from bzrlib import (
     )
 """)
 
-from writer import escape_cdata
+from writer import _escape_cdata
 
 
 class XMLError(errors.BzrError):
@@ -27,7 +27,7 @@ class XMLError(errors.BzrError):
             xml += '<error>%s</error>' % self.get_cause_xml()
         except Exception, e:
             xml += '<error><message>%s</message></error>' % \
-                escape_cdata(str(e))
+                _escape_cdata(str(e))
         return xml
 
     def get_cause_xml(self):
@@ -36,14 +36,14 @@ class XMLError(errors.BzrError):
                 '<message>%s</message>' \
                 % (self.error.__class__.__name__,
                    self._get_dict_as_xml(self.error.__dict__),
-                   escape_cdata(str(self.error)))
+                   _escape_cdata(str(self.error)))
         return s
 
     def _get_dict_as_xml(self, dict):
         """returns a dict as xml using <key> and <value> tags"""
         return ''.join(['<key>%s</key><value>%s</value>' % \
-            (escape_cdata(key),
-            escape_cdata(str(val))) \
+            (_escape_cdata(key),
+            _escape_cdata(str(val))) \
                     for key, val in dict.iteritems() if val is not None])
 
 

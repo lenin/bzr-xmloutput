@@ -36,7 +36,7 @@ from bzrlib import (
 import logxml
 """)
 
-from writer import escape_cdata
+from writer import _escape_cdata
 
 
 def show_tree_status_xml(wt, show_unchanged=None,
@@ -175,7 +175,7 @@ def show_tree_status_xml(wt, show_unchanged=None,
                 for conflict in conflicts:
                     to_file.write('<conflict type="%s">%s</conflict>' %
                                   (conflict.typestring,
-                                   escape_cdata(conflict.path)))
+                                   _escape_cdata(conflict.path)))
                 to_file.write("</conflicts>")
             if nonexistents:
                 to_file.write('<nonexistents>')
@@ -278,9 +278,9 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
                 if fid:
                     kind_id = get_kind_id_element(kind, fid)
                 to_file.write('<%s %s>%s</%s>' % (kind, kind_id,
-                                                  escape_cdata(path), kind))
+                                                  _escape_cdata(path), kind))
             else:
-                to_file.write('<%s>%s</%s>' % (kind, escape_cdata(path), kind))
+                to_file.write('<%s>%s</%s>' % (kind, _escape_cdata(path), kind))
 
     if delta.removed:
         to_file.write('<removed>')
@@ -308,12 +308,12 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
                 if fid:
                     kind_id = get_kind_id_element(kind, fid)
                 to_file.write('<%s oldpath="%s" %s %s>%s</%s>' % \
-                        (kind, escape_cdata(oldpath), metamodified,
-                         kind_id, escape_cdata(newpath), kind))
+                        (kind, _escape_cdata(oldpath), metamodified,
+                         kind_id, _escape_cdata(newpath), kind))
             else:
                 to_file.write('<%s oldpath="%s" %s >%s</%s>' % \
-                        (kind, escape_cdata(oldpath), metamodified,
-                         escape_cdata(newpath), kind))
+                        (kind, _escape_cdata(oldpath), metamodified,
+                         _escape_cdata(newpath), kind))
         to_file.write('</renamed>')
 
     if delta.kind_changed:
@@ -325,7 +325,7 @@ def show_tree_xml(delta, to_file, show_ids=False, show_unchanged=False,
                 suffix = ''
             to_file.write('<%s oldkind="%s" %s>%s</%s>' % \
                        (new_kind, old_kind, suffix,
-                        escape_cdata(path), new_kind))
+                        _escape_cdata(path), new_kind))
         to_file.write('</kind_changed>')
 
     if delta.modified or extra_modified:

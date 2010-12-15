@@ -12,7 +12,7 @@ from bzrlib import (
     )
 """)
 
-from writer import escape_cdata
+from writer import _escape_cdata
 
 
 class XMLLogFormatter(log.LogFormatter):
@@ -152,11 +152,11 @@ class XMLLogFormatter(log.LogFormatter):
                 self.to_file.write('</parents>')
 
         self.to_file.write('<committer>%s</committer>' % \
-                        escape_cdata(revision.rev.committer))
+                        _escape_cdata(revision.rev.committer))
 
         try:
             self.to_file.write('<branch-nick>%s</branch-nick>' % \
-                escape_cdata(revision.rev.properties['branch-nick']))
+                _escape_cdata(revision.rev.properties['branch-nick']))
         except KeyError:
             pass
         date_str = osutils.format_date(revision.rev.timestamp,
@@ -228,7 +228,7 @@ class XMLLineLogFormatter(log.LineLogFormatter):
         elif rev.revision_id:
             out.append("<revisionid>%s</revisionid>" % rev.revision_id)
         out.append('<committer>%s</committer>' %
-                   escape_cdata(rev.committer))
+                   _escape_cdata(rev.committer))
         date_str = osutils.format_date(rev.timestamp,
                             rev.timezone or 0,
                             show_offset=True)
