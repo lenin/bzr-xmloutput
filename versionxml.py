@@ -36,7 +36,7 @@ from bzrlib import (
     )
 from bzrlib.version import _get_bzr_source_tree
 
-from writer import _escape_cdata
+from writer import escape_cdata
 
 
 def show_version_xml(show_config=True, show_copyright=True, to_file=None):
@@ -104,7 +104,7 @@ def _show_source_tree(to_file):
         to_file.write(u'<revision>%s</revision>' % revno)
         to_file.write(u'<revid>%s</revid>' % src_revision_id)
         to_file.write(u'<branch_nick>%s</branch_nick>' % \
-                      _escape_cdata(src_tree.branch.nick))
+                      escape_cdata(src_tree.branch.nick))
         to_file.write(u'</source_tree>')
 
 

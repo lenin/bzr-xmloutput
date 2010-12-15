@@ -26,7 +26,7 @@ lazy_import(globals(), """
 from bzrlib import bzrdir, errors, osutils
 """)
 
-from writer import _escape_cdata
+from writer import escape_cdata
 
 
 def show_ls_xml(outf, revision=None, non_recursive=False,
@@ -81,14 +81,14 @@ def show_ls_xml(outf, revision=None, non_recursive=False,
                 fid = '<id>%s</id>' % fid
             fkind = '<kind>%s</kind>' % fkind
             status_kind = '<status_kind>%s</status_kind>' % long_status_kind[fc]
-            fpath = '<path>%s</path>' % _escape_cdata(fp)
+            fpath = '<path>%s</path>' % escape_cdata(fp)
             if fc == 'I' and ignored:
                 # get the pattern
                 if tree.basedir in fp:
                     pat = tree.is_ignored(tree.relpath(fp))
                 else:
                     pat = tree.is_ignored(fp)
-                pattern = '<pattern>%s</pattern>' % _escape_cdata(pat)
+                pattern = '<pattern>%s</pattern>' % escape_cdata(pat)
             else:
                 pattern = ''
             outstring = '<item>%s%s%s%s%s</item>' % (fid, fkind, fpath,

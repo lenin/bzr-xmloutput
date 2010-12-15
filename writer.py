@@ -7,4 +7,5 @@ other modules of angle brackets entirely.
 import bzrlib.xml_serializer
 
 # Use xml_serializer to avoid duplicating the elementtree location logic
-_escape_cdata = bzrlib.xml_serializer.elementtree.ElementTree._escape_cdata
+def escape_cdata(text):
+    return bzrlib.xml_serializer.elementtree.ElementTree._escape_cdata(text, "utf-8")

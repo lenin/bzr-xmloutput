@@ -38,7 +38,7 @@ except ImportError:
 from bzrlib.annotate import _annotations
 from bzrlib import osutils
 
-from writer import _escape_cdata
+from writer import escape_cdata
 
 
 empty_annotation = 'revno="" author="" date=""'
@@ -84,13 +84,13 @@ def _show_entry(to_file, prevanno, revno_str, author,
                 date_str, line_rev_id, text, fid):
     """output one entry of the annotation"""
     anno = 'revno="%s" author="%s" date="%s"' % \
-                (_escape_cdata(revno_str), _escape_cdata(author), date_str)
+                (escape_cdata(revno_str), escape_cdata(author), date_str)
     if anno.lstrip() == empty_annotation:
         anno = prevanno
     if fid:
         to_file.write('<entry %s fid="%s">%s</entry>' % \
-                    (anno, fid, _escape_cdata(text)))
+                    (anno, fid, escape_cdata(text)))
     else:
         to_file.write('<entry %s>' % anno)
-        to_file.write('%s</entry>' % _escape_cdata(text))
+        to_file.write('%s</entry>' % escape_cdata(text))
     return anno
