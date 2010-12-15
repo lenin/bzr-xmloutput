@@ -4,8 +4,11 @@ Suggestion for this module: create a simple xml writer here and expurgate all
 other modules of angle brackets entirely.
 """
 
-import bzrlib.xml_serializer
+import string
 
 # Use xml_serializer to avoid duplicating the elementtree location logic
 def escape_cdata(text):
-    return bzrlib.xml_serializer.elementtree.ElementTree._escape_cdata(text, "utf-8")
+    text = string.replace(text, "&", "&amp;")
+    text = string.replace(text, "<", "&lt;")
+    text = string.replace(text, ">", "&gt;")
+    return text
