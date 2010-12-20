@@ -1292,10 +1292,9 @@ class TestInfoXml(blackbox.ExternalBase):
             except errors.PathNotChild:
                 return path
 
-        if tree_locked and sys.platform == 'win32':
-            # We expect this to fail because of locking errors. (A write-locked
-            # file cannot be read-locked in the same process).
-            # This should be removed when the locking errors are fixed.
+        if tree_locked:
+            # We expect this to fail because of locking errors, dirstate
+            # can't be read locked while a write lock is open.
             self.run_bzr_error([], 'xmlinfo ' + command_string)
             return
         out, err = self.run_bzr('xmlinfo %s' % command_string)
