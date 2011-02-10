@@ -16,8 +16,8 @@
 
 bzr_plugin_name = "xmloutput"
 
-# versions ending in 'dev' mean development version
-bzr_plugin_version = (0, 8, 7, 'dev')
+# See bzrlib/__init__.py for the definition of version tuple format
+bzr_plugin_version = (0, 8, 7, 'dev', 0)
 
 bzr_commands = ['xmlannotate', 'xmlinfo', 'xmlmissing', 'xmllog', 'xmlls',
                 'xmlplugins', 'xmlversion', 'start-xmlrpc', 'stop-xmlrpc']
