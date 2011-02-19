@@ -55,7 +55,7 @@ class TestLSXML(TestCaseWithTransport):
                 item[attr.tag] = attr.text
             items.append(item)
         return items
-        
+
     #def test_lsxml_null_verbose(self):
     #    # Can't supply both
     #    self.run_bzr_error(['Cannot set both --verbose and --null'],

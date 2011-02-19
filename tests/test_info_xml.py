@@ -54,7 +54,6 @@ class TestInfoXml(blackbox.ExternalBase):
             '<message>Not a branch: "%s/".</message>'
             '</error>' % (osutils.get_user_encoding(), nurl, nurl), err)
 
-
     def test_info_non_existing(self):
         # we disable isolation because the error we want to catch is triggered
         # outside of the jail
