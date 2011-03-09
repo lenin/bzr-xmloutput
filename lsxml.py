@@ -50,7 +50,7 @@ def show_ls_xml(outf, revision=None, non_recursive=False,
         fs_path = path
     tree, branch, relpath = bzrdir.BzrDir.open_containing_tree_or_branch(
             fs_path)
-    
+
     prefix = None
     if from_root:
         if relpath:
@@ -78,7 +78,7 @@ def show_ls_xml(outf, revision=None, non_recursive=False,
             if fid is None:
                 fid = ''
             else:
-                fid = '<id>%s</id>' % fid
+                fid = '<id>%s</id>' % _escape_cdata(fid)
             fkind = '<kind>%s</kind>' % fkind
             status_kind = '<status_kind>%s</status_kind>' % long_status_kind[fc]
             fpath = '<path>%s</path>' % _escape_cdata(fp)
