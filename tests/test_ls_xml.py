@@ -20,7 +20,6 @@ import os
 
 from bzrlib import ignores
 from bzrlib.tests import TestCaseWithTransport
-from bzrlib.trace import mutter
 from bzrlib.xml_serializer import elementtree as elementtree
 fromstring = elementtree.ElementTree.fromstring
 
@@ -61,6 +60,13 @@ class TestLSXML(TestCaseWithTransport):
     #    self.run_bzr_error(['Cannot set both --verbose and --null'],
     #                       'xmlls --verbose --null')
 
+    def test_null_arg(self):
+        """Test that null arg is accepted."""
+        command = 'xmlls --null'
+        out, err = self.run_bzr(command)
+        self.assertEqual('', err)
+        self.assertEqual(out[-2], '\0')
+
     def test_lsxml_basic(self):
         """Test the abilities of 'bzr xmlls'"""
         expected_items = [{'kind': 'file',
@@ -90,7 +96,7 @@ class TestLSXML(TestCaseWithTransport):
                            'path': 'a',
                            'status_kind': 'versioned'}]
         self.assertEquals(expected_items, self.run_xmlls())
-        
+
         self.wt.commit('add')
         self.build_tree(['subdir/'])
         expected_items = [{'kind': 'file',
@@ -104,7 +110,7 @@ class TestLSXML(TestCaseWithTransport):
                            'path': 'subdir',
                            'status_kind': 'unknown'}]
         self.assertEquals(expected_items, self.run_xmlls())
-        
+
         self.build_tree(['subdir/b'])
         self.wt.add(['subdir/', 'subdir/b', '.bzrignore'],
             ['subdir-id', 'subdirb-id', 'bzrignore-id'])

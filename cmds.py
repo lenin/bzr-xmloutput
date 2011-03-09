@@ -375,10 +375,11 @@ class cmd_xmlls(builtins.cmd_ls):
     @handle_error_xml
     def run(self, *args, **kwargs):
         import lsxml
+        null = kwargs.pop('null', False)
         self.outf.write('<?xml version="1.0" encoding="%s"?>' % \
                 bzrlib.osutils.get_user_encoding())
         lsxml.show_ls_xml(self.outf, *args, **kwargs)
-        if getattr(kwargs, 'null', False):
+        if null:
             self.outf.write('\0')
         self.outf.write('\n')
 
