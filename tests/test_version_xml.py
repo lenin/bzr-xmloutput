@@ -22,7 +22,6 @@ import bzrlib
 from bzrlib import osutils, trace
 from bzrlib.tests import (
     probe_unicode_in_user_encoding,
-    TestCase,
     TestCaseInTempDir,
     TestSkipped,
     )
@@ -30,11 +29,35 @@ from bzrlib.tests import (
 from bzrlib.xml_serializer import elementtree as elementtree
 fromstring = elementtree.ElementTree.fromstring
 
+from bzrlib.plugins.xmloutput import versionxml
 
-class TestVersionXML(TestCase):
+
+class BaseVersionXMLTestCase(TestCaseInTempDir):
+    """Base versionxml testcase."""
+
+    def setUp(self):
+        TestCaseInTempDir.setUp(self)
+        # versionxml tries to call bzrlib.version._get_bzr_source_tree(), which
+        # tries an open_containing within the bzr installation. This will cause
+        # a test isolation failure. You might hope that you could avoid this
+        # with TestCase.permit_source_tree_branch_repo(), but this does not
+        # work when running against a bzr installation that has no source tree,
+        # as in this case, the open_containing operation needs to recurse
+        # upwards to the filesystem root before it knows that it is finished.
+        # Therefore we just stub out the relevant function so that it does not
+        # call the problem method.
+        self.old_show_source_tree = versionxml._show_source_tree
+        versionxml._show_source_tree = lambda _: None
+
+    def tearDown(self):
+        # restore the patched function.
+        versionxml._show_source_tree = self.old_show_source_tree
+        TestCaseInTempDir.tearDown(self)
+
+
+class TestVersionXML(BaseVersionXMLTestCase):
 
     def test_version(self):
-        self.permit_source_tree_branch_repo()
         out = self.run_bzr("xmlversion")[0]
         versionElem = fromstring(out)
         self.assertTrue(len(out) > 0)
@@ -51,7 +74,7 @@ class TestVersionXML(TestCase):
         self.assertEquals(1, len(versionElem.findall('python/standard_library')))
 
 
-class TestVersionXMLUnicodeOutput(TestCaseInTempDir):
+class TestVersionXMLUnicodeOutput(BaseVersionXMLTestCase):
 
     def _check(self, args):
         # Even though trace._bzr_log_filename variable
@@ -72,7 +95,6 @@ class TestVersionXMLUnicodeOutput(TestCaseInTempDir):
         self.assertEquals(1, len(versionElem.findall('bazaar/log_file')))
 
     def test_command(self):
-        self.permit_source_tree_branch_repo()
         self._check("xmlversion")
 
     def test_unicode_bzr_home(self):
@@ -82,7 +104,6 @@ class TestVersionXMLUnicodeOutput(TestCaseInTempDir):
                               ' encoding %s' % \
                               bzrlib.osutils.get_user_encoding())
         osutils.set_or_unset_env('BZR_HOME', str_val)
-        self.permit_source_tree_branch_repo()
         out = self.run_bzr("xmlversion")[0]
         self.assertTrue(len(out) > 0)
         versionElem = fromstring(out)
