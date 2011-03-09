@@ -304,3 +304,18 @@ class TestLSXML(TestCaseWithTransport):
                            'status_kind': 'unknown'}]
         self.assertEquals(expected_items,
                           self.run_xmlls('%s --non-recursive' % self.test_dir))
+
+    def test_escape_id(self):
+        """Test that the id is properly escaped."""
+        self.wt.add(['a'], ['Hola_<user@foobar>_Mundo'])
+        self.wt.commit('add')
+
+        self.build_tree(['subdir/'])
+
+        # Check what happens if the id contains <, @ and >
+        expected_items = [{'id': 'Hola_<user@foobar>_Mundo',
+                           'kind': 'file',
+                           'path': 'a',
+                           'status_kind': 'versioned'}]
+        self.assertEquals(expected_items, self.run_xmlls('--revision 1'))
+
