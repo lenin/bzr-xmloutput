@@ -1520,8 +1520,7 @@ class TestInfoXml(blackbox.ExternalBase):
         # call here.
         self.thisFailsStrictLockCheck()
 
-        tree = self.make_branch_and_tree('branch',
-                                         format=bzrlib.bzrdir.BzrDirFormat6())
+        tree = self.make_branch_and_tree('branch', format='weave')
 
         # Test all permutations of locking the working tree, branch and repository
         # XXX: Well not yet, as we can't query oslocks yet. Currently, it's
