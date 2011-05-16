@@ -34,8 +34,8 @@ try:
 except ImportError:
     # to support bzr < 1.8
     from bzrlib.annotate import _annotate_file
+    from bzrlib.annotate import _annotations
 
-from bzrlib.annotate import _annotations
 from bzrlib import osutils
 
 from writer import _escape_cdata
@@ -58,10 +58,12 @@ def annotate_file_xml(branch, rev_id, file_id, to_file=None,
                   (wt_root_path,
                   'file="%s"' % file_path)).encode(encoding, 'replace'))
 
-    annotations = _annotations(branch.repository, file_id, rev_id)
-    if _annotate_file:
+    if _annotate_file: # bzr < 1.8
+        annotations = _annotations(branch.repository, file_id, rev_id)
         annotation = list(_annotate_file(branch, rev_id, file_id))
     else:
+        tree = branch.repository.revision_tree(rev_id)
+        annotations = tree.annotate_iter(file_id)
         annotation = list(_expand_annotations(annotations, branch))
 
     for (revno_str, author, date_str, line_rev_id,
