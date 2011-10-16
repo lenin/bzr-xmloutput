@@ -19,7 +19,6 @@
 
 """Tests for the info command of bzr."""
 
-import os
 import sys
 
 import bzrlib
@@ -27,12 +26,11 @@ from bzrlib import (
     bzrdir,
     errors,
     osutils,
-    repository,
     tests,
     urlutils,
-    upgrade,
     )
 from bzrlib.tests import blackbox
+import bzrlib.upgrade
 
 
 class TestInfoXml(blackbox.ExternalBase):
@@ -361,7 +359,7 @@ class TestInfoXml(blackbox.ExternalBase):
         self.build_tree(['standalone/b'])
         tree1.add('b')
         tree1.commit('commit two')
-        rev = branch1.repository.get_revision(branch1.revision_history()[-1])
+        rev = branch1.repository.get_revision(branch1.last_revision())
         datestring_last = osutils.format_date(rev.timestamp, rev.timezone)
 
         # Out of date branched standalone branch will not be detected
@@ -621,7 +619,7 @@ class TestInfoXml(blackbox.ExternalBase):
 
         # Create branch inside shared repository
         repo.bzrdir.root_transport.mkdir('branch')
-        branch1 = repo.bzrdir.create_branch_convenience('repo/branch',
+        branch1 = bzrdir.BzrDir.create_branch_convenience('repo/branch',
             format=format)
         out, err = self.run_bzr('xmlinfo -v repo/branch')
         expected_xml = '''<?xml version="1.0"?>
@@ -815,7 +813,7 @@ class TestInfoXml(blackbox.ExternalBase):
         tree3.commit('commit two')
 
         # Out of date lightweight checkout
-        rev = repo.get_revision(branch1.revision_history()[-1])
+        rev = repo.get_revision(branch1.last_revision())
         datestring_last = osutils.format_date(rev.timestamp, rev.timezone)
         out, err = self.run_bzr('xmlinfo tree/lightcheckout --verbose')
         expected_xml = '''<?xml version="1.0"?>
@@ -961,7 +959,7 @@ class TestInfoXml(blackbox.ExternalBase):
 
         # Create two branches
         repo.bzrdir.root_transport.mkdir('branch1')
-        branch1 = repo.bzrdir.create_branch_convenience('repo/branch1',
+        branch1 = bzrdir.BzrDir.create_branch_convenience('repo/branch1',
             format=format)
         branch2 = branch1.bzrdir.sprout('repo/branch2').open_branch()
 
@@ -1405,8 +1403,8 @@ class TestInfoXml(blackbox.ExternalBase):
                                     format=bzrlib.bzrdir.BzrDirMetaFormat1())
         repo.set_make_working_trees(False)
         repo.bzrdir.root_transport.mkdir('branch')
-        repo_branch = repo.bzrdir.create_branch_convenience('repo/branch',
-                                    format=bzrlib.bzrdir.BzrDirMetaFormat1())
+        repo_branch = bzrdir.BzrDir.create_branch_convenience(
+            'repo/branch', format=bzrlib.bzrdir.BzrDirMetaFormat1())
         # Do a heavy checkout
         transport.mkdir('tree')
         transport.mkdir('tree/checkout')
