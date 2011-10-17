@@ -50,7 +50,7 @@ class TestLSXML(TestCaseWithTransport):
         items = []
         for item_elem in lst.findall('item'):
             item = {}
-            for attr in item_elem.getchildren():
+            for attr in item_elem:
                 item[attr.tag] = attr.text
             items.append(item)
         return items
