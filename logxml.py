@@ -1,14 +1,12 @@
 # -*- encoding: utf-8 -*-
 
-import os
-
+from bzrlib import log
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import bzrlib
 from bzrlib import (
     debug,
     osutils,
-    log,
     )
 """)
 

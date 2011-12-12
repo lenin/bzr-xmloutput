@@ -20,6 +20,8 @@
 #
 """ xmlrpc service module """
 
+import os
+
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import bzrlib
@@ -30,14 +32,13 @@ from bzrlib import (
     osutils
     )
 import sys
-import os
 import codecs
 import logging
 import traceback
 from cStringIO import StringIO
 """)
 
-from xml_errors import XMLError
+from bzrlib.plugins.xmloutput.xml_errors import XMLError
 from xmlrpclib import Fault, Binary
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 
