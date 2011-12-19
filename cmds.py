@@ -22,36 +22,39 @@
 
 import info
 import bzrlib
+from bzrlib.option import Option
+from bzrlib.commands import (
+    Command,
+    display_command,
+    )
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import sys
 from bzrlib import (
     builtins,
     bzrdir,
-    commands,
-    option,
     log,
     workingtree,
     errors
     )
 
-from bzrlib.option import Option, custom_help
-from bzrlib.commands import display_command
-import logxml
-import service
+from bzrlib.plugins.xmloutput import (
+    logxml,
+    service,
+    )
 import socket
-from xml_errors import handle_error_xml
 """)
 
+from bzrlib.plugins.xmloutput.xml_errors import handle_error_xml
 
 version_info = info.bzr_plugin_version
 plugin_name = info.bzr_plugin_name
 
-null_option = option.Option('null',
-                            help='Write an ascii NUL (\\0) as the final char.')
+null_option = Option('null',
+                     help='Write an ascii NUL (\\0) as the final char.')
 
 
-class cmd_xmlstatus(commands.Command):
+class cmd_xmlstatus(Command):
     """Display status summary.
 
     This reports on versioned and unknown files, reporting them
@@ -118,7 +121,7 @@ class cmd_xmlstatus(commands.Command):
         self.outf.write('\n')
 
 
-class cmd_xmlannotate(commands.Command):
+class cmd_xmlannotate(Command):
     """Show the origin of each line in a file.
 
     This prints out the given file with an annotation on the left side
@@ -176,7 +179,7 @@ class cmd_xmlannotate(commands.Command):
                 branch.unlock()
 
 
-class cmd_xmlmissing(commands.Command):
+class cmd_xmlmissing(Command):
     """Show unmerged/unpulled revisions between two branches.
 
     OTHER_BRANCH may be local or remote.
@@ -212,7 +215,7 @@ class cmd_xmlmissing(commands.Command):
         self.outf.write('\n')
 
 
-class cmd_xmlinfo(commands.Command):
+class cmd_xmlinfo(Command):
     """Show information about a working tree, branch or repository.
 
     This command will show all known locations and formats associated to the
@@ -247,7 +250,7 @@ class cmd_xmlinfo(commands.Command):
         self.outf.write('\n')
 
 
-class cmd_xmlplugins(commands.Command):
+class cmd_xmlplugins(Command):
     """List the installed plugins.
 
     This command displays the list of installed plugins including
@@ -284,7 +287,7 @@ class cmd_xmlplugins(commands.Command):
         self.outf.write('\n')
 
 
-class cmd_xmlversion(commands.Command):
+class cmd_xmlversion(Command):
     """Show version of bzr."""
     hidden = True
     encoding_type = 'replace'
@@ -383,7 +386,7 @@ class cmd_xmlls(builtins.cmd_ls):
             self.outf.write('\0')
         self.outf.write('\n')
 
-class cmd_start_xmlrpc(commands.Command):
+class cmd_start_xmlrpc(Command):
     """Start the xmlrpc service."""
 
     hidden = True
@@ -413,7 +416,7 @@ class cmd_start_xmlrpc(commands.Command):
             self.server.shutdown()
 
 
-class cmd_stop_xmlrpc(commands.Command):
+class cmd_stop_xmlrpc(Command):
     """Stops a xmlrpc service."""
 
     hidden = True

@@ -27,6 +27,7 @@ licensing)
 
 __all__ = ['show_bzrdir_info_xml']
 
+from bzrlib import info
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 import os, sys, time
@@ -36,7 +37,6 @@ from bzrlib import (
     errors,
     osutils,
     urlutils,
-    info,
     missing,
     )
 """)

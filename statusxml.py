@@ -33,7 +33,7 @@ from bzrlib import (
     trace,
     )
 
-import logxml
+from bzrlib.plugins.xmloutput import logxml
 """)
 
 from writer import _escape_cdata

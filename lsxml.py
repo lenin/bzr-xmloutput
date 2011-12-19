@@ -19,8 +19,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
 #
 
-import os
-
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), """
 from bzrlib import bzrdir, errors, osutils
