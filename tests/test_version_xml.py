@@ -27,7 +27,7 @@ from bzrlib.tests import (
     )
 
 from bzrlib.xml_serializer import elementtree as elementtree
-fromstring = elementtree.ElementTree.fromstring
+fromstring = elementtree.fromstring
 
 from bzrlib.plugins.xmloutput import versionxml
 

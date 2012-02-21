@@ -30,7 +30,7 @@ import bzrlib
 
 from bzrlib.tests import TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
-fromstring = elementtree.ElementTree.fromstring
+fromstring = elementtree.fromstring
 
 class TestXmlAnnotate(TestCaseWithTransport):
 
@@ -91,7 +91,8 @@ class TestXmlAnnotate(TestCaseWithTransport):
         self.assertEqualDiff(expected_xml, out)
         expected_elementtree = fromstring(expected_xml)
         current_elementtree = fromstring(out)
-        self.assertEquals(elementtree.ElementTree.tostring(expected_elementtree), elementtree.ElementTree.tostring(current_elementtree))
+        self.assertEquals(elementtree.tostring(expected_elementtree),
+                elementtree.tostring(current_elementtree))
 
     def test_xmlannotate_cmd_show_ids(self):
         out, err = self.run_bzr('xmlannotate hello.txt --show-ids')

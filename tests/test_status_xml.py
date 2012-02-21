@@ -38,13 +38,11 @@ import bzrlib.branch
 from bzrlib.osutils import pathjoin
 from bzrlib.revisionspec import RevisionSpec
 from bzrlib.tests import TestCaseWithTransport, TestSkipped
-from bzrlib.workingtree import WorkingTree
 from bzrlib.xml_serializer import elementtree as elementtree
 
 import bzrlib.plugin
-from bzrlib.status import show_tree_status
-fromstring = elementtree.ElementTree.fromstring
-from elementtree_builder import (ET, _E)
+fromstring = elementtree.fromstring
+from elementtree_builder import _E
 
 ## little hack to load functions from parent module
 show_tree_status_xml = None
@@ -322,8 +320,9 @@ class TestStatus(TestCaseWithTransport):
         self.assertEquals(result.findall('unknown/file')[0].text, "world.txt")
 
         result2 = fromstring(self.run_bzr("xmlstatus -r 0..")[0])
-        self.assertEquals(elementtree.ElementTree.tostring(result2),
-            elementtree.ElementTree.tostring(result))
+        self.assertEquals(
+            elementtree.tostring(result2),
+            elementtree.tostring(result))
 
     def test_statusxml_versioned(self):
         tree = self.make_branch_and_tree('.')
@@ -346,8 +345,9 @@ class TestStatus(TestCaseWithTransport):
         self.assert_(len(result.findall('unknown/*')) == 0)
 
         result2 = fromstring(self.run_bzr("xmlstatus --versioned -r 0..")[0])
-        self.assertEquals(elementtree.ElementTree.tostring(result2),
-            elementtree.ElementTree.tostring(result))
+        self.assertEquals(
+            elementtree.tostring(result2),
+            elementtree.tostring(result))
 
     # Not yet implemneted
     #def assertStatusContains(self, xpath):
