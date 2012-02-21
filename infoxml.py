@@ -102,7 +102,7 @@ def show_component_info_xml(control, repository, branch=None,
         verbose = 1
     if verbose is True:
         verbose = 2
-    layout = info.describe_layout(repository, branch, working)
+    layout = info.describe_layout(repository, branch, working, control)
     formats = info.describe_format(control, repository,
                                    branch, working).split(' or ')
     outfile.write('<layout>%s</layout>' % layout)
