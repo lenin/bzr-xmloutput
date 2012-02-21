@@ -21,7 +21,7 @@ import os
 from bzrlib import ignores
 from bzrlib.tests import TestCaseWithTransport
 from bzrlib.xml_serializer import elementtree as elementtree
-fromstring = elementtree.ElementTree.fromstring
+fromstring = elementtree.fromstring
 
 
 class TestLSXML(TestCaseWithTransport):

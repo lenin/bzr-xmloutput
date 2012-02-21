@@ -163,7 +163,7 @@ class cmd_xmlannotate(Command):
             if file_id is None:
                 raise bzrlib.errors.NotVersionedError(filename)
 
-            file_version = tree.inventory[file_id].revision
+            file_version = tree.get_file_revision(file_id)
             # always run with --all and --long options
             # to get the author of each line
             annotate_file_xml(branch=branch, rev_id=file_version,

@@ -1,7 +1,7 @@
 
-from bzrlib.xml_serializer import elementtree as elementtree
+from bzrlib.xml_serializer import elementtree
 
-ET = elementtree.ElementTree
+ET = elementtree
 
 class _E(object):
     """ This is the E factory, taken from http://effbot.org/zone/element-builder.htm """
