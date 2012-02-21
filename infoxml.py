@@ -216,7 +216,6 @@ def _show_missing_revisions_working_xml(working, outfile):
     """Show missing revisions in working tree."""
     branch = working.branch
     basis = working.basis_tree()
-    work_inv = working.inventory
     branch_revno, branch_last_revision = branch.last_revision_info()
     try:
         tree_last_id = working.get_parent_ids()[0]
@@ -233,7 +232,6 @@ def _show_missing_revisions_working_xml(working, outfile):
 def _show_working_stats_xml(working, outfile):
     """Show statistics about a working tree."""
     basis = working.basis_tree()
-    work_inv = working.inventory
     delta = working.changes_from(basis, want_unchanged=True)
 
     outfile.write('<working_tree_stats>')
@@ -254,9 +252,8 @@ def _show_working_stats_xml(working, outfile):
     outfile.write('<ignored>%d</ignored>' % ignore_cnt)
 
     dir_cnt = 0
-    for file_id in work_inv:
-        if (work_inv.get_file_kind(file_id) == 'directory' and
-            not work_inv.is_root(file_id)):
+    for path, entry in working.iter_entries_by_dir():
+        if entry.kind == 'directory' and entry.parent_id is not None:
             dir_cnt += 1
     outfile.write('<versioned_subdirectories>%d</versioned_subdirectories>' %
                  (dir_cnt))
