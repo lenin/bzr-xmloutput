@@ -29,10 +29,10 @@ avoid the startup overhead.
 (most of this is code was modified from bzrlib.cmd_status,
 bzrlib.status, bzrlib.delta.TreeDelta.show and bzrlib.log.LongLogFormatter)
 """
-import info
-from bzrlib import (
-    log,
-    )
+
+from __future__ import absolute_import
+
+from bzrlib.plugins.xmloutput import info
 
 from bzrlib.commands import plugin_cmds
 
@@ -53,10 +53,21 @@ for cmd in [
     plugin_cmds.register_lazy(
         "cmd_%s" % cmd, [],
         "bzrlib.plugins.xmloutput.cmds")
-log.log_formatter_registry.register_lazy('xml',
-    "bzrlib.plugins.xmloutput.logxml", "XMLLogFormatter",
-    'Detailed XML log format')
 
+
+try:
+    from bzrlib.registry import register_lazy
+except ImportError:
+    from bzrlib import (
+        log,
+        )
+    log.log_formatter_registry.register_lazy('xml',
+        "bzrlib.plugins.xmloutput.logxml", "XMLLogFormatter",
+        'Detailed XML log format')
+else:
+    register_lazy("bzrlib.log", "log_formatter_registry", 'xml',
+        "bzrlib.plugins.xmloutput.logxml", "XMLLogFormatter",
+        'Detailed XML log format')
 
 def load_tests(basic_tests, module, loader):
     try:
