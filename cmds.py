@@ -109,7 +109,8 @@ class cmd_xmlstatus(Command):
     @handle_error_xml
     def run(self, file_list=None, revision=None, versioned=False, null=False):
         from statusxml import show_tree_status_xml
-        tree, file_list = builtins.tree_files(file_list)
+        from bzrlib.workingtree import WorkingTree
+        tree, file_list = WorkingTree.open_containing_paths(file_list)
         to_file = self.outf
         if to_file is None:
             to_file = sys.stdout
